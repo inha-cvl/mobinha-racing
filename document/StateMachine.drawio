@@ -1,0 +1,50 @@
+<mxfile host="app.diagrams.net" modified="2024-05-02T08:31:18.951Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" etag="qVw8GzaNQONENbvIywaE" version="24.2.3" type="github">
+  <diagram name="페이지-1" id="8F4O5PCbXepd0RcYOLAG">
+    <mxGraphModel dx="1362" dy="759" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="qEPV8SCuz5l-aYVScs7q-18">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414.5" y="216" as="sourcePoint" />
+            <mxPoint x="200.5" y="309" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="qEPV8SCuz5l-aYVScs7q-18" target="qEPV8SCuz5l-aYVScs7q-15">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414.5" y="216" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="qEPV8SCuz5l-aYVScs7q-14" target="qEPV8SCuz5l-aYVScs7q-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-14" value="Speed Machine" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="0.5" y="309" width="390" height="371" as="geometry">
+            <mxRectangle x="40" y="200" width="140" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-21" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="qEPV8SCuz5l-aYVScs7q-14">
+          <mxGeometry x="135" y="81" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-22" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="qEPV8SCuz5l-aYVScs7q-14">
+          <mxGeometry x="19.5" y="231" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-23" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="qEPV8SCuz5l-aYVScs7q-14">
+          <mxGeometry x="249.5" y="231" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="qEPV8SCuz5l-aYVScs7q-15" target="qEPV8SCuz5l-aYVScs7q-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-15" value="Lane Machine" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="650" y="309" width="390" height="371" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-17" value="Emergency Stop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85151;" vertex="1" parent="1">
+          <mxGeometry x="462" y="464.5" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qEPV8SCuz5l-aYVScs7q-18" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;StateMachineModule&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ systemStatus: SystemStatus&lt;br&gt;- vehicleState: VehicleState&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- navigationData: NavigationData&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- laneData: LaneData&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- detectionData: DetectionData&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- getDriveMessage(): DriveMessage&lt;br&gt;+ setMessage(SystemStatus): void&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;textShadow=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="414" y="40" width="216" height="149" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
