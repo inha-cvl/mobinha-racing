@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QMainWindow, QScrollArea,  QVBoxLayout, QWidget,QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QWidget, QScrollArea,  QVBoxLayout, QWidget,QTableWidget, QTableWidgetItem
 
 
-class MessageViewer(QMainWindow):
+class MessageViewer(QWidget):
     def __init__(self, TH):
         super().__init__()
         self.decode_handler = TH.decode_handler
@@ -32,6 +32,7 @@ class MessageViewer(QMainWindow):
         if msg_id not in self.tables:
             self.create_table_for_msg_id(msg_id)
 
+        print(data_dict)
         table = self.tables[msg_id]
         table.setRowCount(len(data_dict))  # 데이터 사전 크기에 맞게 행 수 조절
 

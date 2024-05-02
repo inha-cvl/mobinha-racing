@@ -3,7 +3,7 @@ import cantools
 
 class TransmitterHandler:
     def __init__(self):
-        self.dbc = cantools.database.loadfile('./cn7.dbc')
+        self.dbc = cantools.database.load_file('./cn7.dbc')
         
         self.setup_message_dicts()
         self.setup_decode_handlers()
