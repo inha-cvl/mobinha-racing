@@ -1,5 +1,6 @@
 
 import cantools
+import can
 
 class TransmitterHandler:
     def __init__(self):
@@ -13,6 +14,11 @@ class TransmitterHandler:
         self.encode_handler = {
             0x156: self.EAIT_Control_01,
             0x157: self.EAIT_Control_02,
+        }
+
+        self.encode_dbc = {
+            0x156: 'EAIT_Control_01',
+            0x157: 'EAIT_Control_02'
         }
 
     def setup_decode_handlers(self):
@@ -31,17 +37,25 @@ class TransmitterHandler:
             getter_dict.update({key: decoded_message.get(key) for key in getter_dict.keys()})
             return getter_dict
     
+    def encode_message(self, dicts):
+        can_messages = []
+        for i, (key,value) in enumerate(self.encode_dbc.items()):
+            message = self.dbc.encode_message(value, dicts[i])
+            can_message = can.Message(arbitration_id=key, data=message, is_extended_id=False)
+            can_messages.append(can_message)
+        return can_messages
+    
     def setup_message_dicts(self):
 
         self.EAIT_Control_01 = {
             'EPS_En': 0x00,  # 0x00: Disabled, 0x01: Enabled
             'EPS_Override_Ignore': 0x00,  # 0x00: Disabled, 0x01: Enabled
-            'EPS_Speed': 0,  # 1.0 * (value) [0,250]
+            'EPS_Speed': 10,  # 1.0 * (value) [0,250]
             'ACC_En': 0x00,  # 0x00: Disabled, 0x01: Enabled
             'AEB_En': 0x00,  # 0x00: Disabled, 0x01: Enabled
             'Turn_Signal': 0x00,  # 0x00: Off, 0x01: Emergency, 0x02: Right, 0x03: Left
             'AEB_decel_value': 0,  # 0.01 * (value) [0.0,1.0]
-            'Alive_Cnt': 0  # 1.0 * (value) [0,255]
+            'Aliv_Cnt': 0  # 1.0 * (value) [0,255]
         }
 
         self.EAIT_Control_02 = {
@@ -94,4 +108,3 @@ class TransmitterHandler:
             'BRK_CYLINDER': 0,  # 0.1 * (value) [0, 409.4] ""
             'Long_ACCEL': 0  # 0.01 * (value + 10.23) [-10.23, 10.23] "m/s^2"
         }
-    
