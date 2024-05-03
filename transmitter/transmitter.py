@@ -17,7 +17,7 @@ def signal_handler(sig, frame):
 
 class Transmitter():
     def __init__(self):
-        #self.bus = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000)
+        self.bus = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000)
         self.TH = TransmitterHandler()
         self.RH = ROSHandler(self.TH)
 
@@ -48,6 +48,7 @@ class Transmitter():
     
     async def ros_publisher(self):
         try:
+            await asyncio.sleep(0.5)
             while not rospy.is_shutdown():
                 await asyncio.get_event_loop().run_in_executor(None, self.RH.send_can_output)
                 await asyncio.sleep(0.02)  # 50Hz, 0ms 간격
@@ -56,8 +57,8 @@ class Transmitter():
         
     def run(self):
         loop = asyncio.get_event_loop()
-        #read_task = loop.create_task(self.read_from_can())
-        #send_task = loop.create_task(self.send_on_can())
+        read_task = loop.create_task(self.read_from_can())
+        send_task = loop.create_task(self.send_on_can())
         pub_task = loop.create_task(self.ros_publisher())
         loop.run_forever()
 

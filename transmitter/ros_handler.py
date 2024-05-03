@@ -34,7 +34,7 @@ class ROSHandler():
         
     def update_can_output(self, message_dict):
         for key, value in message_dict.items():
-            getattr(self.can_output, key).data= value
+            getattr(self.can_output, key).data = str(value)
     
     def update_can_inputs(self):
         self.update_alive_cnt()
