@@ -26,7 +26,7 @@ class MessageViewer(QWidget):
         
     
     def init_ui(self):
-        self.setGeometry(500,1000,500,1000)
+        self.setGeometry(800,1000,800,1000)
         self.setWindowTitle('Message Viewer')
 
         self.scroll_area1 = QScrollArea(self)  # 스크롤 가능한 영역 생성
@@ -89,7 +89,6 @@ class MessageViewer(QWidget):
         for keys, values in self.TH.decode_handler.items():
             for key in values.keys():
                 values[key] = getattr(msg, key).data
-            
             self.update_table(keys, values)
     
     def can_input_cb(self, msg):

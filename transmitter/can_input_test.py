@@ -49,7 +49,7 @@ class CANInputTest:
         try:
             while not rospy.is_shutdown():
                 await asyncio.get_event_loop().run_in_executor(None, self.publish)
-                await asyncio.sleep(0.05) #20hz
+                # await asyncio.sleep(0.05) #20hz
         except Exception as e:
             rospy.logerr(f"Error in ros_publisher: {e}")
     
@@ -80,7 +80,7 @@ class CANInputTest:
             while not rospy.is_shutdown():
                 await asyncio.get_event_loop().run_in_executor(None, self.get_user_value)
                 self.update_value()
-                await asyncio.sleep(0.1)
+                # await asyncio.sleep(0.1)
 
         except Exception as e:
             rospy.logerr(f"Error in get_user: {e}")

@@ -128,7 +128,7 @@ BO_ 297 KIAPI_6: 8 KIAPI
 
 
 CM_ SG_ 342 EPS_Speed "Default 150";
-CM_ SG_ 342 Aliv_Cnt "°¢ ¸Þ½ÃÁö »ùÇÃ¸¶´Ù 1¾¿ Áõ°¡";
+CM_ SG_ 342 Aliv_Cnt "ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ 1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½";
 CM_ SG_ 342 AEB_decel_value "e.g) set value 0x54 -> 0.84 G  
 but
 If you set value \"0x00\" -> 1.0 G";
