@@ -27,8 +27,8 @@ class Transmitter():
                 message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)
                 if message:
                     message_dict = self.TH.decode_message(message)
-                    if message_dict != None:
-                        self.RH.update_can_output(message_dict)
+                    if message_dict != None: # 이 조건의 의미?
+                        self.RH.update_can_output(message_dict) 
                 await asyncio.sleep(0.002)  # 500Hz, 2ms 간격
         except Exception as e:
             rospy.logerr(f"Error in read_from_can: {e}")

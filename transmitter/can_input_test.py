@@ -25,7 +25,7 @@ class CANInputTest:
 
     def set_datum(self):
         self.can_input = CANInput()
-        self.can_input_dict = {
+        self.can_input_dict = { # 출력을 위한 dict
             'EPS_En':0,
             'EPS_Override_Ignore':0,
             'EPS_Speed':0,
@@ -37,10 +37,10 @@ class CANInputTest:
             'ACC_Cmd':0
         }
 
-        for values in self.TH.encode_handler.values():
+        for values in self.TH.encode_handler.values(): # self.EAIT_Control_01, self.EAIT_Control_02
             for key, value in values.items():
-                getattr(self.can_input, key).data = value
-                self.can_input_dict[key] = value
+                getattr(self.can_input, key).data = value # self.can_input 메시지 업데이트
+                self.can_input_dict[key] = value # self.can_input_dict 업데이트
 
     def publish(self):
         self.can_input_pub.publish(self.can_input)
@@ -87,7 +87,7 @@ class CANInputTest:
 
     def run(self):
         loop = asyncio.get_event_loop()
-        pub_task = loop.create_task(self.ros_publisher())
+        pub_task = loop.create_task(self.ros_publisher()) # garbage collector에 의해 수거되지 않도록 변수에 저장
         get_task = loop.create_task(self.get_user())
         loop.run_forever()
 
