@@ -5,12 +5,12 @@ from time import sleep
 class Apid:
     def __init__(self):
         # 일반형
-        self.Kp = 0.08
-        self.Ki = 0.001
-        self.Kd = 0.001
+        self.window_size = 10
+        self.Kp = 20
+        self.Ki = 5/self.window_size
+        self.Kd = 9
         self.lr = 0.001
         self.error_history = []
-        self.window_size = 5
 
         # 증분형
         # self.Kp = 0.75
@@ -63,9 +63,7 @@ class Apid:
         self.ddKd = (-self.lr) * (-self.errs[2]) * ((self.outs[1] - self.outs[0]) / tmp1) * \
                     (self.errs[2] - 2*self.errs[1] + self.errs[0] + self.epsilon)
         # dK(k)
-        tmp2 = (self.errs[3] - self.errs[2])
-        if tmp2 == 0:
-            tmp2 = 1000 
+        tmp2 = (self.errs[3] - self.errs[2] + self.epsilon)
 
         self.dKp = (-self.lr) * (-self.errs[3]) * ((self.outs[2] - self.outs[1]) / tmp2) * \
                     (self.errs[3] - self.errs[2] + self.epsilon)
@@ -109,6 +107,11 @@ class Apid:
         # self.cur += self.ctrls[4] # for plot
 
         output = max(-100, min(output, 100))
+        # output mapping : output -> brake, accel
+        if output < 0:
+            output = (3 / 100) * output
+        else:
+            output = (2 / 100) * output
         return output
 
     def visualize(self):
@@ -116,6 +119,7 @@ class Apid:
         fig, ax = plt.subplots()
         t, ref_values, cur_values, ctrl_values = [], [], [], []
         cur_t = 0
+        plt.ylim(0, 12)
         while 1:
             control = self.run(self.cur, self.ref)
 
@@ -134,6 +138,7 @@ class Apid:
                 ctrl_values.pop(0)
 
             ax.clear()
+            plt.ylim(0, 55)
             ax.plot(t, ref_values, label='Reference')
             ax.plot(t, cur_values, label='Current')
             # ax.plot(t, ctrl_values, label='Control', linestyle='--')
@@ -141,8 +146,8 @@ class Apid:
             ax.legend(loc='upper right')
             plt.xlabel('Time step')
             plt.ylabel('Value')
-            plt.ylim(0, 12)
             plt.title('Real-time PID Control Visualization')
+            ax.set_ylim(0, 12)
             plt.pause(0.01)  # 0.05초 동안 일시 정지하여 그래프 업데이트
         plt.ioff()  # 대화형 모드 비활성화
         plt.show()

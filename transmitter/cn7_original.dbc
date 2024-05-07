@@ -69,7 +69,7 @@ BO_ 342 EAIT_Control_01: 8 USER
 
 BO_ 343 EAIT_Control_02: 8 USER
  SG_ EPS_Cmd : 0|16@1- (0.1,0) [-500|500] "deg" Vector__XXX
- SG_ ACC_Cmd : 24|16@1+ (0.01,-10.23) [-3|2] "m/s^2" Vector__XXX
+ SG_ ACC_Cmd : 24|16@1+ (0.01,-10.23) [-3|1] "m/s^2" Vector__XXX
 
 BO_ 1808 EAIT_INFO_EPS: 8 EAIT
  SG_ EPS_En_Status : 0|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -128,7 +128,7 @@ BO_ 297 KIAPI_6: 8 KIAPI
 
 
 CM_ SG_ 342 EPS_Speed "Default 150";
-CM_ SG_ 342 Aliv_Cnt "ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ 1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½";
+CM_ SG_ 342 Aliv_Cnt "°¢ ¸Þ½ÃÁö »ùÇÃ¸¶´Ù 1¾¿ Áõ°¡";
 CM_ SG_ 342 AEB_decel_value "e.g) set value 0x54 -> 0.84 G  
 but
 If you set value \"0x00\" -> 1.0 G";
