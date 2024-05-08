@@ -9,8 +9,8 @@ def nmea_parser(sentence):
         heading = float(parsed[1])
         return (heading)
 
-def kph_to_mph(v):
-    return float(v) / 3.6
+def calc_wheel_velocity(vRR, vRL):
+    return (vRR + vRL)/7.2    
 
 def mode_checker(eps_status, acc_status):
     status_to_mode = {
