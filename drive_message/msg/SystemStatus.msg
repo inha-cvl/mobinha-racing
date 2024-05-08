@@ -1,0 +1,2 @@
+std_msgs/Int8 systemState
+std_msgs/Int8 systemHealth
