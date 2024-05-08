@@ -1,0 +1,173 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: EAIT USER KIAPI
+
+
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ curise_btn : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ cruise_cancle : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ RAD_ObjRelSpd : 48|16@1+ (0.1,-170) [-170|239.5] "m/s" Vector__XXX
+ SG_ RAD_ObjDist : 32|16@1+ (0.2,-10) [0|204.7] "m" Vector__XXX
+ SG_ RAD_ObjLatPos : 16|16@1+ (0.1,-20) [-20|31.1] "m" Vector__XXX
+ SG_ RAD_ObjState : 0|8@1+ (1,0) [0|4] "" Vector__XXX
+ SG_ AcceloratorPedalPosition : 0|8@1+ (0.3906,0) [0|99.603] "%" Vector__XXX
+ SG_ SteeringWheelAngleRate : 8|8@1+ (4,0) [0|1016] "deg/s" Vector__XXX
+ SG_ BrakeActSignal : 16|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ NewSignal_0001 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0002 : 8|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0008 : 56|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0006 : 40|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0007 : 48|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0005 : 32|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0004 : 24|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ NewSignal_0003 : 16|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ ACC_Override_Ignore : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Gear_Sel : 44|4@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 342 EAIT_Control_01: 8 USER
+ SG_ EPS_En : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_Override_Ignore : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_Speed : 8|8@1+ (1,0) [10|250] "" Vector__XXX
+ SG_ ACC_En : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ AEB_En : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Aliv_Cnt : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ AEB_decel_value : 48|8@1+ (0.01,0) [0|1] "g" Vector__XXX
+ SG_ Turn_Signal : 40|3@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 343 EAIT_Control_02: 8 USER
+ SG_ EPS_Cmd : 0|16@1- (0.1,0) [-500|500] "deg" Vector__XXX
+ SG_ ACC_Cmd : 24|16@1+ (0.01,-10.23) [-3|1] "m/s^2" Vector__XXX
+
+BO_ 1808 EAIT_INFO_EPS: 8 EAIT
+ SG_ EPS_En_Status : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_Control_Board_Status : 1|3@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ EPS_Control_Status : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ EPS_USER_CAN_ERR : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_ERR : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_Veh_CAN_ERR : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_SAS_ERR : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Override_Ignore_Status : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Override_Status : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ StrAng : 16|16@1- (0.1,0) [-500|500] "deg" Vector__XXX
+ SG_ Str_Drv_Tq : 32|12@1+ (0.01,-20.48) [-20.48|20.47] "" Vector__XXX
+ SG_ Str_Out_Tq : 44|12@1+ (0.1,-204.8) [-204.8|204.7] "" Vector__XXX
+ SG_ EPS_Alive_Cnt : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1809 EAIT_INFO_ACC: 8 EAIT
+ SG_ ACC_En_Status : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ ACC_Control_Board_Status : 1|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ ACC_Control_Status : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ ACC_USER_CAN_ERR : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ ACC_ERR : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ VS : 16|8@1+ (1,0) [0|255] "km/h" Vector__XXX
+ SG_ Long_Accel : 32|11@1+ (0.01,-10.23) [-10.23|10.24] "m/s^2" Vector__XXX
+ SG_ Hazard_En : 49|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Turn_Left_En : 50|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Turn_Right_En : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ ACC_Veh_ERR : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ G_SEL_DISP : 52|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ ACC_Alive_Cnt : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1810 EAIT_INFO_SPD: 8 EAIT
+ SG_ WHEEL_SPD_FR : 0|16@1+ (0.03125,0) [0|511.96875] "kph" Vector__XXX
+ SG_ WHEEL_SPD_FL : 16|16@1+ (0.03125,0) [0|511.96875] "kph" Vector__XXX
+ SG_ WHEEL_SPD_RR : 32|16@1+ (0.03125,0) [0|511.96875] "kph" Vector__XXX
+ SG_ WHEEL_SPD_RL : 48|16@1+ (0.03125,0) [0|511.96875] "kph" Vector__XXX
+
+BO_ 1811 EAIT_INFO_IMU: 8 EAIT
+ SG_ LAT_ACCEL : 0|16@1- (0.01,-10.23) [-10.23|10.23] "m/s^2" Vector__XXX
+ SG_ YAW_RATE : 32|16@1- (0.01,-40.95) [-40.95|40.94] "deg/s" Vector__XXX
+ SG_ BRK_CYLINDER : 48|16@1+ (0.1,0) [0|409.4] "" Vector__XXX
+ SG_ Long_ACCEL : 16|16@1+ (0.01,-10.23) [-10.23|10.23] "m/s^2" Vector__XXX
+
+BO_ 292 KIAPI_1: 8 KIAPI
+
+BO_ 293 KIAPI_2: 8 KIAPI
+
+BO_ 294 KIAPI_3: 8 KIAPI
+
+BO_ 295 KIAPI_4: 8 KIAPI
+
+BO_ 296 KIAPI_5: 8 KIAPI
+
+BO_ 297 KIAPI_6: 8 KIAPI
+
+
+
+CM_ SG_ 342 EPS_Speed "Default 150";
+CM_ SG_ 342 Aliv_Cnt "�� �޽��� ���ø��� 1�� ����";
+CM_ SG_ 342 AEB_decel_value "e.g) set value 0x54 -> 0.84 G  
+but
+If you set value \"0x00\" -> 1.0 G";
+CM_ SG_ 1808 EPS_Control_Status "Other value : error
+BRK_Override operate only gear poisition \"D\"";
+CM_ SG_ 1808 EPS_USER_CAN_ERR "User_CAN_Error.";
+CM_ SG_ 1808 EPS_SAS_ERR "Steering angle sensor error";
+CM_ SG_ 1808 Override_Status "If override occur, values is 1 during 1 second";
+CM_ SG_ 1809 ACC_Control_Status "Other value : error";
+CM_ SG_ 1809 VS "Cluster visual speed";
+CM_ SG_ 1811 BRK_CYLINDER "maybe %";
+BA_DEF_  "BusType" STRING ;
+BA_DEF_ SG_  "GenSigStartValue" FLOAT -3.4e+38 3.4e+38;
+BA_DEF_DEF_  "BusType" "CAN";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_ "BusType" "CAN";
+BA_ "GenSigStartValue" SG_ 342 EPS_Speed 10;
+VAL_ 342 EPS_En 0 "EPS_Off" 1 "EPS_On" ;
+VAL_ 342 EPS_Override_Ignore 0 "Do_Override" 1 "Do_Ignore" ;
+VAL_ 342 ACC_En 0 "ACC_Off" 1 "ACC_On" ;
+VAL_ 342 AEB_En 0 "AEB_Off" 1 "AEB_On" ;
+VAL_ 342 Turn_Signal 1 "Hazard" 2 "Turn_left" 4 "Turn_right" ;
+VAL_ 1808 EPS_En_Status 0 "EPS_Off" 1 "EPS_On" ;
+VAL_ 1808 EPS_Control_Board_Status 0 "Abnormal" 1 "Initial" 2 "Normal" ;
+VAL_ 1808 EPS_Control_Status 0 "None" 1 "Ready" 2 "All_On" 3 "ACC_On" 4 "EPS_On" 7 "Acc_Override" 9 "EPS_Override" 8 "BRK_Overrdie" ;
+VAL_ 1808 EPS_USER_CAN_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1808 EPS_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1808 EPS_Veh_CAN_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1808 EPS_SAS_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1808 Override_Ignore_Status 0 "Do_Override" 1 "Do_Ignore" ;
+VAL_ 1808 Override_Status 0 "Normal" 1 "Override" ;
+VAL_ 1809 ACC_En_Status 0 "ACC_Off" 1 "ACC_On" ;
+VAL_ 1809 ACC_Control_Board_Status 0 "Abnormal" 1 "Initial" 2 "Normal" ;
+VAL_ 1809 ACC_Control_Status 0 "None" 1 "Ready" 2 "All_On" 3 "ACC_On" 4 "EPS_On" 7 "ACC_Override" 8 "BRK_Override" 9 "EPS_Override" ;
+VAL_ 1809 ACC_USER_CAN_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1809 ACC_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1809 Hazard_En 0 "Off" 1 "On" ;
+VAL_ 1809 Turn_Left_En 0 "Off" 1 "On" ;
+VAL_ 1809 Turn_Right_En 0 "Off" 1 "On" ;
+VAL_ 1809 ACC_Veh_ERR 0 "Normal" 1 "Abnormal" ;
+VAL_ 1809 G_SEL_DISP 0 "P" 7 "R" 6 "N" 5 "D" ;
+
