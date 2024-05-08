@@ -2,6 +2,7 @@ from std_msgs.msg import Float32
 import matplotlib.pyplot as plt
 import rospy
 import time
+from matplotlib.ticker import MaxNLocator
 
 # 초기 시간 기록
 start_time = time.time()
@@ -36,7 +37,7 @@ def target_v_cb(msg):
 def truncate():
     global current_v, current_v2, target_v, error_v_history
     for arr in (current_v_history, current_v2_history, target_v_history, error_v_history):
-        if len(arr) > 20:
+        if len(arr) > 100:
             arr.pop(0)
 
 if __name__ == "__main__":
@@ -55,9 +56,11 @@ if __name__ == "__main__":
         'error': ax.plot([], [], 'b-', label='Error')[0]
     }
 
-    ax.set_ylim(0, 30)
+    ax.set_ylim(0, 55)
     plt.legend(loc='upper left')
     plt.grid(True)
+    ax = plt.gca()  # 현재 축 가져오기
+    # ax.xaxis.set_major_locator(MaxNLocator(integer=True, step=1))  # X축 간격을 정수 단위로 1로 설정
 
     while not rospy.is_shutdown():
     
@@ -78,3 +81,5 @@ if __name__ == "__main__":
 
                 plt.draw()
                 plt.pause(0.01)  # 0.01초 간격으로 업데이트
+        
+        truncate()

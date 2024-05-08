@@ -109,9 +109,9 @@ class Apid:
         output = max(-100, min(output, 100))
         # output mapping : output -> brake, accel
         if output < 0:
-            output = (3 / 100) * output
+            output = (10 / 100) * output
         else:
-            output = (2 / 100) * output
+            output = (3 / 100) * output
         return output
 
     def visualize(self):

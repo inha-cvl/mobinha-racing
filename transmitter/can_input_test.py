@@ -14,8 +14,12 @@ import numpy as np
 import time
 
 
-
+v_acc = []
 def signal_handler(sig, frame):
+    global v_acc
+    with open('/home/cvlab-nuc/Desktop/v_acc.txt', 'w') as f:
+        f.write(str(v_acc))
+    print("v-acc saved as txt")
     sys.exit(0)
 
 
@@ -28,6 +32,10 @@ class CANInputTest:
         self.set_messages()
         self.set_controller()
         self.set_plotter()
+
+        ## brk tmp
+        # self.brk_cylinder = 0
+        self.acc_max = 0
     
     def set_plotter(self):
         self.current_v_pub = rospy.Publisher("/current_v", Float32, queue_size=1)
@@ -99,7 +107,6 @@ class CANInputTest:
         # else:
         #     step = -1
         # self.target_v = (offset + amplitude*step) / 3.6
-        
         self.target_v_pub.publish(Float32(self.target_v))
 
     def update_value(self):
@@ -148,6 +155,7 @@ class CANInputTest:
     async def update_vals(self):
         try:
             while not rospy.is_shutdown():
+                # print("brk", self.brk_cylinder)
                 await asyncio.get_event_loop().run_in_executor(None, self.update_value)
                 await asyncio.sleep(0.02)
 
@@ -177,9 +185,19 @@ class CANInputTest:
         vRR = float(self.TH.decode_handler[0x712]['WHEEL_SPD_RR'])
         vRL = float(self.TH.decode_handler[0x712]['WHEEL_SPD_RL'])
         VS = float(self.TH.decode_handler[0x711]['VS'])
+        # pprint(self.TH.decode_handler[0x713])
+        brk_cylinder = float(self.TH.decode_handler[0x713]['BRK_CYLINDER'])
+        acc_max = float(self.TH.decode_handler[0x713]['Long_ACCEL'])
         self.current_v = (vRR + vRL)/7.2
         self.current_v_pub.publish(Float32(self.current_v))
         self.current_v_pub2.publish(Float32(VS))
+        self.brk_cylinder = brk_cylinder
+        self.acc_max = max(acc_max, self.acc_max)
+
+        global v_acc
+        if self.current_v != 0:
+            print("appending")
+            v_acc.append((self.current_v, acc_max))
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
