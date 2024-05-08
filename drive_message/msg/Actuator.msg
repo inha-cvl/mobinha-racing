@@ -1,3 +1,3 @@
-std_msgs/Float64 steer
-std_msgs/Float64 accel
-std_msgs/Float64 brake
+std_msgs/Float32 steer
+std_msgs/Float32 accel
+std_msgs/Float32 brake

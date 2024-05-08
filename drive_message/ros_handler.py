@@ -47,7 +47,7 @@ class ROSHandler():
         #SystemHealth : Float32MultiArray
         #Camera : image (?)
     
-    
+
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
         self.vehicle_state.velocity.data = kph_to_mph(msg.VS.data)
