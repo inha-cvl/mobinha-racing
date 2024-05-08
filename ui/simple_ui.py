@@ -1,42 +1,27 @@
 import sys
-import random
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 from PyQt5.QtCore import QTimer
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+
+from libs.VelocityGraph import VelocityGraph
+
 from functools import partial
 
 import rospy
 from std_msgs.msg import Float32, Int8
 from drive_msgs.msg import *
 
-class PlotCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super().__init__(fig)
-        self.setParent(parent)
-
-    def plot(self, current_velocity, target_velocity):
-        self.axes.clear()
-        self.axes.plot(current_velocity, label='Current Velocity')
-        self.axes.plot(target_velocity, label='Target Velocity')
-        self.axes.legend(loc='upper right')
-        self.axes.set_title('Velocity Over Time')
-        self.draw()
-
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-
-        self.current_vel = [0]
+        
+        self.current_velocity = 0.0
         self.target_velocity = 0.0
-        self.target_vel = [0]
 
         self.ego_actuator = [0,0,0]
         self.target_actuator = [0,0,0]
         
         self.time = 0
+        self.velocity_graph = VelocityGraph(self)
 
         rospy.init_node("simple_ui")
         
@@ -62,9 +47,8 @@ class MainWindow(QWidget):
         self.target_brake_label.setText(f'Target Brake: {round(msg.brake.data,2)}')
     
     def vehicle_state_cb(self, msg):
-        self.current_vel.append(round(msg.velocity.data*3.6,2))
-        self.target_vel.append(round(self.target_velocity,2))
-        self.current_velocity_label.setText(f'Current Velocity: {round(msg.velocity.data,2)}')
+        self.current_velocity = round(msg.velocity.data*3.6,2)
+        self.current_velocity_label.setText(f'Current Velocity: {self.current_velocity}')
     
     
     def initUI(self):
@@ -82,7 +66,7 @@ class MainWindow(QWidget):
 
         # 현재 Velocity와 Target Velocity 입력
         velocity_layout = QHBoxLayout()
-        self.current_velocity_label = QLabel(f'Current Velocity: {self.current_vel[-1]}', self)
+        self.current_velocity_label = QLabel(f'Current Velocity: {self.current_velocity}', self)
         self.target_velocity_input = QLineEdit(self)
         self.send_velocity_button = QPushButton("Set Target Velocity", self)
         self.send_velocity_button.clicked.connect(self.update_velocity)
@@ -114,9 +98,8 @@ class MainWindow(QWidget):
         target_values_layout.addWidget(self.target_brake_label)
         main_layout.addLayout(target_values_layout)
 
-        # 그래프 캔버스 추가
-        self.canvas = PlotCanvas(self, width=5, height=4)
-        main_layout.addWidget(self.canvas)
+
+        main_layout.addWidget(self.velocity_graph)
 
         # 메인 윈도우 설정
         self.setLayout(main_layout)
@@ -128,20 +111,20 @@ class MainWindow(QWidget):
    
     def initTimer(self):
         self.timer = QTimer(self)
-        self.timer.setInterval(1000)  # Update every second
+        self.timer.setInterval(100)  # Update every second
         self.timer.timeout.connect(self.update_graph)
         self.timer.start()
 
     def update_velocity(self):
         target_velocity = self.target_velocity_input.text()
         try:
-            self.target_velocity = float(target_velocity)/3.6
-            self.pub_user_target_velocity.publish(self.target_velocity)
+            self.target_velocity = float(target_velocity)
+            self.pub_user_target_velocity.publish(self.target_velocity/3.6)
         except ValueError:
             pass
     
     def update_graph(self):
-        self.canvas.plot(self.current_vel, self.target_vel)
+        self.velocity_graph.set_speed(self.target_velocity, self.current_velocity)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
