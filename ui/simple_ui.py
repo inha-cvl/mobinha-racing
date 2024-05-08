@@ -30,7 +30,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.current_vel = [0]
-        self.control_target_vel = 0.0
+        self.target_velocity = 0.0
         self.target_vel = [0]
 
         self.ego_actuator = [0,0,0]
@@ -45,7 +45,6 @@ class MainWindow(QWidget):
         rospy.Subscriber('/EgoActuator', Actuator, self.ego_actuator_cb)
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
-        rospy.Subscriber('/control/target_velocity', Float32, self.target_velocity_cb)
         self.pub_user_target_velocity = rospy.Publisher('/test/target_velocity', Float32, queue_size=1)
         self.pub_system_mode = rospy.Publisher('/state_machine/system_state',Int8, queue_size=1)
 
@@ -58,17 +57,15 @@ class MainWindow(QWidget):
         self.current_brake_label.setText(f'Current Brake: {round(msg.brake.data,2)}')
     
     def target_actuator_cb(self, msg):
-        self.current_steer_label.setText(f'Current Steer: {round(msg.steer.data,2)}')
-        self.current_accel_label.setText(f'Current Accel: {round(msg.accel.data,2)}') 
-        self.current_brake_label.setText(f'Current Brake: {round(msg.brake.data,2)}')
+        self.target_steer_label.setText(f'Target Steer: {round(msg.steer.data,2)}')
+        self.target_accel_label.setText(f'Target Accel: {round(msg.accel.data,2)}') 
+        self.target_brake_label.setText(f'Target Brake: {round(msg.brake.data,2)}')
     
     def vehicle_state_cb(self, msg):
         self.current_vel.append(round(msg.velocity.data*3.6,2))
-        self.target_vel.append(round(self.control_target_vel*3.6,2))
+        self.target_vel.append(round(self.target_velocity,2))
         self.current_velocity_label.setText(f'Current Velocity: {round(msg.velocity.data,2)}')
     
-    def target_velocity_cb(self, msg):
-        self.control_target_vel = msg.data
     
     def initUI(self):
         # 전체 수직 레이아웃
@@ -138,8 +135,8 @@ class MainWindow(QWidget):
     def update_velocity(self):
         target_velocity = self.target_velocity_input.text()
         try:
-            target_velocity = float(target_velocity)/3.6
-            self.pub_user_target_velocity.publish(target_velocity)
+            self.target_velocity = float(target_velocity)/3.6
+            self.pub_user_target_velocity.publish(self.target_velocity)
         except ValueError:
             pass
     
