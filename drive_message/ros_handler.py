@@ -50,7 +50,7 @@ class ROSHandler():
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
-        self.vehicle_state.velocity.data = kph_to_mph(msg.VS.data)
+        self.vehicle_state.velocity.data = calc_wheel_velocity(msg.WHEEL_SPD_RR.data, msg.WHEEL_SPD_RL.data)
         self.vehicle_state.gear.data = str(msg.G_SEL_DISP.data)
 
         self.ego_actuator.accel.data = float(msg.Long_ACCEL.data)
