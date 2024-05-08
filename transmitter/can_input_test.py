@@ -9,7 +9,6 @@ from std_msgs.msg import Float32
 from drive_message.msg import CANInput, CANOutput
 from transmitter_handler import TransmitterHandler
 from apid_origin import Apid
-import matplotlib.pyplot as plt
 import datetime
 import numpy as np
 import time
@@ -31,10 +30,8 @@ class CANInputTest:
         self.set_plotter()
     
     def set_plotter(self):
-        # self.current_v_history = []
-        # self.target_v_history = []
-        # self.error_v_history = []
         self.current_v_pub = rospy.Publisher("/current_v", Float32, queue_size=1)
+        self.current_v_pub2 = rospy.Publisher("/current_v2", Float32, queue_size=1)
         self.target_v_pub = rospy.Publisher("/target_v", Float32, queue_size=1)
 
     def set_controller(self):
@@ -115,16 +112,7 @@ class CANInputTest:
         
         self.can_input_dict['ACC_Cmd'] = output
         for key, value in self.can_input_dict.items():
-            # print(key, value)
             getattr(self.can_input, key).data = value
-
-        ## plot update
-        # self.current_v_history.append(self.current_v)
-        # self.target_v_history.append(self.target_v)
-        # self.error_v_history.append(self.target_v-self.current_v)
-        # for arr in [self.current_v_history, self.target_v_history, self.error_v_history]:
-        #     if len(arr)>20:
-        #         arr.pop(0)
 
 
     def get_user_value(self):
@@ -153,7 +141,6 @@ class CANInputTest:
             while not rospy.is_shutdown():
                 await asyncio.get_event_loop().run_in_executor(None, self.get_user_value)
                 await asyncio.sleep(0.1)
-                # self.update_value()
 
         except Exception as e:
             rospy.logerr(f"Error in get_user: {e}")
@@ -166,32 +153,6 @@ class CANInputTest:
 
         except Exception as e:
             rospy.logerr(f"Error in update: {e}")
-
-    # async def plot_velocity(self):
-    #     try:
-    #         plt.ion()  # 대화형 모드 활성화
-    #         fig, ax = plt.subplots()
-    #         line1, = ax.plot(self.current_v_history, 'r-', label='Current Velocity')
-    #         line2, = ax.plot(self.target_v_history, 'g-', label='Target Velocity')
-    #         ax.legend()
-    #         while not rospy.is_shutdown():
-    #             line1.set_ydata(self.current_v_history)
-    #             line2.set_ydata(self.target_v_history)
-    #             line1.set_xdata(range(len(self.current_v_history)))
-    #             line2.set_xdata(range(len(self.target_v_history)))
-
-    #             ax.relim()
-    #             ax.autoscale_view()
-
-    #             plt.draw()
-    #             plt.pause(0.1)  # 0.1초 간격으로 업데이트
-    #             # await asyncio.get_event_loop().run_in_executor(None, self.get_user_value)
-    #             # self.update_value()
-    #             # await asyncio.sleep(0.1)
-
-    #     except Exception as e:
-    #         rospy.logerr(f"Error in get_user: {e}")
-
 
     def run(self):
         loop = asyncio.get_event_loop()
@@ -215,32 +176,10 @@ class CANInputTest:
     def get_current_v(self):
         vRR = float(self.TH.decode_handler[0x712]['WHEEL_SPD_RR'])
         vRL = float(self.TH.decode_handler[0x712]['WHEEL_SPD_RL'])
+        VS = float(self.TH.decode_handler[0x711]['VS'])
         self.current_v = (vRR + vRL)/7.2
         self.current_v_pub.publish(Float32(self.current_v))
-
-    
-    def update_target_v(self):
-        ## manual
-        ## case 1 : constant
-        self.target_v = 50 / 3.6 # km/h
-
-        ## case 2 : sinusoidal
-        # amplitude = 5
-        # offset = 20
-        # number = datetime.datetime.now().microsecond%1000000
-        # while number >= 10:
-        #     number //= 10
-        # self.target_v = offset + amplitude * np.sin(number*2*np.pi/9) / 3.6
-
-        ## case 3 : step
-        # amplitude = 5
-        # offset = 20
-        # number = datetime.datetime.now().second%10
-        # if number < 5:
-        #     step = 1
-        # else:
-        #     step = -1
-        # self.target_v = offset + amplitude*step / 3.6
+        self.current_v_pub2.publish(Float32(VS))
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
