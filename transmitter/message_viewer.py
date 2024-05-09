@@ -4,7 +4,7 @@ import rospy
 import sys
 import signal
 
-from drive_message.msg import *
+from drive_msgs.msg import *
 from transmitter_handler import TransmitterHandler
 
 
@@ -22,7 +22,7 @@ class MessageViewer(QWidget):
     
     def set_protocol(self):
         rospy.Subscriber('/transmitter/can_output', CANOutput, self.can_output_cb)
-        rospy.Subscriber('/test/can_input', CANInput, self.can_input_cb)
+        rospy.Subscriber('/CANInput', CANInput, self.can_input_cb)
         
     
     def init_ui(self):

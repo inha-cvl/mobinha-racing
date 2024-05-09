@@ -17,6 +17,7 @@ class ROSHandler():
 
     def set_messages(self):
         self.can_input = CANInput()
+        self.can_input.EPS_Speed.data = 11
         self.sensor_data = SensorData()
         self.system_status = SystemStatus()
         self.vehicle_state = VehicleState()

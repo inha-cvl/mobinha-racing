@@ -10,7 +10,7 @@ def nmea_parser(sentence):
         return (heading)
 
 def calc_wheel_velocity(vRR, vRL):
-    return (vRR + vRL)/7.2    
+    return (float(vRR) + float(vRL))/7.2    
 
 def mode_checker(eps_status, acc_status):
     status_to_mode = {

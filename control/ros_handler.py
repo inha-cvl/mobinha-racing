@@ -40,7 +40,7 @@ class ROSHandler():
             brake = 0
         else:
             accel = 0
-            brake = acc
+            brake = -acc
         self.target_actuator.accel.data = accel
         self.target_actuator.brake.data = brake
         self.target_actuator_pub.publish(self.target_actuator)
