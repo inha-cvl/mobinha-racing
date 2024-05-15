@@ -7,14 +7,15 @@ class ROSHandler():
     def __init__(self):
         rospy.init_node('Control', anonymous=False)
         
+        self.set_values()
         self.set_publisher_protocol()
-        
+        self.set_subscriber_protocol()
+
+    
+    def set_values(self):
         self.system_status = 0
         self.target_velocity = 0
         self.current_velocity = 0
-
-        self.set_subscriber_protocol()
-
         self.target_actuator = Actuator()
 
     def set_publisher_protocol(self):

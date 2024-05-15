@@ -22,3 +22,11 @@ def mode_checker(eps_status, acc_status):
     mode = status_to_mode.get((eps_status, acc_status), 0)  # 기본값으로 0을 사용
 
     return mode
+
+def turn_signal_checker(turn_left_en, turn_right_en):
+    if turn_left_en == 'On':
+        return 1
+    elif turn_right_en == 'On':
+        return 2
+    else:
+        return 0
