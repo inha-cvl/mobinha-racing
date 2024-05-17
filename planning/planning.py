@@ -27,17 +27,16 @@ class Planning():
         rate = rospy.Rate(10)
         map_pub_cnt = 0
         while not rospy.is_shutdown():
-            if self.RH.system_status < 1:
-                continue
             local_pos = self.calc_local_position()
+            if local_pos == None:
+                continue
             local_path = self.lpt.execute(local_pos)
             self.RH.publish(local_pos, local_path)
-
             #MAP Publish
-            if map_pub_cnt == 100:
+            if map_pub_cnt % 50 == 0:
                 lmap_viz, mlmap_viz = self.map.get_vizs()
+
                 self.RH.publish_map(lmap_viz, mlmap_viz)
-                map_pub_cnt = 0
             map_pub_cnt += 1
             rate.sleep()
 

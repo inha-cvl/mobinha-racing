@@ -1,5 +1,5 @@
 
-import libs.gp_utils as gput
+import local_path.libs.gp_utils as gput
 
 KPH_TO_MPS = 1 / 3.6
 MPS_TO_KPH = 3.6
@@ -44,7 +44,7 @@ class LocalPathTest:
         n_id = l_id if to==1 else r_id
 
         if n_id != None:
-            r = self.lmap.lanelets[n_id]['waypoints']
+            r = self.MAP.lanelets[n_id]['waypoints']
             u_n = n_id
             u_i = gput.find_nearest_idx(r, c_pt)
             uni = [u_n, u_i]
@@ -72,13 +72,13 @@ class LocalPathTest:
 
         r1, ni1 = gput.get_straight_path(ego_ni, x1)
 
-        if self.RH.current_signal == 0 or self.RH.current_signal == 3 or update_type == 3 or update_type == 1:
+        if self.RH.current_signal == 0 or self.RH.current_signal == 4 or update_type == 3 or update_type == 1:
             local_path = r0+r1
         else:
             x2 = self.x2_i if self.RH.current_velocity < self.x2_v_th else self.RH.current_velocity * self.x_p
             _, ni2 = self.get_change_path(ni1, x2, self.RH.current_signal)
             x3 = self.x3_c + self.RH.current_velocity * self.x_p
-            r3, _, _ = gput.get_straight_path(ni2, x3)
+            r3, _ = gput.get_straight_path(ni2, x3)
             local_path = r0+r1+r3
 
         return local_path
@@ -87,12 +87,13 @@ class LocalPathTest:
         if local_pos == None:
             return None
         local_path = []
-        need_update = self.need_update()
+        need_update = self.need_update(local_pos)
         if need_update != -1:
             local_path = self.make_path(need_update, local_pos)
             if local_path == None or len(local_path) <= 0:
                 return
             self.local_path = gput.smooth_interpolate(local_path, self.precision)
-            local_path_viz = gput.LocalPathViz(self.local_path)
-            self.RH.publish_path(local_path_viz)
+            self.local_path_viz = gput.LocalPathViz(self.local_path)
+        
+        self.RH.publish_path(self.local_path_viz)
         return self.local_path

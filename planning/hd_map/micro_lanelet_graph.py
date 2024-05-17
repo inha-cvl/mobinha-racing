@@ -1,5 +1,5 @@
 import copy
-from map_utils import *
+from hd_map.map_utils import *
 
 class MicroLaneletGraph:
     def __init__(self, lmap, cut_dist):

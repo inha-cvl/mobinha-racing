@@ -1,9 +1,9 @@
 import rospy
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, Pose
 from nmea_msgs.msg import Sentence
-from std_msgs.msg import Int8
+from std_msgs.msg import Int8, Float32MultiArray
 
 from message_handler import *
 
@@ -43,12 +43,14 @@ class ROSHandler():
         rospy.Subscriber('/transmitter/can_output', CANOutput, self.can_output_cb)
         rospy.Subscriber('/planning/local_action_set', PoseArray, self.local_action_set_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
-        rospy.Subscriber('/state_machine/system_state', Int8, self.system_state_cb)
+        rospy.Subscriber('/ui/user_input', Float32MultiArray, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         #SystemHealth : Float32MultiArray
         #Camera : image (?)
+        #Simulator
+        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        rospy.Subscriber('/simulator/can_output', CANOutput, self.can_output_cb)
     
-
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
         self.vehicle_state.velocity.data = calc_wheel_velocity(msg.WHEEL_SPD_RR.data, msg.WHEEL_SPD_RL.data)
@@ -58,17 +60,23 @@ class ROSHandler():
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
 
-    def system_state_cb(self, msg):
-        self.system_to_can(int(msg.data))
-        self.system_status.systemState.data = int(msg.data)
+    def signal_cb(self, msg):
+        self.system_status.systemSignal.data = int(msg.data)
+
+    def user_input_cb(self, msg): #mode, signal, state, health
+        if len(msg.data) > 0:
+            mode = int(msg.data[0])
+            self.system_to_can(mode)
+            self.system_status.systemMode.data = mode
+            self.system_status.systemSignal.data = int(msg.data[1])
 
     def nmea_sentence_cb(self, msg):
         parsed = nmea_parser(msg.sentence)
         if len(parsed) == 2:
-            self.sensor_data.position.x = parsed[0]
-            self.sensor_data.position.y = parsed[1]
+            self.vehicle_state.position.x = parsed[0]
+            self.vehicle_state.position.y = parsed[1]
         elif len(parsed) == 1:
-            self.sensor_data.heading.data = parsed[0]    
+            self.vehicle_state.heading.data = parsed[0]    
     
     def target_actuator_cb(self, msg):
         self.can_input.EPS_Cmd.data = msg.steer.data

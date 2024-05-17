@@ -13,7 +13,7 @@ class ROSHandler():
         self.set_subscriber_protocol()
 
     def set_values(self):
-        self.system_status = 0
+        self.system_mode = 0
         self.current_velocity = 0
         self.current_signal = 0
         self.current_position_lat = 0
@@ -30,11 +30,11 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
     
     def system_status_cb(self, msg):
-        self.system_status = msg.systemState.data 
+        self.system_mode = msg.systemMode.data 
+        self.current_signal = msg.systemSignal.data
     
     def vehicle_state_cb(self, msg):
         self.current_velocity = msg.velocity.data
-        self.current_signal = msg.signal.data
         self.current_position_lat = msg.position.x
         self.current_position_long = msg.position.y
     

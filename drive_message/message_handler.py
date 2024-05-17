@@ -4,10 +4,10 @@ def nmea_parser(sentence):
     if parsed[0] == '$GPGGA':
         lat = float(parsed[2])/100.0
         lng = float(parsed[4])/100.0
-        return (lat,lng)
+        return [lat,lng]
     elif parsed[0] == '$GPHDT':
         heading = float(parsed[1])
-        return (heading)
+        return [heading]
 
 def calc_wheel_velocity(vRR, vRL):
     return (float(vRR) + float(vRL))/7.2    

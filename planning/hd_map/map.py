@@ -1,13 +1,13 @@
 import rospy
 import json
-from map_utils import *
-from lanelet import LaneletMap, TileMap
-from micro_lanelet_graph import MicroLaneletGraph
+from hd_map.map_utils import *
+from hd_map.lanelet import LaneletMap, TileMap
+from hd_map.micro_lanelet_graph import MicroLaneletGraph
 
 
 class MAP:
     def __init__(self, map):
-        file_path = f'./maps/{map}.json'
+        file_path = f'./hd_map/maps/{map}.json'
         with open(file_path, 'r') as file:
             data = json.load(file)
 

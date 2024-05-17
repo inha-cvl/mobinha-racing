@@ -23,7 +23,7 @@ class MainWindow(QWidget):
         self.time = 0
         self.velocity_graph = VelocityGraph(self)
 
-        rospy.init_node("simple_ui")
+        rospy.init_node("long_control_ui")
         
         self.initUI()
 
@@ -107,7 +107,7 @@ class MainWindow(QWidget):
         self.setGeometry(300, 300, 600, 400)
 
     def mode_publish(self, mode):
-        self.pub_system_mode.publish(mode)
+        self.pub_system_mode.publish(Int8(mode))
    
     def initTimer(self):
         self.timer = QTimer(self)

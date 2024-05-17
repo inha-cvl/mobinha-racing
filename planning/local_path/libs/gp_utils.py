@@ -6,7 +6,7 @@ from scipy.ndimage import gaussian_filter1d
 
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
-from quadratic_spline_interpolate import QuadraticSplineInterpolate
+from local_path.libs.quadratic_spline_interpolate import QuadraticSplineInterpolate
 
 lanelets = None
 tiles = None
@@ -260,7 +260,8 @@ def get_profiles(path_len, max_vel, sec_to_reach):
     return acceleration, velocity, distance
 
 def LocalPathViz(waypoints):
-    return Path(waypoints, 999, 0.2, 1.5, (255/255,79/255, 66/255, 0.5))
+    color =  [241, 76, 152, 1]
+    return Path(waypoints, 999, 0.2, 1.5, (color[0]/255,color[1]/255, color[2]/255, 0.5))
 
 def PreRound2Viz(waypoints):
     return Path(waypoints, 999, 0.2, 1.5, (150/255,59/255, 255/255, 0.5))
