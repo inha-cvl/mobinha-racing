@@ -13,7 +13,7 @@ class DriveMessage():
         self.RH = ROSHandler()
 
     def execute(self):
-        rate = rospy.Rate(30)
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             self.RH.publish()
             rate.sleep()
