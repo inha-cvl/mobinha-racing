@@ -6,6 +6,7 @@ import signal
 
 from ros_handler import ROSHandler
 from local_path.local_path_test import LocalPathTest
+from longitudinal.adaptive_cruise_control import AdaptiveCruiseControl
 from hd_map.map import MAP
 
 def signal_handler(sig, frame):
@@ -16,6 +17,7 @@ class Planning():
         self.RH = ROSHandler()
         self.map = MAP(map)
         self.lpt = LocalPathTest(self.RH, self.map)
+        self.acc = AdaptiveCruiseControl(self.RH)
 
     def calc_local_position(self):
         if self.RH.current_position_lat == 0:
@@ -23,21 +25,20 @@ class Planning():
         x, y, _ = pm.geodetic2enu(self.RH.current_position_lat, self.RH.current_position_long, 7, self.map.base_lla[0], self.map.base_lla[1], self.map.base_lla[2])
         return [x, y]
 
+    def map_publish(self):
+        lmap_viz, mlmap_viz = self.map.get_vizs()
+        self.RH.publish_map(lmap_viz, mlmap_viz)
+
     def execute(self):
         rate = rospy.Rate(10)
-        map_pub_cnt = 0
+        self.map_publish()
         while not rospy.is_shutdown():
             local_pos = self.calc_local_position()
             if local_pos == None:
                 continue
-            local_path = self.lpt.execute(local_pos)
-            self.RH.publish(local_pos, local_path)
-            #MAP Publish
-            if map_pub_cnt % 50 == 0:
-                lmap_viz, mlmap_viz = self.map.get_vizs()
-
-                self.RH.publish_map(lmap_viz, mlmap_viz)
-            map_pub_cnt += 1
+            local_path, local_kappa = self.lpt.execute(local_pos)
+            local_velocity = self.acc.execute(local_pos, local_path, local_kappa)
+            self.RH.publish(local_pos, local_path, local_kappa, local_velocity)
             rate.sleep()
 
 def main():

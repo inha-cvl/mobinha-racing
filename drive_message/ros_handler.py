@@ -1,15 +1,15 @@
 import rospy
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray, Pose
+from geometry_msgs.msg import PoseArray
 from nmea_msgs.msg import Sentence
-from std_msgs.msg import Int8, Float32MultiArray
+from std_msgs.msg import Float32MultiArray
 
-from message_handler import *
+from libs.message_handler import *
 
 class ROSHandler():
     def __init__(self):
-        rospy.init_node('DriveMessage', anonymous=False)
+        rospy.init_node('drive_message', anonymous=False)
         
         self.set_messages()
         self.set_publisher_protocol()
@@ -21,7 +21,6 @@ class ROSHandler():
         self.sensor_data = SensorData()
         self.system_status = SystemStatus()
         self.vehicle_state = VehicleState()
-        self.navigation_data = NavigationData()
         self.lane_data = LaneData()
         self.detection_data = DetectionData()
         
@@ -32,7 +31,6 @@ class ROSHandler():
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
         self.system_status_pub = rospy.Publisher('/SystemStatus', SystemStatus, queue_size=1)
         self.vehicle_state_pub = rospy.Publisher('/VehicleState', VehicleState, queue_size=1)
-        self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
         self.lane_data_pub = rospy.Publisher('/LaneData', LaneData, queue_size=1)
         self.detection_data_pub = rospy.Publisher('/DetectionData', DetectionData, queue_size=1)
         self.can_input_pub = rospy.Publisher('/CANInput', CANInput, queue_size=1)
@@ -40,7 +38,7 @@ class ROSHandler():
         self.ego_actuator_pub = rospy.Publisher('/EgoActuator', Actuator, queue_size=1)
     
     def set_subscriber_protocol(self):
-        rospy.Subscriber('/transmitter/can_output', CANOutput, self.can_output_cb)
+        rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/planning/local_action_set', PoseArray, self.local_action_set_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/ui/user_input', Float32MultiArray, self.user_input_cb)
@@ -49,7 +47,6 @@ class ROSHandler():
         #Camera : image (?)
         #Simulator
         rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
-        rospy.Subscriber('/simulator/can_output', CANOutput, self.can_output_cb)
     
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
@@ -100,7 +97,6 @@ class ROSHandler():
         self.sensor_data_pub.publish(self.sensor_data)
         self.system_status_pub.publish(self.system_status)
         self.vehicle_state_pub.publish(self.vehicle_state)
-        self.navigation_data_pub.publish(self.navigation_data)
         self.lane_data_pub.publish(self.lane_data)
         self.detection_data_pub.publish(self.detection_data)
 

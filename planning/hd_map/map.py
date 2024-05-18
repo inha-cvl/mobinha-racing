@@ -1,8 +1,8 @@
 import rospy
 import json
-from hd_map.map_utils import *
-from hd_map.lanelet import LaneletMap, TileMap
-from hd_map.micro_lanelet_graph import MicroLaneletGraph
+from hd_map.libs.map_utils import *
+from hd_map.libs.lanelet import LaneletMap, TileMap
+from hd_map.libs.micro_lanelet_graph import MicroLaneletGraph
 
 
 class MAP:

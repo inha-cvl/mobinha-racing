@@ -3,7 +3,7 @@ import rospy
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker, MarkerArray
 
-from hd_map.quadratic_spline_interpolate import QuadraticSplineInterpolate
+from hd_map.libs.quadratic_spline_interpolate import QuadraticSplineInterpolate
 
 def LaneletMapViz(lanelet, for_viz):
     array = MarkerArray()

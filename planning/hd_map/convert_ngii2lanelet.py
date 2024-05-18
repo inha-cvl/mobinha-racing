@@ -1,7 +1,7 @@
 import json
 import argparse
 
-from ngii2lanelet import NGII2LANELET
+from hd_map.libs.ngii2lanelet import NGII2LANELET
 
 
 def main(args):

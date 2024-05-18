@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 
 from ngiiParser import NGIIParser
-from quadratic_spline_interpolate import QuadraticSplineInterpolate
+from hd_map.libs.quadratic_spline_interpolate import QuadraticSplineInterpolate
 
 from shapely.geometry import LineString, Polygon
 from scipy.interpolate import splprep, splev

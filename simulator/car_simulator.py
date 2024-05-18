@@ -77,7 +77,7 @@ class CarSimulator:
         self.pub_viz_car = rospy.Publisher('/viz/car', Marker, queue_size=1)
         self.pub_viz_car_info = rospy.Publisher('/viz/car_info', Marker, queue_size=1)
         self.pub_nmea_sentence = rospy.Publisher('/simulator/nmea_sentence', Sentence, queue_size=1)
-        self.pub_can_output = rospy.Publisher('/simulator/can_output', CANOutput, queue_size=1)
+        self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
 
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
@@ -94,9 +94,9 @@ class CarSimulator:
         self.ego.set(x, y, yaw)
 
     def target_actuator_cb(self, msg):
-        self._steer = math.radians(msg.steer.data)
+        self._steer = msg.steer.data
         self._accel = msg.accel.data
-        self._brake = msg.braek.data
+        self._brake = msg.brake.data
    
     def system_status_cb(self, msg):
         self.mode = msg.systemMode.data
@@ -108,8 +108,7 @@ class CarSimulator:
         while not rospy.is_shutdown():
             dt = 0.05
             if self.mode == 1:
-                x, y, yaw, v = self.ego.next_state(
-                dt, self._steer,self._accel, self._brake)
+                x, y, yaw, v = self.ego.next_state(dt, self._steer, self._accel, self._brake)
             else:
                 x, y, yaw, v = self.ego.x, self.ego.y, self.ego.yaw, self.ego.v
             self.yaw = math.degrees(yaw)
@@ -134,22 +133,25 @@ class CarSimulator:
             (eps_status, acc_status) = mode_to_signal.get(self.mode)
             can_output.EPS_Control_Status.data = eps_status
             can_output.ACC_Control_Board_Status.data = acc_status
-            can_output.WHEEL_SPD_RR.data = (7.2/2)*v
-            can_output.WHEEL_SPD_RL.data = (7.2/2)*v
+            can_output.WHEEL_SPD_RR.data = str((7.2/2)*v)
+            can_output.WHEEL_SPD_RL.data = str((7.2/2)*v)
             signal_to_turn = {
                 0:['Off','Off','Off'],
                 1:['On','Off','Off'],
                 2:['Off','Off','On'],
-                3:['Off','On','Off']
+                3:['Off','On','Off'],
+                4:['Off', 'Off', 'Off'],
             }
             turn_sig = signal_to_turn.get(self.signal)
             can_output.Turn_Left_En.data = turn_sig[0]
             can_output.Turn_Right_En.data = turn_sig[2]
             can_output.Hazard_En.data = turn_sig[1]
             can_output.G_SEL_DISP.data = 'D'
-            can_output.Long_ACCEL.data = self._accel
-            can_output.BRK_CYLINDER.data = self._brake
-            can_output.StrAng.data = self._steer
+            can_output.Long_ACCEL.data = str(self._accel)
+            can_output.BRK_CYLINDER.data = str(self._brake)
+            can_output.StrAng.data = str(self._steer*12.67)
+
+            self.pub_can_output.publish(can_output)
 
             info = f"{(v*3.6):.2f}km/h {self.yaw:.2f}deg"
             self.ego_car_info.text = info

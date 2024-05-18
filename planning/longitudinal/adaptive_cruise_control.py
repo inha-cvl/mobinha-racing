@@ -1,49 +1,51 @@
 import numpy as np 
-import pymap3d as pm
-import math
-import scipy.interpolate
-from scipy.spatial import KDTree
-from planning.obstacle_utils import ObstacleUtils
+import configparser
+
+MPS_TO_KPH = 3.6
+KPH_TO_MPS = 1/3.6
 
 class AdaptiveCruiseControl:
-    def __init__(self,  vehicle_length, velocity_gain, distance_gain, time_gap, max_velocity, latitude, longitude, altitude):
-        self.vel_gain = velocity_gain #bigger : sensitive with velocity
-        self.dist_gain = distance_gain #smaller : sensitive with distance
-        self.time_gap = time_gap
-        self.vehicle_length = vehicle_length
-        self.max_velocity = max_velocity
-
-        self.base_lat = latitude
-        self.base_lng = longitude
-        self.base_alt = altitude
+    def __init__(self, ros_handler):
+        self.RH = ros_handler
+        self.set_configs()
 
         self.object_dist= 0
         self.object_vel = 0
-        self.dist_th = 9
+        self.dist_th = 5
 
         self.dangerous = 0
-    
-    def calc_error(self, path, vehicle_position):
-        min_dist = 1000
-        for point in path:
-            dist = vehicle_position.distance(point)
-            if dist < min_dist:
-                min_dist = dist
-        return min_dist
-    
-    def check_objects(self, path):
-        goal = path[-1]
-        distance_threshold = 0
-        for point in path:
-            distance_from_path = point.distance(goal)           
-            if distance_from_path<=distance_threshold:
-                self.object_dist = goal.distance(path[0])-(self.vehicle_length)
-                self.object_vel = 0
 
-    def calculate_curvature(self, local_kappa):
+        self.velocity_list = [0., 10.0, 25., 40., 55, 80]
+        self.max_accel_list = [5,4,3,2,2,2]
+    
+    def set_configs(self):
+        config_file_path = './longitudinal/config.ini'
+        config = configparser.ConfigParser()
+        config.read(config_file_path)
+        acc_config = config['AdaptiveCruiseControl']
+        self.vehicle_length = float(acc_config['vehicle_length'])
+        self.vel_gain = float(acc_config['velocity_gain'])
+        self.dist_gain = float(acc_config['distance_gain'])
+        self.time_gap = float(acc_config['time_gap'])
+        self.max_velocity = float(acc_config['max_velocity'])
+
+    def closest_index(self, path, point):
+        path = np.array(path)
+        point = np.array(point)
+        distance = np.linalg.norm(path-point, axis=1)
+        idx = np.argmin(distance)
+        return idx
+
+    def check_objects(self, local_pos, path):
+        now = self.closest_index(path, local_pos)
+        dist_to_goal = len(path)-now
+        if dist_to_goal <= 0:
+            self.object_dist = dist_to_goal-self.vehicle_length
+            self.object_vel = 0
+
+    def check_curvature_ratio(self, local_kappa):
         avg_curvature = abs(np.mean(local_kappa))*1000
-        co = self.smoothed_deceleration(avg_curvature)
-        return avg_curvature, co
+        self.co = self.smoothed_deceleration(avg_curvature)
     
     def smoothed_deceleration(self, avg_curvature):
         if 5<avg_curvature <= 11:
@@ -56,16 +58,33 @@ class AdaptiveCruiseControl:
             co = 0
         return co
 
-    def get_target_velocity(self, ego_vel, target_vel, co):
-        vel_error = ego_vel - self.object_vel
-        safe_distance = ego_vel*self.time_gap
-        dist_error = safe_distance-self.object_dist
+    def get_dynamic_accel(self, ev):
+        return np.interp(ev, self.velocity_list, self.max_accel_list)
 
-        acceleration = -(self.vel_gain*vel_error + self.dist_gain*dist_error)
-        target_vel = max(self.max_velocity, target_vel-target_vel*(co))
-        out_vel = min(ego_vel+acceleration+2, target_vel)
+    def get_target_velocity(self):
+        ev = self.RH.current_velocity * MPS_TO_KPH
+        tv = self.max_velocity
 
-        if -dist_error < self.dist_th:
-             out_vel -= 1.5
-        return out_vel
+        # vel_error = ev - self.object_vel
+        # safe_distance = ev*self.time_gap
+        # dist_error = safe_distance-self.object_dist
+
+        # acceleration = -(self.vel_gain*vel_error + self.dist_gain*dist_error)
+        # tv = max(tv, tv-tv*(self.co))
+        # alpha = self.get_dynamic_accel(ev)
+
+        # print(ev, tv, vel_error, safe_distance, dist_error, acceleration)
+
+        # out_vel = min(ev+acceleration+alpha, tv)
+
+        acceleration = self.vel_gain * (tv - ev)
+        out_vel = min(ev+acceleration, tv)
+
+        return out_vel*KPH_TO_MPS
+
+    def execute(self, local_pos, local_path, local_kappa):
+        self.check_objects(local_pos, local_path)
+        self.check_curvature_ratio(local_kappa)
+        vel = self.get_target_velocity()
+        return vel
     

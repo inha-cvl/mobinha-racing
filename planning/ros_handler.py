@@ -6,7 +6,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 
 class ROSHandler():
     def __init__(self):
-        rospy.init_node('Planning', anonymous=False)
+        rospy.init_node('planning', anonymous=False)
         
         self.set_values()
         self.set_publisher_protocol()
@@ -38,7 +38,7 @@ class ROSHandler():
         self.current_position_lat = msg.position.x
         self.current_position_long = msg.position.y
     
-    def publish(self, pos, path):
+    def publish(self, pos, path, kappa, velocity):
         if pos == None or path == None:
             return
         self.navigation_data = NavigationData()
@@ -49,12 +49,14 @@ class ROSHandler():
             point.x = xy[0]
             point.y = xy[1]
             self.navigation_data.plannedRoute.append(point)
-        
+        for rk in kappa:
+            self.navigation_data.plannedKappa.append(rk)
+        self.navigation_data.plannedVelocity.data = velocity
         self.navigation_data_pub.publish(self.navigation_data) 
 
     def publish_map(self, lmap_viz, mlmap_viz):
         self.lmap_viz_pub.publish(lmap_viz)
-        self.mlmap_viz_pub.publish(mlmap_viz)
+        #self.mlmap_viz_pub.publish(mlmap_viz)
     
     def publish_path(self, path_viz):
         self.path_viz_pub.publish(path_viz)

@@ -1,5 +1,6 @@
 
 import local_path.libs.gp_utils as gput
+import copy
 
 KPH_TO_MPS = 1 / 3.6
 MPS_TO_KPH = 3.6
@@ -92,8 +93,18 @@ class LocalPathTest:
             local_path = self.make_path(need_update, local_pos)
             if local_path == None or len(local_path) <= 0:
                 return
+            
+            copy_local_path = copy.deepcopy(local_path)
+            copy_local_path.insert(0, local_path[0])
+            copy_local_path.append(local_path[-1])
+            local_kappa = []
+            for i, f in enumerate(local_path):
+                before_after_pts = [copy_local_path[i], copy_local_path[i+2]]
+                Rk = gput.calc_kappa(f, before_after_pts)
+                local_kappa.append(Rk)
+
+            self.local_kappa = local_kappa
             self.local_path = gput.smooth_interpolate(local_path, self.precision)
             self.local_path_viz = gput.LocalPathViz(self.local_path)
-        
         self.RH.publish_path(self.local_path_viz)
-        return self.local_path
+        return self.local_path, self.local_kappa

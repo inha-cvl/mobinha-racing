@@ -14,7 +14,7 @@ app = None
 
 from libs.widgets import *
 
-STEER_RATIO = 14.6
+STEER_RATIO = 12.9
 MPS_TO_KPH = 3.6
 
 def signal_handler(sig, frame):
@@ -46,7 +46,7 @@ class MyApp(QMainWindow):
 
         self.initUI()
 
-        rospy.Subscriber('/EgoActuator', Actuator, self.ego_actuator_cb)
+        rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
@@ -61,24 +61,21 @@ class MyApp(QMainWindow):
         self.user_input_timer.timeout.connect(self.publish_user_input)
         self.user_input_timer.start(500)
 
-    def ego_actuator_cb(self, msg):
-        self.inform['e_y'] = msg.steer.data
-        self.inform['e_a'] = msg.accel.data
-        self.inform['e_b'] = msg.brake.data
+    def can_output_cb(self, msg):
+        self.inform['e_y'] = -1*float(msg.StrAng.data)
+        self.inform['e_a'] = float(msg.Long_ACCEL.data)
+        self.inform['e_b'] = float(msg.BRK_CYLINDER.data)
     
     def vehicle_state_cb(self, msg):
         self.inform['e_v'] = int(msg.velocity.data*MPS_TO_KPH)
 
     def target_actuator_cb(self, msg):
-        self.inform['t_y'] = msg.steer.data
+        self.inform['t_y'] = -1*msg.steer.data
         self.inform['t_a'] = msg.accel.data
         self.inform['t_b'] = msg.brake.data
     
     def navigation_data_cb(self, msg):
-        if len(msg.plannedVelocity) > 0:
-            self.inform['t_v'] = int(msg.plannedVelocity[-1])
-        else:
-            self.inform['t_v'] = 0
+        self.inform['t_v'] = int(msg.plannedVelocity.data*MPS_TO_KPH)
 
     def set_mode(self, mode):
         self.user_input.data[0] = mode
