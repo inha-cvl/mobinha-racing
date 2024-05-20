@@ -1,11 +1,13 @@
 
 def nmea_parser(sentence):
     parsed = sentence.split(',')
-    if parsed[0] == '$GPGGA':
+    # if parsed[0] == '$GPGGA':
+    if parsed[0] == '$GNGGA':
         lat = float(parsed[2])/100.0
         lng = float(parsed[4])/100.0
         return [lat,lng]
-    elif parsed[0] == '$GPHDT':
+    # elif parsed[0] == '$GPHDT':
+    elif parsed[0] == '$GNHDT':
         heading = float(parsed[1])
         return [heading]
 
