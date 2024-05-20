@@ -71,11 +71,13 @@ class PurePursuit(object):
 
 
 class PurePursuit_test(object):
-    def __init__(self, ros_handler):
+    def __init__(self, ros_handler, path):
         self.RH = ros_handler
         self.set_configs()
         self.saturation_th = 5 ## 미션1
         self.prev_steer = 0
+
+        self.path = path
 
     def set_configs(self):
         config_file_path = './config.ini'
@@ -90,7 +92,7 @@ class PurePursuit_test(object):
         self.steer_ratio = float(cm_config['steer_ratio'])
         self.steer_max = float(cm_config['steer_max'])
 
-    def execute(self, path):
+    def execute(self):
         if len(self.RH.current_location) < 1:
             return 0
         
@@ -99,7 +101,7 @@ class PurePursuit_test(object):
 
         point = self.RH.current_location
         # route = self.RH.planned_route
-        route = path
+        route = self.path
         heading = math.radians(self.RH.current_heading)
         
         steering_angle = 0.
