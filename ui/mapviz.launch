@@ -1,0 +1,16 @@
+<launch>
+<node pkg="mapviz" type="mapviz" name="mapviz" required="true"/>
+<node pkg="swri_transform_util" type="initialize_origin.py" name="initialize_origin" >
+<param name="local_xy_frame" value="/map"/>
+<param name="local_xy_origin" value="static_origin"/>
+<rosparam param="local_xy_origins">
+[{ name: static_origin,
+latitude: 37.383863,
+longitude: 126.6556737,
+altitude: 7,
+heading: 0.0},
+</rosparam>
+<remap from="fix" to="/navsat/fix"/>
+</node>
+  <node pkg="tf" type="static_transform_publisher" name="swri_transform" args="0 0 0 0 0 0 /map /origin 100"  />
+</launch>

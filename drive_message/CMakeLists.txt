@@ -1,30 +1,39 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(drive_message)
+project(drive_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
+  sensor_msgs
   message_generation
 )
 
 add_message_files(
+  DIRECTORY msg
   FILES
   Actuator.msg
-  CANInput.msg
-  CANOutput.msg 
+  DetectionData.msg
+  NavigationData.msg
   VehicleState.msg
+  CANInput.msg
+  LaneData.msg
+  SensorData.msg
+  CANOutput.msg
+  LaneLet.msg
+  SystemStatus.msg
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
   geometry_msgs
+  sensor_msgs
 )
 
 catkin_package(
- LIBRARIES drive_message
- CATKIN_DEPENDS rospy std_msgs geometry_msgs message_runtime
+ LIBRARIES drive_msgs
+ CATKIN_DEPENDS rospy std_msgs geometry_msgs sensor_msgs message_runtime
 )
 
 include_directories(

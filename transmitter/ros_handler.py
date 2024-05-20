@@ -1,6 +1,6 @@
 import rospy
 
-from drive_message.msg import *
+from drive_msgs.msg import *
 
 
 
@@ -17,8 +17,8 @@ class ROSHandler():
         self.alive_cnt = -1
 
     def set_protocol(self):
-        self.can_output_pub = rospy.Publisher('/transmitter/can_output', CANOutput, queue_size=1)
-        rospy.Subscriber('/test/can_input', CANInput, self.can_input_cb)
+        self.can_output_pub = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
+        rospy.Subscriber('/CANInput', CANInput, self.can_input_cb)
 
 
     def set_messages(self):

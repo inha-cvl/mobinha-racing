@@ -4,7 +4,7 @@ import rospy
 import sys
 import signal
 
-from drive_message.msg import *
+from drive_msgs.msg import *
 from transmitter_handler import TransmitterHandler
 
 
@@ -22,11 +22,11 @@ class MessageViewer(QWidget):
     
     def set_protocol(self):
         rospy.Subscriber('/transmitter/can_output', CANOutput, self.can_output_cb)
-        rospy.Subscriber('/test/can_input', CANInput, self.can_input_cb)
+        rospy.Subscriber('/CANInput', CANInput, self.can_input_cb)
         
     
     def init_ui(self):
-        self.setGeometry(500,1000,500,1000)
+        self.setGeometry(800,1000,800,1000)
         self.setWindowTitle('Message Viewer')
 
         self.scroll_area1 = QScrollArea(self)  # 스크롤 가능한 영역 생성
@@ -89,7 +89,6 @@ class MessageViewer(QWidget):
         for keys, values in self.TH.decode_handler.items():
             for key in values.keys():
                 values[key] = getattr(msg, key).data
-            
             self.update_table(keys, values)
     
     def can_input_cb(self, msg):
