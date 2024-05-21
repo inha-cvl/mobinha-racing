@@ -17,7 +17,7 @@ class ROSHandler():
 
     def set_messages(self):
         self.can_input = CANInput()
-        self.can_input.EPS_Speed.data = 11
+        self.can_input.EPS_Speed.data = 30
         self.sensor_data = SensorData()
         self.system_status = SystemStatus()
         self.vehicle_state = VehicleState()
@@ -45,9 +45,7 @@ class ROSHandler():
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         #SystemHealth : Float32MultiArray
         #Camera : image (?)
-        #Simulator
-        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
-    
+
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
         self.vehicle_state.velocity.data = calc_wheel_velocity(msg.WHEEL_SPD_RR.data, msg.WHEEL_SPD_RL.data)
@@ -76,7 +74,7 @@ class ROSHandler():
             self.vehicle_state.heading.data = parsed[0]    
     
     def target_actuator_cb(self, msg):
-        self.can_input.EPS_Cmd.data = msg.steer.data
+        self.can_input.EPS_Cmd.data = msg.steer.data * 12.9
         self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
 
     def system_to_can(self, mode):

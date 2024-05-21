@@ -7,7 +7,7 @@ from drive_msgs.msg import *
 class ROSHandler():
     def __init__(self, TH):
         
-        rospy.init_node('Transmitter', anonymous=False)
+        rospy.init_node('transmitter', anonymous=False)
         self.decode_handler = TH.decode_handler
         self.encode_handler = TH.encode_handler
 

@@ -7,7 +7,7 @@ from visualization_msgs.msg import Marker
 
 class ROSHandler():
     def __init__(self):
-        rospy.init_node('Control', anonymous=False)
+        rospy.init_node('control', anonymous=False)
         
         self.set_values()
         self.set_publisher_protocol()
