@@ -76,7 +76,7 @@ class CarSimulator:
 
         self.pub_viz_car = rospy.Publisher('/viz/car', Marker, queue_size=1)
         self.pub_viz_car_info = rospy.Publisher('/viz/car_info', Marker, queue_size=1)
-        self.pub_nmea_sentence = rospy.Publisher('/simulator/nmea_sentence', Sentence, queue_size=1)
+        self.pub_nmea_sentence = rospy.Publisher('/nmea_sentence', Sentence, queue_size=1)
         self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
 
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
@@ -149,7 +149,7 @@ class CarSimulator:
             can_output.G_SEL_DISP.data = 'D'
             can_output.Long_ACCEL.data = str(self._accel)
             can_output.BRK_CYLINDER.data = str(self._brake)
-            can_output.StrAng.data = str(self._steer*12.67)
+            can_output.StrAng.data = str(self._steer)
 
             self.pub_can_output.publish(can_output)
 

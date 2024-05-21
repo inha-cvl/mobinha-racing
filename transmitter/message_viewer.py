@@ -21,7 +21,7 @@ class MessageViewer(QWidget):
         self.set_protocol()
     
     def set_protocol(self):
-        rospy.Subscriber('/transmitter/can_output', CANOutput, self.can_output_cb)
+        rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/CANInput', CANInput, self.can_input_cb)
         
     

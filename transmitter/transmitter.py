@@ -24,15 +24,7 @@ class Transmitter():
     async def read_from_can(self):
         try:
             while not rospy.is_shutdown():
-                message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)
-                
-                if message.arbitration_id == 1808: # EPS
-                    message_dict = self.TH.decode_message(message)
-                    print(message_dict['Override_Status'], message_dict['StrAng'])
-                # if message.arbitration_id == 1809: # ACC
-                #     message_dict = self.TH.decode_message(message)
-                #     print(message_dict['ACC_Alive_Cnt'])
-
+                message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)               
                 if message:
                     message_dict = self.TH.decode_message(message)
                     if message_dict != None:
@@ -50,10 +42,6 @@ class Transmitter():
                 can_messages = self.TH.encode_message(dicts)
                 for can_message in can_messages:
                     await asyncio.get_event_loop().run_in_executor(None, self.bus.send, can_message)
-                    # print(can_message.arbitration_id)
-                    # if can_message.arbitration_id == 343:
-                    #     # can_message.data[3] = 0x01
-                    #     print(can_message)
                     await asyncio.sleep(0.01)  # 100Hz, 10ms 간격
         except Exception as e:
             rospy.logerr(f"Error in send_on_can: {e}")
@@ -63,7 +51,7 @@ class Transmitter():
             await asyncio.sleep(0.5)
             while not rospy.is_shutdown():
                 await asyncio.get_event_loop().run_in_executor(None, self.RH.send_can_output)
-                await asyncio.sleep(0.05)  # 50Hz, 0ms 간격
+                await asyncio.sleep(0.05)  # 20Hz, 0ms 간격
         except Exception as e:
             rospy.logerr(f"Error in ros_publisher: {e}")
         
