@@ -49,7 +49,7 @@ class PurePursuit(object):
                     break
         
         steering_angle_deg = math.degrees(steering_angle)
-        steering_angle = self.saturate_steering_angle(steering_angle_deg)
+        steering_angle = steering_angle_deg#self.saturate_steering_angle(steering_angle_deg)
 
         return steering_angle
 
@@ -58,8 +58,8 @@ class PurePursuit(object):
         diff = abs(self.prev_steer-now)
         if diff > self.saturation_th:
             if now>=0: 
-                saturated_steering_angle = self.prev_steer-self.saturation_th
-            else: 
                 saturated_steering_angle = self.prev_steer+self.saturation_th
+            else: 
+                saturated_steering_angle = self.prev_steer-self.saturation_th
         self.prev_steer = saturated_steering_angle
         return saturated_steering_angle

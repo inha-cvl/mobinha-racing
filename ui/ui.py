@@ -76,8 +76,8 @@ class MyApp(QMainWindow, form_class):
         self.systemLabel2.setText(self.signal_strings[int(signal)])
     
     def can_table_update(self, can_inform):
-        self.canTable.setItem(0, 1, str(can_inform['eps_status']))
-        self.canTable.setItem(1, 1, str(can_inform['acc_status']))
+        self.canTable.setItem(0, 1, QTableWidgetItem(can_inform['eps_status']))
+        self.canTable.setItem(1, 1, QTableWidgetItem(can_inform['acc_status']))
 
 
     def click_mode(self, mode):

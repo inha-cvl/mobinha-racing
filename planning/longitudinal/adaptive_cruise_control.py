@@ -48,13 +48,15 @@ class AdaptiveCruiseControl:
         self.co = self.smoothed_deceleration(avg_curvature)
     
     def smoothed_deceleration(self, avg_curvature):
-        if 5<avg_curvature <= 11:
-            co = 0.35
-        elif 2<avg_curvature<=5:
+        if 11<avg_curvature:
             co = 0.2
-        elif 0.7<avg_curvature<=2:
+        elif 5<avg_curvature <= 11:
+            co = 0.15
+        elif 2<avg_curvature<=5:
             co = 0.1
-        else:
+        elif 0.7<avg_curvature<=2:
+            co = 0.05
+        elif avg_curvature<=0.7:
             co = 0
         return co
 
@@ -67,6 +69,7 @@ class AdaptiveCruiseControl:
         
         ev = self.RH.current_velocity * MPS_TO_KPH
         tv = self.max_velocity
+
 
         # vel_error = ev - self.object_vel
         # safe_distance = ev*self.time_gap
@@ -81,9 +84,11 @@ class AdaptiveCruiseControl:
         # out_vel = min(ev+acceleration+alpha, tv)
 
         tv = min(tv, tv-(tv*self.co))
-        acceleration = self.vel_gain * (tv - ev)
-        out_vel = min(ev+acceleration, tv)
-
+        #acceleration = (self.vel_gain * (tv - ev))
+        #print(acceleration, ev, tv, ev+acceleration)
+        #out_vel = min(ev+acceleration, tv)
+        out_vel = tv
+        
         return out_vel*KPH_TO_MPS
 
     def execute(self, local_pos, local_path, local_kappa):

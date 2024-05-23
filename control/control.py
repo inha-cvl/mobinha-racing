@@ -17,7 +17,7 @@ class Control():
         self.PP = PurePursuit(self.RH)
 
     def execute(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(50)
         while not rospy.is_shutdown():
             acc = self.APID.execute()
             steer = self.PP.execute()

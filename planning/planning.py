@@ -34,6 +34,8 @@ class Planning():
         self.map_publish()
         while not rospy.is_shutdown():
             local_pos = self.calc_local_position()
+            # TUM
+            # self.RH.publish2(local_pos)
             lp_result = self.lpt.execute(local_pos)
             if lp_result == None:
                 local_path, local_kappa = None, None 

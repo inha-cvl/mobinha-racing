@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1148</width>
+    <width>1161</width>
     <height>892</height>
    </rect>
   </property>
@@ -194,7 +194,7 @@ image-position:top;
                    </property>
                    <property name="icon">
                     <iconset>
-                     <normaloff>../icon/steer.png</normaloff>../icon/steer.png</iconset>
+                     <normaloff>../icon/accel.png</normaloff>../icon/accel.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -238,7 +238,7 @@ image-position:top;
                    </property>
                    <property name="icon">
                     <iconset>
-                     <normaloff>../icon/accel.png</normaloff>../icon/accel.png</iconset>
+                     <normaloff>../icon/steer.png</normaloff>../icon/steer.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -581,7 +581,7 @@ color: rgb(255, 255, 255);</string>
          <item>
           <widget class="QTabWidget" name="tabWidgetCluster">
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tabCluster">
             <attribute name="title">
@@ -788,67 +788,6 @@ color: rgb(255, 255, 255);</string>
                 </widget>
                </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QWidget" name="widget_6" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>2</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <layout class="QVBoxLayout" name="rightLayout">
-         <item>
-          <widget class="QTabWidget" name="tabWidget">
-           <property name="minimumSize">
-            <size>
-             <width>400</width>
-             <height>720</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="tabRViz">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <attribute name="title">
-             <string>RViz</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item>
-              <layout class="QVBoxLayout" name="rvizLayout"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tab_2">
-            <attribute name="title">
-             <string>-</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_6">
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_3"/>
              </item>
             </layout>
            </widget>

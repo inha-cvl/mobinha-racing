@@ -22,7 +22,7 @@ class ROSHandler():
 
     def set_messages(self):
         self.can_input = CANInput()
-        self.can_input.EPS_Speed.data = 30
+        self.can_input.EPS_Speed.data = 15  
         self.sensor_data = SensorData()
         self.system_status = SystemStatus()
         self.vehicle_state = VehicleState()
@@ -90,8 +90,10 @@ class ROSHandler():
                     self.vehicle_state.heading.data = parsed[0]    
     
     def nav_sat_fix_cb(self, msg):
-        self.vehicle_state.position.x = msg.latitude
-        self.vehicle_state.position.y = msg.longitude
+        if not self.check_error(self.vehicle_state.position.x, msg.latitude,10):
+            self.vehicle_state.position.x = msg.latitude
+        if not self.check_error(self.vehicle_state.position.y, msg.longitude,10):
+            self.vehicle_state.position.y = msg.longitude
     
     def heading_cb(self, msg):
         _, _, yaw = tf.transformations.euler_from_quaternion([msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w])

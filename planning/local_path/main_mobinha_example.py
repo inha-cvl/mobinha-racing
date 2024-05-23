@@ -5,22 +5,17 @@ import pymap3d as pm
 os.environ['OPENBLAS_NUM_THREADS'] = str(1)
 
 import rospy
-from geometry_msgs.msg import Pose,Vector3
-from std_msgs.msg import Int8, Float32MultiArray
-from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point as GPoint
+from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
-from jsk_recognition_msgs.msg import BoundingBoxArray, BoundingBox
 
-
-import numpy as np
-import pandas as pd
 import math
 import datetime
 import json
 import time
 import configparser
 import graph_ltpl
+
+from drive_msgs.msg import *
 
 class LTPL:
     def __init__(self):
@@ -90,17 +85,18 @@ class LTPL:
             rate.sleep()
 
     def set_protocol(self):
-        rospy.Subscriber('/car/pose', Pose, self.pose_cb)
-        rospy.Subscriber('/mode', Int8, self.mode_cb)
-        rospy.Subscriber('/simulator/track_box', BoundingBoxArray, self.track_box_cb)
+        rospy.Subscriber('/VehicleState', VehicleState, self.pose_cb)        
+        rospy.Subscriber('/SystemStatus', SystemStatus, self.mode_cb)
         self.local_action_set_pub = rospy.Publisher('/ltpl/local_action_set', PoseArray, queue_size=1)
+        
 
     def pose_cb(self, msg):
+        
         x, y = self.conver_to_enu(msg.position.x, msg.position.y)
-        self.vehicle_state = [x, y, math.radians(msg.position.z), msg.orientation.x] # enu x, enu y, radian heading, m/s velocity
+        self.vehicle_state = [x, y, math.radians(msg.heading.data), msg.velocity.data] # enu x, enu y, radian heading, m/s velocity
 
     def mode_cb(self, msg):
-        self.mode = msg.data
+        self.mode = msg.systemMode.data
 
     def track_box_cb(self, msg):
         obs = []
@@ -113,7 +109,7 @@ class LTPL:
         return x, y
 
     def check_vehicle_state(self):
-        while self.vehicle_state == None or self.mode != 1:
+        while self.vehicle_state == None or self.mode < 1:
             time.sleep(0.01)
         return True
 
