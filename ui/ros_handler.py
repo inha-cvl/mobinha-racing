@@ -32,7 +32,7 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
 
     def can_output_cb(self, msg):
-        self.ego_value['steer'] = float(msg.StrAng.data)
+        self.ego_value['steer'] = -1*float(msg.StrAng.data)
         self.ego_value['accel'] = float(msg.Long_ACCEL.data)
         self.ego_value['brake'] = float(msg.BRK_CYLINDER.data)
     
@@ -41,7 +41,7 @@ class ROSHandler():
         self.ego_value['gear'] = str(msg.gear.data)
 
     def target_actuator_cb(self, msg):
-        self.target_value['steer'] = msg.steer.data
+        self.target_value['steer'] = -1*msg.steer.data
         self.target_value['accel'] = msg.accel.data
         self.target_value['brake'] = msg.brake.data
     

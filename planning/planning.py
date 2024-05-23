@@ -34,9 +34,11 @@ class Planning():
         self.map_publish()
         while not rospy.is_shutdown():
             local_pos = self.calc_local_position()
-            if local_pos == None:
-                continue
-            local_path, local_kappa = self.lpt.execute(local_pos)
+            lp_result = self.lpt.execute(local_pos)
+            if lp_result == None:
+                local_path, local_kappa = None, None 
+            else:
+                [ local_path, local_kappa ] = lp_result
             local_velocity = self.acc.execute(local_pos, local_path, local_kappa)
             self.RH.publish(local_pos, local_path, local_kappa, local_velocity)
             rate.sleep()

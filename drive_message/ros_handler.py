@@ -1,11 +1,16 @@
 import rospy
+import numpy as np
+import tf
+import math
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, QuaternionStamped
 from nmea_msgs.msg import Sentence
+from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Float32MultiArray
 
 from libs.message_handler import *
+import tf.transformations
 
 class ROSHandler():
     def __init__(self):
@@ -40,11 +45,11 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/planning/local_action_set', PoseArray, self.local_action_set_cb)
-        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        #rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/ui/user_input', Float32MultiArray, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
-        #SystemHealth : Float32MultiArray
-        #Camera : image (?)
+        rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
+        rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
@@ -65,16 +70,37 @@ class ROSHandler():
             self.system_status.systemMode.data = mode
             self.system_status.systemSignal.data = int(msg.data[1])
 
+    def check_error(self, a,b, bound):
+        if a == 0:
+            return False
+        error_boundary = bound
+        error = abs(a-b)
+        return False if error<error_boundary else True
     def nmea_sentence_cb(self, msg):
         parsed = nmea_parser(msg.sentence)
-        if len(parsed) == 2:
-            self.vehicle_state.position.x = parsed[0]
-            self.vehicle_state.position.y = parsed[1]
-        elif len(parsed) == 1:
-            self.vehicle_state.heading.data = parsed[0]    
+        if parsed != None:
+            # if len(parsed) == 2:
+            #     if not self.check_error(self.vehicle_state.position.x, parsed[0],10):
+            #         self.vehicle_state.position.x = parsed[0]
+            #     if not self.check_error(self.vehicle_state.position.y, parsed[1],10):
+            #         self.vehicle_state.position.y = parsed[1]
+            # el
+            if len(parsed) == 1:
+                if not self.check_error(self.vehicle_state.heading.data, parsed[0],100):
+                    self.vehicle_state.heading.data = parsed[0]    
     
+    def nav_sat_fix_cb(self, msg):
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+    
+    def heading_cb(self, msg):
+        _, _, yaw = tf.transformations.euler_from_quaternion([msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w])
+        yaw = (-1*(float(math.degrees(yaw))+450)%360)+180
+        self.vehicle_state.heading.data = yaw    
+
     def target_actuator_cb(self, msg):
-        self.can_input.EPS_Cmd.data = msg.steer.data * 12.9
+        steer = np.clip(msg.steer.data*12.9, -500, 500)
+        self.can_input.EPS_Cmd.data = steer#msg.steer.data * 12.9 
         self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
 
     def system_to_can(self, mode):

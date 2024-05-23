@@ -83,8 +83,11 @@ class AdaptiveCruiseControl:
         return out_vel*KPH_TO_MPS
 
     def execute(self, local_pos, local_path, local_kappa):
-        self.check_objects(local_pos, local_path)
-        self.check_curvature_ratio(local_kappa)
-        vel = self.get_target_velocity()
+        if local_path != None or local_kappa != None:
+            self.check_objects(local_pos, local_path)
+            self.check_curvature_ratio(local_kappa)
+            vel = self.get_target_velocity()
+        else:
+            vel = 0
         return vel
     

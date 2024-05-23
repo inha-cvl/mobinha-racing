@@ -39,18 +39,20 @@ class ROSHandler():
         self.current_position_long = msg.position.y
     
     def publish(self, pos, path, kappa, velocity):
-        if pos == None or path == None:
+        if pos == None:
             return
         self.navigation_data = NavigationData()
         self.navigation_data.currentLocation.x = pos[0]
         self.navigation_data.currentLocation.y = pos[1]
-        for xy in path:
-            point = Point()
-            point.x = xy[0]
-            point.y = xy[1]
-            self.navigation_data.plannedRoute.append(point)
-        for rk in kappa:
-            self.navigation_data.plannedKappa.append(rk)
+        if path != None:
+            for xy in path:
+                point = Point()
+                point.x = xy[0]
+                point.y = xy[1]
+                self.navigation_data.plannedRoute.append(point)
+        if kappa != None:
+            for rk in kappa:
+                self.navigation_data.plannedKappa.append(rk)
         self.navigation_data.plannedVelocity.data = velocity
         self.navigation_data_pub.publish(self.navigation_data) 
 
