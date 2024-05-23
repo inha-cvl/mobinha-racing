@@ -11,7 +11,7 @@ class APID:
         self.dKp, self.dKi, self.dKd = 0, 0, 0
         self.ddKp, self.ddKi, self.ddKd = 0, 0, 0
 
-        self.errs = [-1, -1, -1, -1, -1] # k-3, k-2, k-1, k, k+1 
+        self.errs = [-1, -1, -1, -1, -1] 
         self.outs = [-1, -1, -1, -1, -1]
         self.ctrls = [-1, -1, -1, -1, -1]
 

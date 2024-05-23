@@ -9,7 +9,6 @@ class PurePursuit(object):
     def __init__(self, ros_handler):
         self.RH = ros_handler
         self.set_configs()
-        self.saturation_th = 5
         self.prev_steer = 0
 
     def set_configs(self):
@@ -24,9 +23,10 @@ class PurePursuit(object):
         self.wheelbase = float(cm_config['wheelbase'])
         self.steer_ratio = float(cm_config['steer_ratio'])
         self.steer_max = float(cm_config['steer_max'])
+        self.saturation_th = float(cm_config['saturation_th'])
 
     def execute(self):
-        if len(self.RH.current_location) < 1 or self.RH.system_mode < 1:
+        if len(self.RH.current_location) < 1:
             return 0
         
         lfd = self.lfd_gain * self.RH.current_velocity * MPS_TO_KPH
@@ -49,12 +49,7 @@ class PurePursuit(object):
                     break
         
         steering_angle_deg = math.degrees(steering_angle)
-        if steering_angle_deg<0:
-            final_steering_angle = max(-self.steer_max, steering_angle_deg)
-        else:
-            final_steering_angle = min(self.steer_max, steering_angle_deg)
-
-        steering_angle = self.saturate_steering_angle(final_steering_angle)
+        steering_angle = self.saturate_steering_angle(steering_angle_deg)
 
         return steering_angle
 
@@ -62,9 +57,9 @@ class PurePursuit(object):
         saturated_steering_angle = now
         diff = abs(self.prev_steer-now)
         if diff > self.saturation_th:
-            if now>=0: #left
-                saturated_steering_angle = self.prev_steer+self.saturation_th
-            else: #right
+            if now>=0: 
                 saturated_steering_angle = self.prev_steer-self.saturation_th
+            else: 
+                saturated_steering_angle = self.prev_steer+self.saturation_th
         self.prev_steer = saturated_steering_angle
         return saturated_steering_angle

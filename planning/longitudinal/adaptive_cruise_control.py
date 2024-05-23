@@ -62,6 +62,9 @@ class AdaptiveCruiseControl:
         return np.interp(ev, self.velocity_list, self.max_accel_list)
 
     def get_target_velocity(self):
+        if self.RH.system_mode < 1:
+            return 0
+        
         ev = self.RH.current_velocity * MPS_TO_KPH
         tv = self.max_velocity
 
@@ -77,6 +80,7 @@ class AdaptiveCruiseControl:
 
         # out_vel = min(ev+acceleration+alpha, tv)
 
+        tv = min(tv, tv-(tv*self.co))
         acceleration = self.vel_gain * (tv - ev)
         out_vel = min(ev+acceleration, tv)
 
