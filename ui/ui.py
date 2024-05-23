@@ -1,6 +1,6 @@
 import sys
 import signal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton,  QVBoxLayout, QHBoxLayout,QWidget, QTabWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import QTimer
 from PyQt5 import uic
 from functools import partial
@@ -68,10 +68,16 @@ class MyApp(QMainWindow, form_class):
         self.gear_widget.set_gear(self.RH.ego_value['gear'])
 
         self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'])
+
+        self.can_table_update(self.RH.can_inform)
         
     def system_label_update(self, mode, signal):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
         self.systemLabel2.setText(self.signal_strings[int(signal)])
+    
+    def can_table_update(self, can_inform):
+        self.canTable.setItem(0, 1, str(can_inform['eps_status']))
+        self.canTable.setItem(1, 1, str(can_inform['acc_status']))
 
 
     def click_mode(self, mode):
