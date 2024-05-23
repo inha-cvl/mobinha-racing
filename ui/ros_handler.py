@@ -17,6 +17,7 @@ class ROSHandler():
     def set_values(self):
         self.ego_value = {'velocity':0, 'steer': 0, 'accel': 0, 'brake': 0, 'gear':'P'}
         self.target_value = {'velocity':0, 'steer': 0, 'accel': 0, 'brake': 0}
+        self.can_inform = {'eps_status':'Off', 'acc_status':'off'}
         self.system_status = {'mode': 0, 'signal':0}
         self.user_input = Float32MultiArray()
         self.user_input.data = [0,0]
@@ -35,6 +36,9 @@ class ROSHandler():
         self.ego_value['steer'] = float(msg.StrAng.data)
         self.ego_value['accel'] = float(msg.Long_ACCEL.data)
         self.ego_value['brake'] = float(msg.BRK_CYLINDER.data)
+        self.can_inform['eps_status'] = str(msg.EPS_En_Status.data)
+        self.can_inform['acc_status'] = str(msg.ACC_En_Status.data)
+
     
     def vehicle_state_cb(self, msg):
         self.ego_value['velocity'] = int(msg.velocity.data*MPS_TO_KPH)

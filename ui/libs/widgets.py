@@ -277,12 +277,10 @@ class SpeedSubscriberWidget(QWidget):
         self.target_speed = 0
         self.initUI(type)
 
-
     def set_speed(self, e, t):
         self.current_speed = e
         self.target_speed = t
         self.update_graph()
-    
 
     def initUI(self, type):
         self.setContentsMargins(0, 0, 0, 0)
@@ -293,7 +291,6 @@ class SpeedSubscriberWidget(QWidget):
         self.setLayout(layout)
         self.setWindowTitle('ROS Speed Graph')
         self.setGeometry(100, 100, 800, 600)
-
 
     def update_graph(self):
         self.graph.update_graph(self.current_speed, self.target_speed)

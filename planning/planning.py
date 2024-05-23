@@ -36,6 +36,7 @@ class Planning():
             local_pos = self.calc_local_position()
             if local_pos == None:
                 continue
+            #TODO: get lane information
             local_path, local_kappa = self.lpt.execute(local_pos)
             local_velocity = self.acc.execute(local_pos, local_path, local_kappa)
             self.RH.publish(local_pos, local_path, local_kappa, local_velocity)
