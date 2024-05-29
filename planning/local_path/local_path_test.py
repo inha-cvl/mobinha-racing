@@ -27,16 +27,17 @@ class LocalPathTest:
 
     def need_update(self, local_pos):
         if self.local_path == None:
-            return 0
+            return 0, -1
+
+        idx = gput.find_nearest_idx(self.local_path, local_pos)
         if self.temp_signal != self.RH.current_signal and self.RH.current_signal != 0:
             self.temp_signal = self.RH.current_signal
-            return 2
+            return 2, idx
         threshold = (self.RH.current_velocity*MPS_TO_KPH)*2.5
-        idx = gput.find_nearest_idx(self.local_path, local_pos)
         if len(self.local_path)-idx <= threshold:
-            return 1
+            return 1, idx
         else:
-            return -1
+            return -1, idx
 
     def get_change_path(self, sni,  path_len, to=1):
         wps, uni = gput.get_straight_path( sni, path_len)
@@ -84,27 +85,41 @@ class LocalPathTest:
 
         return local_path
 
+    def calc_kappa(self, idx):
+        copy_local_path = copy.deepcopy(self.local_path)
+        ratio = self.RH.current_velocity/22.0 if self.RH.current_velocity > 0 else 0.1
+        start = int(idx+30*ratio)
+        print(len(copy_local_path), start)
+        end = start+60 if len(copy_local_path[start:])>60 else len(copy_local_path)-1
+        if start < len(copy_local_path):
+            copy_local_path = copy_local_path[start:end]
+        else:
+            pass
+        ccopy_local_path = copy.deepcopy(copy_local_path)
+        kappa_viz = gput.KappaPathViz(copy_local_path)
+        self.RH.publish_kappa(kappa_viz)
+        copy_local_path.insert(0, copy_local_path[0])
+        copy_local_path.append(copy_local_path[-1])
+        local_kappa = []
+        for i, f in enumerate(ccopy_local_path):
+            before_after_pts = [copy_local_path[i], copy_local_path[i+2]]
+            Rk = gput.calc_kappa(f, before_after_pts)
+            local_kappa.append(Rk)
+        return local_kappa
+
+
     def execute(self, local_pos):
         if local_pos == None:
             return None
         local_path = []
-        need_update = self.need_update(local_pos)
+        need_update, idx = self.need_update(local_pos)
         if need_update != -1:
             local_path = self.make_path(need_update, local_pos)
             if local_path == None or len(local_path) <= 0:
                 return
-            
-            copy_local_path = copy.deepcopy(local_path)
-            copy_local_path.insert(0, local_path[0])
-            copy_local_path.append(local_path[-1])
-            local_kappa = []
-            for i, f in enumerate(local_path):
-                before_after_pts = [copy_local_path[i], copy_local_path[i+2]]
-                Rk = gput.calc_kappa(f, before_after_pts)
-                local_kappa.append(Rk)
-
-            self.local_kappa = local_kappa
             self.local_path = gput.smooth_interpolate(local_path, self.precision)
             self.local_path_viz = gput.LocalPathViz(self.local_path)
+        
+        self.local_kappa = self.calc_kappa(idx)
         self.RH.publish_path(self.local_path_viz)
         return self.local_path, self.local_kappa

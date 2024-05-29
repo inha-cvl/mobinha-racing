@@ -45,7 +45,7 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/planning/local_action_set', PoseArray, self.local_action_set_cb)
-        #rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/ui/user_input', Float32MultiArray, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
@@ -77,18 +77,25 @@ class ROSHandler():
         error = abs(a-b)
         return False if error<error_boundary else True
     def nmea_sentence_cb(self, msg):
-        parsed = nmea_parser(msg.sentence)
+        parsed = sim_nmea_parser(msg.sentence)
         if parsed != None:
-            # if len(parsed) == 2:
-            #     if not self.check_error(self.vehicle_state.position.x, parsed[0],10):
-            #         self.vehicle_state.position.x = parsed[0]
-            #     if not self.check_error(self.vehicle_state.position.y, parsed[1],10):
-            #         self.vehicle_state.position.y = parsed[1]
-            # el
-            if len(parsed) == 1:
+            if len(parsed) == 2:
+                if not self.check_error(self.vehicle_state.position.x, parsed[0],20):
+                    self.vehicle_state.position.x = parsed[0]
+                else:
+                    print('lat err')
+                if not self.check_error(self.vehicle_state.position.y, parsed[1],20):
+                    self.vehicle_state.position.y = parsed[1]
+                else:
+                    print('long err')
+            elif len(parsed) == 1:
+                self.vehicle_state.heading.data = parsed[0]
+                '''
                 if not self.check_error(self.vehicle_state.heading.data, parsed[0],100):
-                    self.vehicle_state.heading.data = parsed[0]    
-    
+                    self.vehicle_state.heading.data = parsed[0]
+                else:
+                    print('heading err')    
+                '''
     def nav_sat_fix_cb(self, msg):
         if not self.check_error(self.vehicle_state.position.x, msg.latitude,10):
             self.vehicle_state.position.x = msg.latitude

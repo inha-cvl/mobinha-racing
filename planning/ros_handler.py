@@ -28,6 +28,7 @@ class ROSHandler():
         self.lmap_viz_pub = rospy.Publisher('/lmap', MarkerArray, queue_size=1)
         self.mlmap_viz_pub = rospy.Publisher('/mlmap', MarkerArray, queue_size=1)
         self.path_viz_pub = rospy.Publisher('/planning/local_path', Marker, queue_size=1)
+        self.kappa_viz_pub = rospy.Publisher('/planning/kappa_viz', Marker, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
@@ -98,3 +99,6 @@ class ROSHandler():
     
     def publish_path(self, path_viz):
         self.path_viz_pub.publish(path_viz)
+    
+    def publish_kappa(self, path_viz):
+        self.kappa_viz_pub.publish(path_viz)

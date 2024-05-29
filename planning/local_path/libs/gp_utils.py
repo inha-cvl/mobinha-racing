@@ -103,7 +103,7 @@ def get_merged_point(idnidx, path_len, to=1):
         return [u_n, u_i]
     
 
-def get_possible_successor(node, prior='Left'):
+def get_possible_successor(node, prior='Right'):
     successor = None
     left_lanes, right_lanes, me = get_whole_neighbor(node)
     if len(lanelets[node]['successor']) <= 0:
@@ -263,7 +263,7 @@ def LocalPathViz(waypoints):
     color =  [241, 76, 152, 1]
     return Path(waypoints, 999, 0.2, 1.5, (color[0]/255,color[1]/255, color[2]/255, 0.5))
 
-def PreRound2Viz(waypoints):
+def KappaPathViz(waypoints):
     return Path(waypoints, 999, 0.2, 1.5, (150/255,59/255, 255/255, 0.5))
 
 
