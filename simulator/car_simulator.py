@@ -76,7 +76,7 @@ class CarSimulator:
 
         self.pub_viz_car = rospy.Publisher('/viz/car', Marker, queue_size=1)
         self.pub_viz_car_info = rospy.Publisher('/viz/car_info', Marker, queue_size=1)
-        self.pub_nmea_sentence = rospy.Publisher('/nmea_sentence', Sentence, queue_size=1)
+        self.pub_nmea_sentence = rospy.Publisher('/sim_nmea_sentence', Sentence, queue_size=1)
         self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
 
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)

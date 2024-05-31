@@ -52,8 +52,8 @@ class GraphBase(object):
                  graph_id: str,
                  glob_rl: np.ndarray,
                  virt_goal_node: bool = True,
-                 virt_goal_node_cost: float = 200.0,
-                 min_plan_horizon: int or float = 200.0,
+                 virt_goal_node_cost: float = 120.0,
+                 min_plan_horizon: int or float = 120.0,
                  plan_horizon_mode: str = 'distance',
                  closed: bool = True) -> None:
         """
@@ -883,6 +883,7 @@ class GraphBase(object):
             start_node_id = self.__g.vs.find(str((start_layer, start_node)))
         except ValueError:
             return None, None
+
 
         if self.virt_goal_node:
             # Determine virtual goal layer node (Note: the virtual node is automatically removed after graph search)

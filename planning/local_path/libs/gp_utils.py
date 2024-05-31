@@ -1,11 +1,8 @@
 import numpy as np
 import copy
-import rospy
 from math import *
 from scipy.ndimage import gaussian_filter1d
 
-from geometry_msgs.msg import Point
-from visualization_msgs.msg import Marker
 from local_path.libs.quadratic_spline_interpolate import QuadraticSplineInterpolate
 
 lanelets = None
@@ -258,37 +255,3 @@ def get_profiles(path_len, max_vel, sec_to_reach):
     distance = np.cumsum(velocity) * (t[1] - t[0])
 
     return acceleration, velocity, distance
-
-def LocalPathViz(waypoints):
-    color =  [241, 76, 152, 1]
-    return Path(waypoints, 999, 0.2, 1.5, (color[0]/255,color[1]/255, color[2]/255, 0.5))
-
-def KappaPathViz(waypoints):
-    return Path(waypoints, 999, 0.2, 1.5, (150/255,59/255, 255/255, 0.5))
-
-
-def Path(waypoints, id_, z, scale, color):
-    marker = Line('path', int(id_), scale, color, len(waypoints))
-    for pt in waypoints:
-        marker.points.append(Point(x=pt[0], y=pt[1], z=z))
-    return marker
-
-def Line(ns, id_, scale, color, len):
-    marker = Marker()
-    marker.type = Marker.LINE_STRIP
-    marker.action = Marker.ADD
-    marker.header.frame_id = 'world'
-    marker.ns = ns
-    marker.id = id_
-    marker.lifetime = rospy.Duration(0)
-    marker.scale.x = scale
-    marker.color.r = color[0]
-    marker.color.g = color[1]
-    marker.color.b = color[2]
-    marker.color.a = color[3]
-    marker.pose.orientation.x = 0.0
-    marker.pose.orientation.y = 0.0
-    marker.pose.orientation.z = 0.0
-    marker.pose.orientation.w = 1.0
-    return marker
-    

@@ -1,11 +1,14 @@
 import numpy as np
 import logging
+import copy
 
 # custom modules
 import graph_ltpl
 
 # custom packages
 import trajectory_planning_helpers as tph
+from graph_ltpl.online_graph.src.calc_splines_opt import calc_linear_splines, calc_splines_optimized
+from graph_ltpl.online_graph.src.interp_splines_opt import interp_splines, interp_linear_splines
 
 
 def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase,
@@ -18,6 +21,8 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
                          const_path_seg: np.ndarray = None,
                          pos_est: np.ndarray = None,
                          last_solution_nodes: list = None,
+                         once_gen: bool=False,
+                         prev_action_set_coeff: dict = None,
                          w_last_edges: list = ()) -> tuple:
     """
     The main function to be called iteratively in an online environment to calculate path solutions. The following steps
@@ -205,11 +210,30 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
             if mod_action_set_goal_layer == start_node[0]:
                 break
 
-            # Trigger graph search (if goal node exists)
-            _, loc_path_nodes_list = graph_base.search_graph_layer(start_layer=start_node[0],
-                                                                   start_node=start_node[1],
-                                                                   end_layer=mod_action_set_goal_layer,
-                                                                   max_solutions=max_solutions)
+            if not obj_in_const_path and once_gen:
+                sstart_node = last_solution_nodes[-1]
+                if mod_action_set_goal_layer == sstart_node[0]:
+                    loc_path_nodes_list = [last_solution_nodes]
+                elif sstart_node[0] > mod_action_set_goal_layer:
+                    for i, lsn in enumerate(last_solution_nodes):
+                        if lsn[0] == mod_action_set_goal_layer:
+                            idx = i
+                    loc_path_nodes_list = [last_solution_nodes[:idx]]
+                else:
+                    _, get_short_nodes_list = graph_base.search_graph_layer(start_layer=sstart_node[0],
+                                                                        start_node=sstart_node[1],
+                                                                        end_layer=mod_action_set_goal_layer,
+                                                                        max_solutions=1)
+                    loc_path_nodes_list = [last_solution_nodes+[get_short_nodes_list[0][1]]]
+                index = last_solution_nodes.index(start_node) if start_node in last_solution_nodes else 0
+                loc_path_nodes_list = [loc_path_nodes_list[0][index:]]
+            else:
+                # Trigger graph search (if goal node exists)
+                
+                _, loc_path_nodes_list = graph_base.search_graph_layer(start_layer=start_node[0],
+                                                                    start_node=start_node[1],
+                                                                    end_layer=mod_action_set_goal_layer,
+                                                                    max_solutions=max_solutions)
 
             # exit if solution is found or when planning a special maneuver (e.g. overtaking -> use same goal as s/f)
             if loc_path_nodes_list is not None or not (action_set_name == "follow" or action_set_name == "straight"):
@@ -241,7 +265,7 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
             else:
                 logging.getLogger("local_trajectory_logger"). \
                     info("No feasible solution for '" + action_set_name + "'! Reduced planning horizon!")
-
+    
         # If no solution is found (blocked graph), end iteration and leave action set list empty
         if loc_path_nodes_list is None:
             logging.getLogger("local_trajectory_logger").\
@@ -256,7 +280,96 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
             action_set_path_param[action_set_name] = []
             action_set_red_len[action_set_name] = []
 
-            # For every path in list
+            # # For every path in list
+            # if not obj_in_const_path and once_gen:
+            #     #action_set_node_idx[action_set_name] = []
+
+
+
+            #     for lll, loc_path_nodes in enumerate(loc_path_nodes_list):
+            #         loc_path_node_idx = [0]
+
+            #         prev_idx = last_solution_nodes.index(loc_path_nodes) if loc_path_nodes in last_solution_nodes else 0
+            #         print(loc_path_nodes, prev_idx)
+
+            #         # spline_coeff_mat = np.zeros((len(loc_path_nodes)-1, 8))
+
+            #         # Initialize list for all path components (since length is not beforehand, lists are faster than numpy)
+            #         spline_param_fuse = np.empty((0, 5))
+            #         dists = np.empty(0)
+
+            #         previous_node = None
+
+            #         # Assemble data from path segments in one array per path
+            #         for count, current_node in enumerate(loc_path_nodes):
+            #             if previous_node is not None:
+            #                 spline_coeff, spline_param, offline_cost, spline_length = \
+            #                     graph_base.get_edge(start_layer=previous_node[0],
+            #                                         start_node=previous_node[1],
+            #                                         end_layer=current_node[0],
+            #                                         end_node=current_node[1])
+
+            #                 # Sort spline coefficients in large numpy matrix Nx8
+            #                 # spline_coeff_mat[count-1, :] = np.array(spline_coeff).flatten()
+
+            #                 # Remove last value of coordinate, psi and curvature, since they appear twice at transitions
+            #                 # between two spline segments -> indicator that is one except in the last iteration
+            #                 if count != len(loc_path_nodes) - 1:
+            #                     rmv_el = -1
+            #                 else:
+            #                     rmv_el = None
+
+            #                 # Add the coordinates to a single array
+            #                 spline_param_fuse = np.append(spline_param_fuse, spline_param[:rmv_el, :], axis=0)
+            #                 dists = np.append(dists, spline_length)
+
+            #                 # Provide indexes of loc_path_nodes in loc_path_coords
+            #                 loc_path_node_idx.append(np.size(spline_param_fuse, axis=0) - 1 * (rmv_el is None))
+
+            #             previous_node = current_node
+
+            #         # Calculate curvature continous spline
+            #         if const_path_seg is not None:
+            #             psi_s = const_path_seg[-1, 2]
+            #         else:
+            #             psi_s = spline_param_fuse[0, 2]
+
+            #         #original
+            #         # spline_coeff_mat = np.column_stack(tph.calc_splines.
+            #         #                                    calc_splines(path=spline_param_fuse[loc_path_node_idx, 0:2],
+            #         #                                                 psi_s=psi_s,
+            #         #                                                 psi_e=spline_param_fuse[-1, 2],
+            #         #                                                 el_lengths=dists)[0:2])
+
+
+            #         spline_coeff_mat = np.column_stack(calc_splines_optimized(path=spline_param_fuse[loc_path_node_idx, 0:2],
+            #                                                         psi_s=psi_s,
+            #                                                         psi_e=spline_param_fuse[-1, 2],
+            #                                                         el_lengths=dists)[0:2])
+                    
+
+            #         #Original
+            #         #Calculate new curvature, coordinates and headings based on splines
+            #         spline_param_fuse[:, 0:2], tmp_spline_inds, tmp_t_values, _ = \
+            #             tph.interp_splines.interp_splines(coeffs_x=spline_coeff_mat[:, :4],
+            #                                             coeffs_y=spline_coeff_mat[:, 4:],
+            #                                             incl_last_point=True,
+            #                                             stepnum_fixed=(np.diff(loc_path_node_idx) + 1).tolist())
+
+            #         #Original
+            #         spline_param_fuse[:, 2], spline_param_fuse[:, 3] = tph.calc_head_curv_an.\
+            #             calc_head_curv_an(coeffs_x=spline_coeff_mat[:, :4],
+            #                             coeffs_y=spline_coeff_mat[:, 4:],
+            #                             ind_spls=tmp_spline_inds,
+            #                             t_spls=tmp_t_values)
+ 
+            #         # add trajectory candidate to action set
+            #         action_set_coeff[action_set_name].append(spline_coeff_mat)
+            #         action_set_node_idx[action_set_name].append(loc_path_node_idx)
+            #         action_set_path_param[action_set_name].append(spline_param_fuse)
+            #         action_set_red_len[action_set_name].append(reduced_horizon)
+
+            # else:
             for loc_path_nodes in loc_path_nodes_list:
                 loc_path_node_idx = [0]
 
@@ -302,24 +415,30 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
                 else:
                     psi_s = spline_param_fuse[0, 2]
 
-                spline_coeff_mat = np.column_stack(tph.calc_splines.
-                                                   calc_splines(path=spline_param_fuse[loc_path_node_idx, 0:2],
+                #original
+                # spline_coeff_mat = np.column_stack(tph.calc_splines.
+                #                                    calc_splines(path=spline_param_fuse[loc_path_node_idx, 0:2],
+                #                                                 psi_s=psi_s,
+                #                                                 psi_e=spline_param_fuse[-1, 2],
+                #                                                 el_lengths=dists)[0:2])
+                spline_coeff_mat = np.column_stack(calc_splines_optimized(path=spline_param_fuse[loc_path_node_idx, 0:2],
                                                                 psi_s=psi_s,
                                                                 psi_e=spline_param_fuse[-1, 2],
                                                                 el_lengths=dists)[0:2])
-
-                # Calculate new curvature, coordinates and headings based on splines
+                #Original
+                #Calculate new curvature, coordinates and headings based on splines
                 spline_param_fuse[:, 0:2], tmp_spline_inds, tmp_t_values, _ = \
                     tph.interp_splines.interp_splines(coeffs_x=spline_coeff_mat[:, :4],
-                                                      coeffs_y=spline_coeff_mat[:, 4:],
-                                                      incl_last_point=True,
-                                                      stepnum_fixed=(np.diff(loc_path_node_idx) + 1).tolist())
-
+                                                    coeffs_y=spline_coeff_mat[:, 4:],
+                                                    incl_last_point=True,
+                                                    stepnum_fixed=(np.diff(loc_path_node_idx) + 1).tolist())
+                #Original
                 spline_param_fuse[:, 2], spline_param_fuse[:, 3] = tph.calc_head_curv_an.\
                     calc_head_curv_an(coeffs_x=spline_coeff_mat[:, :4],
-                                      coeffs_y=spline_coeff_mat[:, 4:],
-                                      ind_spls=tmp_spline_inds,
-                                      t_spls=tmp_t_values)
+                                    coeffs_y=spline_coeff_mat[:, 4:],
+                                    ind_spls=tmp_spline_inds,
+                                    t_spls=tmp_t_values)
+                
 
                 # add trajectory candidate to action set
                 action_set_coeff[action_set_name].append(spline_coeff_mat)
@@ -327,8 +446,9 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
                 action_set_path_param[action_set_name].append(spline_param_fuse)
                 action_set_red_len[action_set_name].append(reduced_horizon)
 
+
     # deactivate present filters
     graph_base.deactivate_filter()
-
+    
     return (action_set_nodes, action_set_node_idx, action_set_coeff, action_set_path_param, action_set_red_len,
             closest_obj_index)

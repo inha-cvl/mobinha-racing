@@ -1,0 +1,1093 @@
+         14553892 function calls (14337740 primitive calls) in 35.075 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   35.074   35.074 planning.py:56(main)
+        1    0.033    0.033   33.966   33.966 planning.py:34(execute)
+     2405   25.368    0.011   25.368    0.011 {built-in method time.sleep}
+      600    0.010    0.000   24.868    0.041 /opt/ros/noetic/lib/python3/dist-packages/rospy/timer.py:90(sleep)
+      600    0.004    0.000   24.802    0.041 /opt/ros/noetic/lib/python3/dist-packages/rospy/timer.py:116(sleep)
+      600    0.003    0.000   24.797    0.041 /opt/ros/noetic/lib/python3/dist-packages/rospy/rostime.py:258(wallsleep)
+      601    0.010    0.000    4.079    0.007 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/ltpl.py:52(execute)
+        1    0.000    0.000    3.943    3.943 planning.py:30(map_publish)
+        1    0.000    0.000    3.921    3.921 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/map.py:28(get_vizs)
+        1    0.019    0.019    3.794    3.794 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:33(MicroLaneletGraphViz)
+     1571    0.081    0.000    3.758    0.002 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:118(Edge)
+      601    0.009    0.000    3.514    0.006 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/Graph_LTPL.py:300(calc_paths)
+      601    0.069    0.000    3.501    0.006 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:289(calc_paths)
+      601    0.060    0.000    3.312    0.006 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/main_online_path_gen.py:14(main_online_path_gen)
+    46214    0.053    0.000    3.220    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/quadratic_spline_interpolate.py:41(calc_position)
+    92428    0.078    0.000    3.167    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:62(__call__)
+    92428    0.087    0.000    2.486    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/interpolate.py:656(_evaluate)
+    92428    0.903    0.000    2.368    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/interpolate.py:587(_call_linear)
+      601    0.017    0.000    2.223    0.004 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/gen_local_node_template.py:13(gen_local_node_template)
+381452/348763    0.265    0.000    1.572    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+      601    0.089    0.000    1.403    0.002 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:713(remove_nodes_filter)
+3005/1202    0.051    0.000    1.226    0.001 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:3583(select)
+    92428    0.042    0.000    1.148    0.000 {method 'clip' of 'numpy.ndarray' objects}
+        1    0.003    0.003    1.109    1.109 planning.py:22(__init__)
+    92428    0.139    0.000    1.106    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_methods.py:97(_clip)
+     1803    0.760    0.000    1.105    0.001 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:3712(<listcomp>)
+      601    0.085    0.000    1.041    0.002 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:71(publish2)
+     1202    0.795    0.001    0.825    0.001 {method 'induced_subgraph' of 'igraph.Graph' objects}
+      601    0.010    0.000    0.749    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:674(set_node_filter_layers)
+     1201    0.010    0.000    0.718    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:859(publish)
+   184856    0.335    0.000    0.707    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_methods.py:63(_clip_dep_is_scalar_nan)
+     1201    0.021    0.000    0.698    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:1019(publish)
+      601    0.009    0.000    0.547    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/Graph_LTPL.py:344(calc_vel_profile)
+     1801    0.012    0.000    0.533    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_pubsub.py:407(write_data)
+    92428    0.058    0.000    0.528    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:88(_prepare_x)
+        1    0.000    0.000    0.482    0.482 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:10(__init__)
+        1    0.000    0.000    0.478    0.478 /opt/ros/noetic/lib/python3/dist-packages/rospy/client.py:190(init_node)
+    92428    0.180    0.000    0.450    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/_lib/_util.py:193(_asarray_validated)
+      601    0.047    0.000    0.443    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/calc_splines_opt.py:15(calc_splines_optimized)
+      601    0.046    0.000    0.441    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:608(calc_vel_profile)
+      600    0.002    0.000    0.388    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:92(publish_path_viz)
+   187720    0.063    0.000    0.378    0.000 <__array_function__ internals>:2(ndim)
+        1    0.000    0.000    0.372    0.372 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:382(configure_logging)
+        1    0.000    0.000    0.372    0.372 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/roslogging.py:106(configure_logging)
+        1    0.000    0.000    0.370    0.370 /usr/lib/python3/dist-packages/rospkg/rospack.py:199(get_path)
+        1    0.000    0.000    0.370    0.370 /usr/lib/python3/dist-packages/rospkg/rospack.py:173(_update_location_cache)
+        3    0.021    0.007    0.370    0.123 /usr/lib/python3/dist-packages/rospkg/rospack.py:49(list_by_path)
+163345/18996    0.103    0.000    0.331    0.000 /usr/lib/python3.8/os.py:280(walk)
+   160819    0.109    0.000    0.328    0.000 /opt/ros/noetic/lib/python3/dist-packages/geometry_msgs/msg/_Point.py:22(__init__)
+        1    0.000    0.000    0.320    0.320 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/ltpl.py:18(__init__)
+        1    0.000    0.000    0.320    0.320 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/ltpl.py:22(setting_values)
+     1202    0.002    0.000    0.310    0.000 <__array_function__ internals>:2(solve)
+     1202    0.282    0.000    0.306    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:323(solve)
+        1    0.000    0.000    0.303    0.303 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/map.py:9(__init__)
+   451784    0.254    0.000    0.254    0.000 {built-in method numpy.array}
+    92428    0.038    0.000    0.245    0.000 <__array_function__ internals>:2(searchsorted)
+   187720    0.128    0.000    0.243    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:3037(ndim)
+      601    0.040    0.000    0.241    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/interp_splines.py:6(interp_splines)
+   385683    0.065    0.000    0.240    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_asarray.py:16(asarray)
+      600    0.003    0.000    0.233    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:102(LocalPathViz)
+      600    0.042    0.000    0.230    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:109(Path)
+     2401    0.051    0.000    0.229    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/helper_funcs/src/get_s_coord.py:8(get_s_coord)
+        1    0.002    0.002    0.220    0.220 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/imp_global_traj/src/import_globtraj_csv.py:4(import_globtraj_csv)
+   125076    0.183    0.000    0.219    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/message.py:341(__init__)
+        1    0.000    0.000    0.217    0.217 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:822(loadtxt)
+      601    0.004    0.000    0.214    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/VpForwardBackward.py:194(calc_vel_profile)
+      601    0.014    0.000    0.209    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/calc_vel_profile.py:6(calc_vel_profile)
+        2    0.042    0.021    0.206    0.103 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1060(read_data)
+     1533    0.006    0.000    0.201    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/quadratic_spline_interpolate.py:6(__init__)
+   106099    0.047    0.000    0.198    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:55(_wrapfunc)
+    92428    0.197    0.000    0.197    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_methods.py:78(_clip_dep_invoke_with_casting)
+     4710    0.043    0.000    0.178    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_Marker.py:140(__init__)
+      601    0.009    0.000    0.167    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/calc_vel_profile.py:218(__solver_fb_unclosed)
+        1    0.000    0.000    0.162    0.162 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/micro_lanelet_graph.py:5(__init__)
+        1    0.003    0.003    0.162    0.162 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/micro_lanelet_graph.py:12(generate_micro_lanelet_graph)
+    92428    0.041    0.000    0.161    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1274(searchsorted)
+      432    0.031    0.000    0.158    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:221(find_nearest_idx)
+     1202    0.030    0.000    0.156    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/calc_vel_profile.py:381(__solver_fb_acc_profile)
+    98560    0.061    0.000    0.152    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numerictypes.py:365(issubdtype)
+     2864    0.011    0.000    0.150    0.000 <__array_function__ internals>:2(linspace)
+     1201    0.007    0.000    0.142    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/msg.py:126(serialize_message)
+     2402    0.097    0.000    0.140    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/helper_funcs/src/closest_path_index.py:4(closest_path_index)
+   173241    0.137    0.000    0.138    0.000 {built-in method builtins.next}
+     2864    0.050    0.000    0.134    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/function_base.py:26(linspace)
+  1734486    0.131    0.000    0.131    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:3696(<lambda>)
+   146124    0.128    0.000    0.128    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:233(euc_distance)
+        1    0.000    0.000    0.127    0.127 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:8(LaneletMapViz)
+      268    0.021    0.000    0.126    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:100(Bound)
+        2    0.000    0.000    0.119    0.060 /usr/lib/python3.8/json/__init__.py:274(load)
+     3066    0.026    0.000    0.117    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/interpolate.py:427(__init__)
+        8    0.000    0.000    0.112    0.014 /usr/lib/python3.8/json/__init__.py:299(loads)
+        8    0.000    0.000    0.112    0.014 /usr/lib/python3.8/json/decoder.py:332(decode)
+        8    0.112    0.014    0.112    0.014 /usr/lib/python3.8/json/decoder.py:343(raw_decode)
+    18420    0.027    0.000    0.109    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1087(<listcomp>)
+  1734486    0.108    0.000    0.108    0.000 {built-in method _operator.ge}
+  1671109    0.105    0.000    0.105    0.000 {built-in method _operator.le}
+        1    0.000    0.000    0.101    0.101 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/init.py:71(start_node)
+     7355    0.008    0.000    0.100    0.000 <__array_function__ internals>:2(diff)
+        1    0.000    0.000    0.099    0.099 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/Graph_LTPL.py:189(graph_init)
+     5911    0.057    0.000    0.099    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:200(__init__)
+     4710    0.013    0.000    0.097    0.000 /opt/ros/noetic/lib/python3/dist-packages/std_msgs/msg/_Header.py:32(__init__)
+      601    0.022    0.000    0.097    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:523(get_ref_idx)
+        1    0.000    0.000    0.096    0.096 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/offline_graph/src/main_offline_callback.py:12(main_offline_callback)
+    14130    0.011    0.000    0.093    0.000 <__array_function__ internals>:2(concatenate)
+     9474    0.024    0.000    0.089    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:73(_wrapreduction)
+   439134    0.051    0.000    0.087    0.000 {built-in method builtins.isinstance}
+   197120    0.058    0.000    0.085    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numerictypes.py:293(issubclass_)
+     6317    0.005    0.000    0.084    0.000 <__array_function__ internals>:2(append)
+     7355    0.062    0.000    0.083    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:1141(diff)
+   221040    0.070    0.000    0.082    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:790(floatconv)
+     1533    0.009    0.000    0.078    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/quadratic_spline_interpolate.py:11(calc_s)
+     1202    0.001    0.000    0.077    0.000 <__array_function__ internals>:2(isclose)
+     3609    0.003    0.000    0.076    0.000 <__array_function__ internals>:2(column_stack)
+    92428    0.037    0.000    0.075    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:94(_finish_y)
+    92428    0.075    0.000    0.075    0.000 {method 'searchsorted' of 'numpy.ndarray' objects}
+     1571    0.004    0.000    0.074    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:200(Arrow)
+     1202    0.009    0.000    0.074    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:2167(isclose)
+        1    0.000    0.000    0.073    0.073 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/lanelet.py:6(__init__)
+    17732    0.020    0.000    0.072    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:59(__init__)
+     6317    0.014    0.000    0.070    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:4640(append)
+        1    0.068    0.068    0.070    0.070 {built-in method _pickle.load}
+    96494    0.067    0.000    0.067    0.000 {method 'astype' of 'numpy.ndarray' objects}
+      600    0.009    0.000    0.067    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:115(Line)
+     3005    0.067    0.000    0.067    0.000 {function VertexSeq.select at 0x7f095611b1f0}
+     1687    0.008    0.000    0.066    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:161(Line)
+      601    0.052    0.000    0.065    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/calc_head_curv_an.py:6(calc_head_curv_an)
+     3609    0.015    0.000    0.064    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/shape_base.py:612(column_stack)
+   184856    0.047    0.000    0.063    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_methods.py:73(_clip_dep_is_byte_swapped)
+      600    0.036    0.000    0.057    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_Marker.py:210(serialize)
+     3605    0.005    0.000    0.056    0.000 <__array_function__ internals>:2(sum)
+     2140    0.015    0.000    0.052    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/calc_vel_profile.py:503(calc_ax_poss)
+      600    0.031    0.000    0.051    0.000 /home/kana/catkin_ws/devel/lib/python3/dist-packages/drive_msgs/msg/_NavigationData.py:70(serialize)
+     1803    0.010    0.000    0.047    0.000 /usr/lib/python3.8/threading.py:341(notify)
+     3605    0.008    0.000    0.046    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2092(sum)
+     9474    0.046    0.000    0.046    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   100165    0.045    0.000    0.045    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+    32148    0.010    0.000    0.044    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_asarray.py:88(asanyarray)
+    18993    0.042    0.000    0.042    0.000 {built-in method posix.scandir}
+   519948    0.042    0.000    0.042    0.000 {method 'append' of 'list' objects}
+      684    0.001    0.000    0.042    0.000 <__array_function__ internals>:2(insert)
+    11821    0.009    0.000    0.039    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:298(__init__)
+      684    0.020    0.000    0.039    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:4429(insert)
+     1805    0.029    0.000    0.039    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:142(__init__)
+     3005    0.003    0.000    0.038    0.000 <__array_function__ internals>:2(all)
+     3334    0.004    0.000    0.038    0.000 <__array_function__ internals>:2(cumsum)
+     2864    0.005    0.000    0.037    0.000 <__array_function__ internals>:2(any)
+    18342    0.007    0.000    0.036    0.000 /usr/lib/python3.8/abc.py:96(__instancecheck__)
+   309992    0.035    0.000    0.035    0.000 {built-in method builtins.issubclass}
+     5218    0.003    0.000    0.034    0.000 <__array_function__ internals>:2(interp)
+     2403    0.003    0.000    0.034    0.000 <__array_function__ internals>:2(argpartition)
+      601    0.008    0.000    0.033    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:747(init_edge_filter)
+     2858    0.012    0.000    0.033    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:444(get_edge)
+     1202    0.010    0.000    0.032    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:2244(within_tol)
+     1803    0.032    0.000    0.032    0.000 {method 'release' of '_thread.lock' objects}
+     3005    0.004    0.000    0.032    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2324(all)
+    19276    0.019    0.000    0.031    0.000 /usr/lib/python3.8/posixpath.py:71(join)
+     3334    0.004    0.000    0.030    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2405(cumsum)
+     3066    0.003    0.000    0.030    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:55(__init__)
+    92428    0.019    0.000    0.030    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/sparse/base.py:1189(isspmatrix)
+    18342    0.011    0.000    0.029    0.000 {built-in method _abc._abc_instancecheck}
+     2403    0.004    0.000    0.028    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:754(argpartition)
+     2864    0.004    0.000    0.028    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2236(any)
+     3066    0.007    0.000    0.027    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:113(_set_yi)
+36841/18421    0.011    0.000    0.026    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_internal.py:875(__call__)
+   375385    0.026    0.000    0.026    0.000 {built-in method builtins.setattr}
+     5218    0.007    0.000    0.025    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:1278(interp)
+     5911    0.007    0.000    0.025    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/rostime.py:80(__init__)
+    95887    0.024    0.000    0.024    0.000 {method 'ravel' of 'numpy.ndarray' objects}
+    18422    0.012    0.000    0.024    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1048(split_line)
+      601    0.006    0.000    0.023    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/conv_filt.py:4(conv_filt)
+     3459    0.003    0.000    0.023    0.000 <__array_function__ internals>:2(ravel)
+        1    0.000    0.000    0.023    0.023 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:88(publish_map_viz)
+        1    0.014    0.014    0.023    0.023 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:155(serialize)
+208945/208943    0.021    0.000    0.021    0.000 {built-in method builtins.len}
+        1    0.018    0.018    0.021    0.021 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/lanelet.py:18(__init__)
+    92428    0.015    0.000    0.021    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/ma/core.py:6293(isMaskedArray)
+     4802    0.016    0.000    0.021    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/helper_funcs/src/get_s_coord.py:102(angle3pt)
+   116703    0.020    0.000    0.020    0.000 {built-in method builtins.getattr}
+36840/18420    0.014    0.000    0.020    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1031(pack_items)
+     3005    0.004    0.000    0.019    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:159(ones)
+     3066    0.002    0.000    0.019    0.000 <__array_function__ internals>:2(argsort)
+   112389    0.019    0.000    0.019    0.000 {method 'pack' of 'Struct' objects}
+     2403    0.018    0.000    0.018    0.000 {method 'argpartition' of 'numpy.ndarray' objects}
+     1201    0.004    0.000    0.018    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/rostime.py:127(__init__)
+   187720    0.018    0.000    0.018    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:3033(_ndim_dispatcher)
+18336/18334    0.005    0.000    0.018    0.000 /usr/lib/python3.8/abc.py:100(__subclasscheck__)
+     4397    0.017    0.000    0.017    0.000 {built-in method numpy.arange}
+     1801    0.005    0.000    0.017    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:283(full)
+     6459    0.007    0.000    0.017    0.000 <__array_function__ internals>:2(size)
+     4806    0.005    0.000    0.016    0.000 <__array_function__ internals>:2(copyto)
+     3459    0.004    0.000    0.016    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1693(ravel)
+      600    0.003    0.000    0.016    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/timer.py:65(_remaining)
+      600    0.004    0.000    0.016    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:235(__add__)
+   113590    0.016    0.000    0.016    0.000 {method 'write' of '_io.BytesIO' objects}
+     4710    0.010    0.000    0.016    0.000 /opt/ros/noetic/lib/python3/dist-packages/geometry_msgs/msg/_Pose.py:38(__init__)
+     3066    0.005    0.000    0.016    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:105(_reshape_yi)
+     2858    0.003    0.000    0.016    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:4126(__call__)
+     1800    0.010    0.000    0.016    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:478(factor_edge_cost)
+      602    0.001    0.000    0.016    0.000 <__array_function__ internals>:2(vstack)
+     4066    0.004    0.000    0.015    0.000 <__array_function__ internals>:2(result_type)
+      684    0.001    0.000    0.015    0.000 <__array_function__ internals>:2(moveaxis)
+     3066    0.002    0.000    0.015    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:997(argsort)
+     2864    0.005    0.000    0.015    0.000 {method 'any' of 'numpy.generic' objects}
+     3066    0.003    0.000    0.014    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/polyint.py:133(_set_dtype)
+     7687    0.014    0.000    0.014    0.000 {built-in method builtins.min}
+     3334    0.014    0.000    0.014    0.000 {method 'cumsum' of 'numpy.ndarray' objects}
+     2404    0.006    0.000    0.014    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_ufunc_config.py:39(seterr)
+     1533    0.004    0.000    0.014    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:42(_wrapit)
+        2    0.000    0.000    0.014    0.007 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/offline_graph/src/main_offline_callback.py:201(md5)
+      700    0.001    0.000    0.014    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:113(Node)
+      601    0.013    0.000    0.013    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/normalize_psi.py:6(normalize_psi)
+      684    0.004    0.000    0.013    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1340(moveaxis)
+18336/18334    0.013    0.000    0.013    0.000 {built-in method _abc._abc_subclasscheck}
+     3066    0.002    0.000    0.013    0.000 <__array_function__ internals>:2(take)
+   222367    0.013    0.000    0.013    0.000 {method 'lower' of 'str' objects}
+     2858    0.008    0.000    0.013    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:3828(select)
+   145897    0.013    0.000    0.013    0.000 {method 'items' of 'dict' objects}
+      605    0.001    0.000    0.013    0.000 <__array_function__ internals>:2(expand_dims)
+     6692    0.012    0.000    0.012    0.000 {built-in method numpy.empty}
+      707    0.012    0.000    0.012    0.000 {method 'update' of '_hashlib.HASH' objects}
+      601    0.006    0.000    0.012    0.000 {method 'copy' of 'igraph.Graph' objects}
+      275    0.001    0.000    0.012    0.000 /usr/lib/python3.8/xml/etree/ElementTree.py:551(__init__)
+      602    0.002    0.000    0.012    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/shape_base.py:224(vstack)
+        1    0.000    0.000    0.012    0.012 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:648(get_edges)
+        1    0.007    0.007    0.012    0.012 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:658(<listcomp>)
+      601    0.002    0.000    0.011    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:352(delete_edges)
+      275    0.001    0.000    0.011    0.000 /usr/lib/python3.8/xml/etree/ElementTree.py:571(parse)
+     1202    0.002    0.000    0.011    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_ufunc_config.py:441(__enter__)
+      700    0.002    0.000    0.011    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:180(Text)
+    92428    0.010    0.000    0.010    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1270(_searchsorted_dispatcher)
+     3066    0.010    0.000    0.010    0.000 {method 'argsort' of 'numpy.ndarray' objects}
+     1202    0.001    0.000    0.010    0.000 <__array_function__ internals>:2(repeat)
+      605    0.004    0.000    0.010    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/shape_base.py:512(expand_dims)
+      601    0.001    0.000    0.010    0.000 <__array_function__ internals>:2(convolve)
+     3005    0.002    0.000    0.010    0.000 <__array_function__ internals>:2(flipud)
+     3086    0.010    0.000    0.010    0.000 {built-in method builtins.sorted}
+     5218    0.003    0.000    0.010    0.000 <__array_function__ internals>:2(iscomplexobj)
+     1973    0.007    0.000    0.010    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1277(normalize_axis_tuple)
+      601    0.010    0.000    0.010    0.000 /home/kana/.local/lib/python3.8/site-packages/trajectory_planning_helpers/calc_ax_profile.py:4(calc_ax_profile)
+     2864    0.001    0.000    0.009    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_methods.py:44(_any)
+     1200    0.003    0.000    0.009    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:247(__sub__)
+      601    0.009    0.000    0.009    0.000 {function Graph.delete_edges at 0x7f0956115e50}
+     1202    0.006    0.000    0.009    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:144(_commonType)
+     1533    0.008    0.000    0.009    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/quadratic_spline_interpolate.py:14(<listcomp>)
+      601    0.003    0.000    0.009    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/rostime.py:183(get_rostime)
+     2404    0.005    0.000    0.009    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:116(_makearray)
+   152765    0.009    0.000    0.009    0.000 {method 'is_dir' of 'posix.DirEntry' objects}
+     3066    0.002    0.000    0.009    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:97(take)
+        1    0.000    0.000    0.009    0.009 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/ltpl.py:47(set_start_pos)
+     4658    0.009    0.000    0.009    0.000 {method 'get_eid' of 'igraph.Graph' objects}
+        1    0.000    0.000    0.009    0.009 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/Graph_LTPL.py:262(set_startpos)
+        1    0.004    0.004    0.009    0.009 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:181(set_initial_pose)
+      601    0.003    0.000    0.008    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:720(convolve)
+    17732    0.008    0.000    0.008    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:39(_canon)
+       13    0.000    0.000    0.008    0.001 /usr/lib/python3.8/xmlrpc/client.py:1108(__call__)
+       13    0.000    0.000    0.008    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:667(_ServerProxy__request)
+       13    0.000    0.000    0.008    0.001 /usr/lib/python3.8/xmlrpc/client.py:1444(__request)
+       13    0.000    0.000    0.008    0.001 /usr/lib/python3.8/xmlrpc/client.py:1149(request)
+       13    0.000    0.000    0.008    0.001 /usr/lib/python3.8/xmlrpc/client.py:1162(single_request)
+     1202    0.001    0.000    0.008    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:440(repeat)
+     3066    0.002    0.000    0.008    0.000 <__array_function__ internals>:2(rollaxis)
+      275    0.007    0.000    0.007    0.000 {method '_parse_whole' of 'xml.etree.ElementTree.XMLParser' objects}
+      600    0.002    0.000    0.007    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:361(__mul__)
+        2    0.004    0.002    0.007    0.004 {method 'read' of '_io.TextIOWrapper' objects}
+      602    0.001    0.000    0.007    0.000 <__array_function__ internals>:2(atleast_2d)
+        8    0.000    0.000    0.007    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:119(__init__)
+       10    0.000    0.000    0.007    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:142(notify_added)
+       10    0.000    0.000    0.007    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:423(reg_added)
+      600    0.005    0.000    0.007    0.000 /home/kana/catkin_ws/devel/lib/python3/dist-packages/drive_msgs/msg/_NavigationData.py:33(__init__)
+        8    0.000    0.000    0.007    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:1242(acquire_impl)
+    35658    0.007    0.000    0.007    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:2670(vs)
+     1202    0.002    0.000    0.007    0.000 <__array_function__ internals>:2(copy)
+     1202    0.003    0.000    0.006    0.000 {method 'all' of 'numpy.generic' objects}
+      601    0.002    0.000    0.006    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/calc_splines_opt.py:16(<listcomp>)
+     1202    0.001    0.000    0.006    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_ufunc_config.py:446(__exit__)
+        8    0.000    0.000    0.006    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:1179(_add)
+    19291    0.003    0.000    0.006    0.000 /usr/lib/python3.8/posixpath.py:41(_get_sep)
+    20832    0.006    0.000    0.006    0.000 {method 'split' of 'str' objects}
+     1800    0.006    0.000    0.006    0.000 {method 'argmin' of 'numpy.ndarray' objects}
+      602    0.004    0.000    0.005    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/shape_base.py:83(atleast_2d)
+     1805    0.003    0.000    0.005    0.000 <frozen importlib._bootstrap>:1017(_handle_fromlist)
+        6    0.000    0.000    0.005    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:812(__init__)
+     3005    0.003    0.000    0.005    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/twodim_base.py:99(flipud)
+     5218    0.005    0.000    0.005    0.000 {built-in method numpy.core._multiarray_umath.interp}
+     3066    0.005    0.000    0.005    0.000 {method 'take' of 'numpy.ndarray' objects}
+     3606    0.005    0.000    0.005    0.000 {built-in method numpy.zeros}
+     7950    0.005    0.000    0.005    0.000 {built-in method builtins.max}
+     3609    0.002    0.000    0.005    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/shape_base.py:608(_column_stack_dispatcher)
+     1202    0.005    0.000    0.005    0.000 {method 'repeat' of 'numpy.ndarray' objects}
+     2404    0.004    0.000    0.005    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_ufunc_config.py:139(geterr)
+       13    0.000    0.000    0.005    0.000 /usr/lib/python3.8/http/client.py:1304(getresponse)
+    12394    0.005    0.000    0.005    0.000 {built-in method numpy.core._multiarray_umath.normalize_axis_index}
+     9474    0.005    0.000    0.005    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:74(<dictcomp>)
+       13    0.000    0.000    0.005    0.000 /usr/lib/python3.8/http/client.py:309(begin)
+      600    0.002    0.000    0.004    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:350(__sub__)
+    11656    0.004    0.000    0.004    0.000 {built-in method builtins.hasattr}
+    14130    0.004    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/multiarray.py:145(concatenate)
+     9604    0.004    0.000    0.004    0.000 {built-in method math.atan2}
+     1802    0.002    0.000    0.004    0.000 /usr/lib/python3.8/threading.py:261(_is_owned)
+     4710    0.004    0.000    0.004    0.000 /opt/ros/noetic/lib/python3/dist-packages/std_msgs/msg/_ColorRGBA.py:22(__init__)
+     1202    0.003    0.000    0.004    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/calc_splines_opt.py:5(isclose)
+    12015    0.004    0.000    0.004    0.000 {built-in method builtins.abs}
+    18422    0.004    0.000    0.004    0.000 {method 'split' of 're.Pattern' objects}
+    31033    0.004    0.000    0.004    0.000 /home/kana/catkin_ws/devel/lib/python3/dist-packages/drive_msgs/msg/_NavigationData.py:212(_get_struct_3d)
+     4710    0.004    0.000    0.004    0.000 /opt/ros/noetic/lib/python3/dist-packages/geometry_msgs/msg/_Quaternion.py:24(__init__)
+     3066    0.002    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/interpolate.py:549(fill_value)
+    30433    0.004    0.000    0.004    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_Marker.py:520(_get_struct_3d)
+     4211    0.002    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/shape_base.py:209(_arrays_for_stack_dispatcher)
+     1201    0.002    0.000    0.004    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:976(acquire)
+     3066    0.003    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1215(rollaxis)
+      600    0.001    0.000    0.004    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:160(__gt__)
+      371    0.000    0.000    0.004    0.000 /usr/lib/python3.8/codecs.py:319(decode)
+     2858    0.004    0.000    0.004    0.000 {function EdgeSeq.select at 0x7f095611b430}
+     5218    0.003    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/type_check.py:280(iscomplexobj)
+     6459    0.004    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:3079(size)
+        7    0.000    0.000    0.004    0.001 /usr/lib/python3.8/configparser.py:679(read)
+     1202    0.001    0.000    0.004    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:730(copy)
+      600    0.001    0.000    0.003    0.000 <__array_function__ internals>:2(argmin)
+    18716    0.003    0.000    0.003    0.000 /usr/lib/python3/dist-packages/rospkg/rospack.py:102(<listcomp>)
+      289    0.003    0.000    0.003    0.000 {built-in method io.open}
+      600    0.001    0.000    0.003    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:146(__lt__)
+      371    0.003    0.000    0.003    0.000 {built-in method _codecs.utf_8_decode}
+     1202    0.001    0.000    0.003    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_methods.py:47(_all)
+       13    0.000    0.000    0.003    0.000 /usr/lib/python3.8/http/client.py:276(_read_status)
+     1202    0.001    0.000    0.003    0.000 <__array_function__ internals>:2(where)
+       78    0.000    0.000    0.003    0.000 {method 'readline' of '_io.BufferedReader' objects}
+       13    0.000    0.000    0.003    0.000 /usr/lib/python3.8/socket.py:655(readinto)
+       13    0.003    0.000    0.003    0.000 {method 'recv_into' of '_socket.socket' objects}
+      601    0.003    0.000    0.003    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/ObjectListInterface.py:75(process_object_list)
+     1201    0.002    0.000    0.003    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/msg.py:81(args_kwds_to_message)
+      601    0.003    0.000    0.003    0.000 {built-in method numpy.core._multiarray_umath.correlate}
+        1    0.000    0.000    0.003    0.003 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:28(set_publisher_protocol)
+      600    0.002    0.000    0.003    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:261(__cmp__)
+    35104    0.003    0.000    0.003    0.000 {method 'get' of 'dict' objects}
+      152    0.000    0.000    0.003    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/hd_map/libs/map_utils.py:144(Points)
+     1202    0.002    0.000    0.003    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_ufunc_config.py:437(__init__)
+    10700    0.003    0.000    0.003    0.000 {built-in method math.pow}
+    20083    0.003    0.000    0.003    0.000 {method 'startswith' of 'str' objects}
+        1    0.000    0.000    0.003    0.003 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:316(get_closest_nodes)
+    38360    0.003    0.000    0.003    0.000 {built-in method posix.fspath}
+      600    0.001    0.000    0.003    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:443(__cmp__)
+        1    0.000    0.000    0.003    0.003 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/rosout.py:64(init_rosout)
+     1805    0.003    0.000    0.003    0.000 {method 'acquire' of '_thread.lock' objects}
+     4671    0.002    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:2675(es)
+      601    0.002    0.000    0.002    0.000 {built-in method _bisect.bisect_left}
+     1269    0.002    0.000    0.002    0.000 {method 'acquire' of '_thread.RLock' objects}
+     6132    0.002    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/scipy/interpolate/interpolate.py:333(_do_extrapolate)
+    18424    0.002    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_iotools.py:20(_decode_line)
+    39370    0.002    0.000    0.002    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:577(_get_struct_3d)
+    19293    0.002    0.000    0.002    0.000 {method 'endswith' of 'str' objects}
+     4710    0.002    0.000    0.002    0.000 /opt/ros/noetic/lib/python3/dist-packages/geometry_msgs/msg/_Vector3.py:27(__init__)
+      275    0.000    0.000    0.002    0.000 /usr/lib/python3.8/xml/etree/ElementTree.py:629(find)
+        7    0.001    0.000    0.002    0.000 /usr/lib/python3.8/configparser.py:993(_read)
+     2400    0.002    0.000    0.002    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:121(to_nsec)
+    19935    0.002    0.000    0.002    0.000 {method 'strip' of 'str' objects}
+       13    0.000    0.000    0.002    0.000 /usr/lib/python3.8/xmlrpc/client.py:1265(send_request)
+      626    0.001    0.000    0.002    0.000 /usr/lib/python3.8/logging/__init__.py:1424(debug)
+     2864    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1786(isscalar)
+     1202    0.002    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:111(get_linalg_error_extobj)
+      600    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1193(argmin)
+    10320    0.002    0.000    0.002    0.000 {method 'keys' of 'dict' objects}
+        1    0.000    0.000    0.002    0.002 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:35(set_subscriber_protocol)
+        2    0.000    0.000    0.002    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:514(__init__)
+      275    0.000    0.000    0.002    0.000 {method 'find' of 'xml.etree.ElementTree.Element' objects}
+     1805    0.002    0.000    0.002    0.000 {method 'difference_update' of 'set' objects}
+     1973    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1327(<listcomp>)
+     1201    0.001    0.000    0.002    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:981(release)
+     2404    0.002    0.000    0.002    0.000 {built-in method numpy.seterrobj}
+     3606    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:121(isComplexType)
+     1627    0.002    0.000    0.002    0.000 {method 'extend' of 'list' objects}
+     3680    0.002    0.000    0.002    0.000 {built-in method builtins.sum}
+      275    0.000    0.000    0.002    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:388(find)
+      601    0.002    0.000    0.002    0.000 {method 'get_eids' of 'igraph.Graph' objects}
+     2404    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:134(_realType)
+     7355    0.002    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:1137(_diff_dispatcher)
+      601    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:637(_mode_from_name)
+       13    0.000    0.000    0.002    0.000 /usr/lib/python3.8/xmlrpc/client.py:1299(send_content)
+      602    0.001    0.000    0.002    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/shape_base.py:220(_vhstack_dispatcher)
+     3613    0.002    0.000    0.002    0.000 {built-in method time.time}
+       13    0.000    0.000    0.002    0.000 /usr/lib/python3.8/http/client.py:1240(endheaders)
+       13    0.000    0.000    0.002    0.000 /usr/lib/python3.8/http/client.py:1002(_send_output)
+       26    0.000    0.000    0.001    0.000 /usr/lib/python3.8/http/client.py:943(send)
+        2    0.000    0.000    0.001    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py:690(__init__)
+     3744    0.001    0.000    0.001    0.000 {method 'encode' of 'str' objects}
+     1201    0.001    0.000    0.001    0.000 {built-in method _struct.pack}
+     1803    0.001    0.000    0.001    0.000 {method 'rindex' of 'str' objects}
+     1803    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:785(activate_filter)
+        1    0.000    0.000    0.001    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:32(__init__)
+     3673    0.001    0.000    0.001    0.000 {built-in method math.sqrt}
+        1    0.000    0.000    0.001    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/check_inside_bounds.py:7(check_inside_bounds)
+     1201    0.001    0.000    0.001    0.000 {method 'tolist' of 'numpy.ndarray' objects}
+     6459    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:3075(_size_dispatcher)
+        1    0.000    0.000    0.001    0.001 /usr/lib/python3.8/http/client.py:920(connect)
+        1    0.000    0.000    0.001    0.001 /usr/lib/python3.8/socket.py:771(create_connection)
+      601    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/VpForwardBackward.py:86(check_brake_prefix)
+     1202    0.001    0.000    0.001    0.000 {built-in method math.sin}
+      601    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/VpForwardBackward.py:65(update_dyn_parameters)
+        1    0.000    0.000    0.001    0.001 /usr/lib/python3.8/socket.py:901(getaddrinfo)
+        1    0.000    0.000    0.001    0.001 {built-in method _socket.getaddrinfo}
+       13    0.000    0.000    0.001    0.000 /usr/lib/python3.8/http/client.py:222(parse_headers)
+     6317    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:4636(_append_dispatcher)
+        2    0.000    0.000    0.001    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/service.py:97(register)
+     4808    0.001    0.000    0.001    0.000 {built-in method numpy.geterrobj}
+     4806    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/multiarray.py:1043(copyto)
+      605    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/shape_base.py:600(<listcomp>)
+     4804    0.001    0.000    0.001    0.000 {method 'seek' of '_io.BytesIO' objects}
+      709    0.000    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/offline_graph/src/main_offline_callback.py:204(<lambda>)
+        1    0.000    0.000    0.001    0.001 /usr/lib/python3.8/logging/config.py:51(fileConfig)
+       13    0.000    0.000    0.001    0.000 /usr/lib/python3.8/email/parser.py:59(parsestr)
+       13    0.000    0.000    0.001    0.000 /usr/lib/python3.8/email/parser.py:41(parse)
+      711    0.001    0.000    0.001    0.000 {method 'read' of '_io.BufferedReader' objects}
+     1818    0.001    0.000    0.001    0.000 {method 'rpartition' of 'str' objects}
+        1    0.000    0.000    0.001    0.001 /usr/lib/python3.8/encodings/__init__.py:70(search_function)
+     4232    0.001    0.000    0.001    0.000 {built-in method _operator.index}
+        2    0.000    0.000    0.001    0.000 {built-in method builtins.__import__}
+      633    0.001    0.000    0.001    0.000 /usr/lib/python3.8/logging/__init__.py:1689(isEnabledFor)
+       13    0.000    0.000    0.001    0.000 /usr/lib/python3.8/xmlrpc/client.py:1316(parse_response)
+     1202    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:209(_assert_stacked_square)
+      2/1    0.000    0.000    0.001    0.001 <frozen importlib._bootstrap>:986(_find_and_load)
+        7    0.000    0.000    0.001    0.000 /usr/lib/python3.8/logging/__init__.py:1565(_log)
+     4804    0.001    0.000    0.001    0.000 {method 'tell' of '_io.BytesIO' objects}
+      2/1    0.000    0.000    0.001    0.001 <frozen importlib._bootstrap>:956(_find_and_load_unlocked)
+     3334    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2401(_cumsum_dispatcher)
+     5218    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/type_check.py:207(_is_type_dispatcher)
+        2    0.000    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:604(__init__)
+        2    0.000    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/statistics.py:52(is_enabled)
+        2    0.000    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/client.py:452(get_param)
+        2    0.001    0.000    0.001    0.000 {built-in method builtins.print}
+     3605    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2087(_sum_dispatcher)
+      2/1    0.000    0.000    0.001    0.001 <frozen importlib._bootstrap>:650(_load_unlocked)
+     5218    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:1274(_interp_dispatcher)
+        2    0.000    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/msproxy.py:107(__getitem__)
+      2/1    0.000    0.000    0.001    0.001 <frozen importlib._bootstrap_external>:842(exec_module)
+     3016    0.001    0.000    0.001    0.000 {method 'pop' of 'dict' objects}
+     1202    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:203(_assert_stacked_2d)
+        6    0.000    0.000    0.001    0.000 /usr/lib/python3.8/logging/__init__.py:1436(info)
+     1209    0.001    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:421(is_initialized)
+  742/321    0.001    0.000    0.001    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:164(select)
+      600    0.001    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/genpy/rostime.py:115(to_sec)
+     3005    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2320(_all_dispatcher)
+     2417    0.001    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:458(is_shutdown)
+      601    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:272(update_objects)
+       13    0.000    0.000    0.001    0.000 /usr/lib/python3.8/email/feedparser.py:173(feed)
+      601    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:1026(<listcomp>)
+     1202    0.001    0.000    0.001    0.000 {built-in method math.cos}
+     1201    0.001    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:351(has_connections)
+      2/1    0.000    0.000    0.001    0.001 <frozen importlib._bootstrap>:211(_call_with_frames_removed)
+      2/1    0.000    0.000    0.001    0.001 {built-in method builtins.exec}
+        1    0.000    0.000    0.001    0.001 /usr/lib/python3.8/encodings/idna.py:3(<module>)
+        1    0.000    0.000    0.001    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/Graph_LTPL.py:41(__init__)
+      601    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:1046(<listcomp>)
+       26    0.000    0.000    0.001    0.000 /usr/lib/python3.8/email/feedparser.py:178(_call_parse)
+     3459    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1689(_ravel_dispatcher)
+        1    0.000    0.000    0.001    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/simtime.py:71(init_simtime)
+     4066    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/multiarray.py:635(result_type)
+       26    0.000    0.000    0.001    0.000 /usr/lib/python3.8/email/feedparser.py:218(_parsegen)
+        1    0.000    0.000    0.001    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:359(get_nodes)
+        1    0.001    0.001    0.001    0.001 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:368(<listcomp>)
+      684    0.001    0.000    0.001    0.000 {method 'transpose' of 'numpy.ndarray' objects}
+      600    0.001    0.000    0.001    0.000 /opt/ros/noetic/lib/python3/dist-packages/std_msgs/msg/_Float32.py:18(__init__)
+     2864    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/function_base.py:21(_linspace_dispatcher)
+        7    0.000    0.000    0.001    0.000 /usr/lib/python3.8/configparser.py:601(__init__)
+      275    0.000    0.000    0.001    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:344(iterfind)
+      289    0.001    0.000    0.001    0.000 {method 'close' of '_io.BufferedReader' objects}
+     2403    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:750(_argpartition_dispatcher)
+     1314    0.001    0.000    0.001    0.000 {method 'pop' of 'list' objects}
+       13    0.000    0.000    0.001    0.000 /usr/lib/python3.8/xmlrpc/client.py:437(feed)
+       26    0.000    0.000    0.001    0.000 {method 'Parse' of 'pyexpat.xmlparser' objects}
+     3066    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:993(_argsort_dispatcher)
+      601    0.001    0.000    0.001    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:478(<listcomp>)
+     2864    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:2232(_any_dispatcher)
+        1    0.000    0.000    0.001    0.001 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/simtime.py:54(_is_use_simtime)
+     1201    0.001    0.000    0.001    0.000 {method 'truncate' of '_io.BytesIO' objects}
+     3005    0.001    0.000    0.001    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/twodim_base.py:44(_flip_dispatcher)
+        7    0.000    0.000    0.001    0.000 /usr/lib/python3.8/logging/__init__.py:1591(handle)
+     2858    0.001    0.000    0.001    0.000 {method 'is_directed' of 'igraph.Graph' objects}
+        7    0.000    0.000    0.001    0.000 /usr/lib/python3.8/logging/__init__.py:1645(callHandlers)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:941(handle)
+      600    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_Marker.py:514(_get_struct_3I)
+      601    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:777(deactivate_filter)
+     3066    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1211(_rollaxis_dispatcher)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1317(__init__)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/VpForwardBackward.py:62(__del__)
+     1802    0.000    0.000    0.000    0.000 {method 'remove' of 'collections.deque' objects}
+        9    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:854(search_graph_layer)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/longitudinal/adaptive_cruise_control.py:8(__init__)
+     3066    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:93(_take_dispatcher)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/longitudinal/adaptive_cruise_control.py:21(set_configs)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/handlers.py:61(emit)
+     1269    0.000    0.000    0.000    0.000 {method 'release' of '_thread.RLock' objects}
+     1201    0.000    0.000    0.000    0.000 {method 'getvalue' of '_io.BytesIO' objects}
+      684    0.000    0.000    0.000    0.000 {method 'insert' of 'list' objects}
+      600    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_Marker.py:526(_get_struct_3i10d4f2iB)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/re.py:250(compile)
+     1202    0.000    0.000    0.000    0.000 {method '__array_prepare__' of 'numpy.ndarray' objects}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/re.py:289(_compile)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py:551(__init__)
+     1202    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:726(_copy_dispatcher)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:759(compile)
+      684    0.000    0.000    0.000    0.000 {method 'item' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:124(_install_handlers)
+     1204    0.000    0.000    0.000    0.000 {method 'values' of 'dict' objects}
+     1202    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/linalg/linalg.py:319(_solve_dispatcher)
+      600    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/devel/lib/python3/dist-packages/drive_msgs/msg/_NavigationData.py:218(_get_struct_f)
+        9    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:802(search_graph)
+     1202    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:436(_repeat_dispatcher)
+     1202    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:2163(_isclose_dispatcher)
+      974    0.000    0.000    0.000    0.000 {method 'match' of 're.Pattern' objects}
+    82/44    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:765(get)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1240(__init__)
+     1202    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/multiarray.py:312(where)
+      600    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_Marker.py:538(_get_struct_B)
+        7    0.000    0.000    0.000    0.000 {built-in method builtins.dir}
+      684    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1403(<listcomp>)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:1056(putrequest)
+      600    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/rostime.py:237(is_wallclock)
+      601    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:742(<listcomp>)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:564(get_content_type)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/handlers.py:175(shouldRollover)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:598(_code)
+       65    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:1212(putheader)
+       10    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/igraph/__init__.py:3536(find)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:918(format)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1550(makeRecord)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:234(start_tcpros_server)
+      619    0.000    0.000    0.000    0.000 {built-in method builtins.any}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1448(warning)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:285(start_server)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:655(format)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:338(<listcomp>)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:914(get_code)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:288(__init__)
+      684    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:1336(_moveaxis_dispatcher)
+       10    0.000    0.000    0.000    0.000 {function VertexSeq.find at 0x7f095611b160}
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.8/urllib/parse.py:377(urlparse)
+       26    0.000    0.000    0.000    0.000 {method 'sendall' of '_socket.socket' objects}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:471(_parse_headers)
+      600    0.000    0.000    0.000    0.000 {method 'index' of 'list' objects}
+      601    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/numeric.py:716(_convolve_dispatcher)
+      600    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1189(_argmin_dispatcher)
+        9    0.000    0.000    0.000    0.000 {method 'get_shortest_paths' of 'igraph.Graph' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:183(_install_loggers)
+       91    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:462(get)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:276(_optimize_charset)
+      684    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/function_base.py:4425(_insert_dispatcher)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:231(open)
+       39    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:588(get_content_maintype)
+      605    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/shape_base.py:508(_expand_dims_dispatcher)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:931(dumps)
+      252    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementTree.py:651(findtext)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:246(__init__)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:184(close)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1178(emit)
+      220    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:682(end)
+       17    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1252(__getitem__)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:221(get_node_info)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1073(emit)
+      602    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/shape_base.py:79(_atleast_2d_dispatcher)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1115(_join_multiline_values)
+       26    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:448(read)
+      431    0.000    0.000    0.000    0.000 {method 'remove' of 'list' objects}
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:2018(getLogger)
+        7    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/roslogging.py:53(findCaller)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:577(open)
+       38    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:393(before_get)
+       12    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:642(xmlrpcapi)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:890(_find_spec)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:301(makefile)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:536(_compile_info)
+      661    0.000    0.000    0.000    0.000 {built-in method builtins.iter}
+        8    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:271(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/stringprep.py:2(<module>)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:1288(send_headers)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:480(dumps)
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1284(getLogger)
+       38    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:406(_interpolate_some)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1399(find_spec)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:588(formatTime)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:480(readinto)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1367(_get_spec)
+        6    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:895(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:638(_compile_bytecode)
+      550    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:178(select)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/ObjectListInterface.py:50(set_track_data)
+        2    0.000    0.000    0.000    0.000 {built-in method marshal.loads}
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.8/urllib/parse.py:428(urlsplit)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:125(__init__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:145(start)
+        5    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1498(find_spec)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1062(flush)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:193(_create_server_sock)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:1195(getparser)
+      262    0.000    0.000    0.000    0.000 {method 'search' of 're.Pattern' objects}
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:427(_findfile)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:71(_compile)
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.eval}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:892(getparser)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:139(__init__)
+       17    0.000    0.000    0.000    0.000 {built-in method posix.stat}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:101(push)
+      220    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:668(start)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/_policybase.py:293(header_source_parse)
+        8    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:194(__init__)
+       46    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:507(__dump)
+       20    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:163(resolve_name)
+       91    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:128(__next__)
+       65    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/_policybase.py:311(header_fetch_parse)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:834(start)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:937(parse)
+        8    0.000    0.000    0.000    0.000 {method 'flush' of '_io.TextIOWrapper' objects}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:204(_read_headers)
+       82    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1139(_unify_values)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:805(_get_conv)
+      275    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:336(__init__)
+       27    0.000    0.000    0.000    0.000 /usr/lib/python3.8/os.py:670(__getitem__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/handlers.py:120(__init__)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1514(findCaller)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1417(setLevel)
+      206    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:874(optionxform)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/signal.py:45(signal)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/handlers.py:51(__init__)
+        4    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/network.py:101(get_address_override)
+        2    0.000    0.000    0.000    0.000 {built-in method _thread.start_new_thread}
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:802(_get)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:410(_close_conn)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1129(__init__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1372(_clear_cache)
+       11    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_bootlocale.py:33(getpreferredencoding)
+      466    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+        5    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:372(abspath)
+      252    0.000    0.000    0.000    0.000 {method 'findtext' of 'xml.etree.ElementTree.Element' objects}
+       65    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/_policybase.py:281(_sanitize_header)
+        1    0.000    0.000    0.000    0.000 {method 'connect' of '_socket.socket' objects}
+        5    0.000    0.000    0.000    0.000 {built-in method builtins.__build_class__}
+       24    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:898(acquire)
+      180    0.000    0.000    0.000    0.000 {method 'group' of 're.Match' objects}
+       14    0.000    0.000    0.000    0.000 {built-in method time.localtime}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:102(_create_formatters)
+       46    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:554(dump_unicode)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:435(_parse_sub)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:139(get_log_dir)
+      225    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:679(data)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1291(get)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:120(get_ros_home)
+       17    0.000    0.000    0.000    0.000 /usr/lib/python3.8/copy.py:66(copy)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1034(get_data)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:270(_clearExistingHandlers)
+       91    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:78(readline)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_collections_abc.py:664(__contains__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:540(wait)
+      536    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:601(_get_struct_B)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:428(__init__)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:816(getint)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:493(_parse)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/enum.py:313(__call__)
+        6    0.000    0.000    0.000    0.000 /usr/lib/python3.8/genericpath.py:27(isfile)
+        7    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:186(logdebug)
+       82    0.000    0.000    0.000    0.000 /usr/lib/python3.8/collections/__init__.py:892(__getitem__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/timer.py:52(__init__)
+       43    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:218(_acquireLock)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:549(module_from_spec)
+       20    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:64(canonicalize_name)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:619(register_signals)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:270(wait)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:862(__init__)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:29(_splitparam)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/signal.py:25(_int_to_enum)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:244(get_tcpros_server_address)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:732(close)
+        7    0.000    0.000    0.000    0.000 {method 'seek' of '_io.TextIOWrapper' objects}
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:334(normpath)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/xmlrpc.py:235(start)
+        7    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:158(_base_logger)
+        3    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:376(_isurl)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/network.py:241(get_bind_address)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:301(get_address)
+      411    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1020(<dictcomp>)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:184(get_full_addr)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:477(_init_module_attrs)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/network.py:265(get_host_name)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:2111(shutdown)
+        5    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:821(getfloat)
+       10    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:117(splitext)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:70(close)
+       11    0.000    0.000    0.000    0.000 {built-in method _locale.nl_langinfo}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:228(expanduser)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:643(__init__)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/enum.py:631(__new__)
+       12    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:415(close)
+        9    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:135(_path_stat)
+      268    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:595(_get_struct_4f)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1171(_open)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:697(getheader)
+      319    0.000    0.000    0.000    0.000 {method 'rstrip' of 'str' objects}
+       65    0.000    0.000    0.000    0.000 {method 'fullmatch' of 're.Pattern' objects}
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:458(abspath)
+       40    0.000    0.000    0.000    0.000 /usr/lib/python3.8/urllib/parse.py:121(_coerce_args)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/client.py:437(_init_param_server)
+       26    0.000    0.000    0.000    0.000 {method 'readlines' of '_io._IOBase' objects}
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:354(cache_from_source)
+       10    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:216(is_legal_name)
+       27    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:121(_path_join)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:1236(make_connection)
+       14    0.000    0.000    0.000    0.000 {built-in method time.strftime}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/genericpath.py:16(exists)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:322(__init__)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:639(formatMessage)
+        2    0.000    0.000    0.000    0.000 {built-in method io.open_code}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:53(__init__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/masterslave.py:176(__init__)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1359(__iter__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/client.py:350(get_master)
+        2    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:367(_possible_names)
+      268    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:565(_get_struct_2I)
+       10    0.000    0.000    0.000    0.000 /usr/lib/python3.8/codecs.py:309(__init__)
+        3    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/rosenv.py:46(get_master_uri)
+      268    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:583(_get_struct_3i)
+       46    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:149(escape)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/rospack.py:330(__init__)
+        3    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:337(_iszip)
+       29    0.000    0.000    0.000    0.000 /usr/lib/python3.8/os.py:748(encode)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/rosout.py:125(load_rosout_handlers)
+       78    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:981(_output)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/service.py:56(__init__)
+      160    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+       65    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/utils.py:51(_has_surrogates)
+      268    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:589(_get_struct_4d)
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:376(cached)
+      268    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:561(_get_struct_I)
+       25    0.000    0.000    0.000    0.000 {function SocketIO.close at 0x7f093902bf70}
+       82    0.000    0.000    0.000    0.000 /usr/lib/python3.8/collections/__init__.py:882(__init__)
+      268    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:571(_get_struct_2i)
+      125    0.000    0.000    0.000    0.000 {method 'find' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:271(resolve_name)
+        6    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_collections_abc.py:657(get)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/rospack.py:115(__init__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:219(__init__)
+       43    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:227(_releaseLock)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:438(format)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:484(_get_cached)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:140(basename)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:633(usesTime)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/roslogging.py:231(__init__)
+       21    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:760(end_array)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:473(publisher_update)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:411(_mk_bitmap)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:83(get_ros_paths)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:188(__init__)
+       21    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:877(has_option)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:761(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:147(__enter__)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:891(createLock)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:1468(__getattr__)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:479(set_raw)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/GraphBase.py:355(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1051(__init__)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:197(_new_message)
+      260    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:381(_check_close)
+       26    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:122(pushlines)
+        1    0.000    0.000    0.000    0.000 {method 'close' of '_io.TextIOWrapper' objects}
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:435(_format)
+       42    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:52(normcase)
+       10    0.000    0.000    0.000    0.000 /usr/lib/python3.8/genericpath.py:121(_splitext)
+       91    0.000    0.000    0.000    0.000 {method 'join' of 'bytes' objects}
+       26    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:120(__init__)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/VpForwardBackward.py:22(__init__)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:1187(_validate_method)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1404(__init__)
+      169    0.000    0.000    0.000    0.000 {method 'start' of 're.Match' objects}
+       17    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:246(__enter__)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:497(get_all)
+       41    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:752(end_string)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/os.py:678(__setitem__)
+       13    0.000    0.000    0.000    0.000 {built-in method pyexpat.ParserCreate}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:638(__init__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros.py:52(init_tcpros)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1335(_fixupParents)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:517(exists)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:820(__init__)
+       17    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:249(__exit__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/enum.py:938(__and__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:364(notify_all)
+       27    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:123(<listcomp>)
+       26    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:694(readable)
+       88    0.000    0.000    0.000    0.000 {method 'lstrip' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:503(_sanitize_relative_path)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:472(__init__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:236(is_legal_base_name)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:427(usesTime)
+        3    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/network.py:238(use_ipv6)
+       46    0.000    0.000    0.000    0.000 {method 'decode' of 'bytes' objects}
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:157(_get_module_lock)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:160(<lambda>)
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.8/os.py:752(decode)
+        5    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:206(keys)
+       48    0.000    0.000    0.000    0.000 {method 'rfind' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:413(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/msproxy.py:83(__init__)
+        6    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:73(xpath_tokenizer)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:248(_register_at_fork_reinit_lock)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:221(init_tcpros_server)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1493(_get_spec)
+       52    0.000    0.000    0.000    0.000 {method 'count' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/client.py:174(_init_node_params)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:440(close)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:257(canonicalize_name)
+        4    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:127(_path_split)
+       18    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:731(end_int)
+       12    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:427(flush)
+       24    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:905(release)
+        1    0.000    0.000    0.000    0.000 <__array_function__ internals>:2(squeeze)
+       18    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:74(<listcomp>)
+        6    0.000    0.000    0.000    0.000 /usr/lib/python3.8/signal.py:35(_enum_to_int)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:161(_handle_existing_loggers)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:843(_addHandlerRef)
+       18    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:81(RLock)
+        1    0.000    0.000    0.000    0.000 {method 'strftime' of 'datetime.date' objects}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:1183(_encode_request)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:96(get_ros_root)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:193(_checkLevel)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:210(_pop_message)
+       23    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x902780}
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:1306(current_thread)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:416(_bytes_to_codes)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/ObjectListInterface.py:27(__init__)
+       80    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:795(end_value)
+        5    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:60(isabs)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:135(namespace)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/client.py:87(load_command_line_node_params)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:958(__getitem__)
+        9    0.000    0.000    0.000    0.000 {built-in method posix.getpid}
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:974(close)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:538(add_shutdown_hook)
+       17    0.000    0.000    0.000    0.000 {method 'copy' of 'list' objects}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/message.py:303(set_payload)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:154(_path_isfile)
+       14    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:364(getMessage)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:85(_resolve)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:174(getwidth)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:119(getLevelName)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:559(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:689(spec_from_file_location)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1675(getEffectiveLevel)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1266(__contains__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:222(__init__)
+      103    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:369(before_read)
+       52    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:1187(converters)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:650(close)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:486(_decref_socketios)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:553(_classify_pyc)
+       13    0.000    0.000    0.000    0.000 {method '_checkReadable' of '_io._IOBase' objects}
+       26    0.000    0.000    0.000    0.000 {method 'read' of '_io.StringIO' objects}
+        3    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:478(_add_shutdown_hook)
+        6    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:173(_load)
+       52    0.000    0.000    0.000    0.000 {method 'partition' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:298(getregentry)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py:264(__init__)
+       20    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:796(filter)
+       10    0.000    0.000    0.000    0.000 /usr/lib/python3.8/codecs.py:260(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:151(__exit__)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:224(__init__)
+        7    0.000    0.000    0.000    0.000 {method 'tell' of '_io.TextIOWrapper' objects}
+       13    0.000    0.000    0.000    0.000 {method 'readinto' of '_io.BufferedReader' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:505(__init__)
+        2    0.000    0.000    0.000    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:145(_path_is_mode_type)
+        2    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:943(<genexpr>)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:1031(name)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/inspect.py:1520(currentframe)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_weakrefset.py:81(add)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/socket.py:97(_intenum_converter)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_collections_abc.py:816(clear)
+        3    0.000    0.000    0.000    0.000 {built-in method _signal.signal}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:1196(_validate_path)
+        1    0.000    0.000    0.000    0.000 {method 'findall' of 're.Pattern' objects}
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/masterslave.py:201(_is_registered)
+       34    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:312(get_name)
+       52    0.000    0.000    0.000    0.000 {method 'seek' of '_io.StringIO' objects}
+       26    0.000    0.000    0.000    0.000 {method 'extend' of 'collections.deque' objects}
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:248(is_legal_remap)
+        1    0.000    0.000    0.000    0.000 {method 'bind' of '_socket.socket' objects}
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:787(_getconv)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:233(__next)
+       13    0.000    0.000    0.000    0.000 {method 'tobytes' of 'memoryview' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:179(_compute_package_paths)
+       26    0.000    0.000    0.000    0.000 {method 'truncate' of '_io.StringIO' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method now}
+       65    0.000    0.000    0.000    0.000 {method 'popleft' of 'collections.deque' objects}
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:1103(__init__)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:254(get)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/parser.py:17(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/__init__.py:43(normalize_encoding)
+        2    0.000    0.000    0.000    0.000 {built-in method _hashlib.openssl_md5}
+       13    0.000    0.000    0.000    0.000 {method 'write' of '_io.StringIO' objects}
+       29    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:222(_verbose_message)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1601(addHandler)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:103(release)
+        6    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:79(_unpack_uint32)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1075(path_stats)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/re.py:270(escape)
+       93    0.000    0.000    0.000    0.000 {method 'clear' of 'dict' objects}
+       16    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:1210(get_host_info)
+        1    0.000    0.000    0.000    0.000 {built-in method posix.putenv}
+       10    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:776(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:355(_escape)
+        1    0.000    0.000    0.000    0.000 {built-in method posix.getcwd}
+        8    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:58(isstring)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:354(_splitzipext)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:78(acquire)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:150(dirname)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:461(_get_literal_prefix)
+       40    0.000    0.000    0.000    0.000 /usr/lib/python3.8/urllib/parse.py:110(_noop)
+        1    0.000    0.000    0.000    0.000 {method 'sort' of 'list' objects}
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:58(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:213(get_etc_ros_dir)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:152(prepare_child)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:586(_validate_timestamp_pyc)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:912(setLevel)
+       16    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1426(squeeze)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:324(_set_caller_id)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:160(ns_join)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:374(__init__)
+       13    0.000    0.000    0.000    0.000 {method '_checkClosed' of '_io._IOBase' objects}
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/multiprocessing/process.py:37(current_process)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:145(encode)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/weakref.py:247(popitem)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/paramserver.py:181(get_param_server_cache)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:249(_compile_charset)
+       19    0.000    0.000    0.000    0.000 {built-in method _thread.get_ident}
+       10    0.000    0.000    0.000    0.000 {method 'find' of 'bytearray' objects}
+        2    0.000    0.000    0.000    0.000 {method 'setsockopt' of '_socket.socket' objects}
+       14    0.000    0.000    0.000    0.000 {built-in method sys._getframe}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:430(validate)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:866(_get_hostport)
+       16    0.000    0.000    0.000    0.000 {method 'end' of 're.Match' objects}
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:800(find_spec)
+       12    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:438(isclosed)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:161(reinit_iterative_memory)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py:271(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/http/client.py:1204(_validate_host)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:432(_uniq)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/codecs.py:94(__new__)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:689(add_callback)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:111(__init__)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/paramserver.py:157(get)
+        5    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/config.py:99(_strip_spaces)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:176(cb)
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1276(disable)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/ros_handler.py:18(set_values)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:725(find_spec)
+       24    0.000    0.000    0.000    0.000 {built-in method builtins.callable}
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:286(tell)
+        7    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1330(_path_importer_cache)
+        1    0.000    0.000    0.000    0.000 {method 'getsockname' of '_socket.socket' objects}
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:941(<listcomp>)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:921(fix_flags)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/multiprocessing/process.py:189(name)
+        6    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:863(__enter__)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:664(xml)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/xmlrpc.py:197(__init__)
+        9    0.000    0.000    0.000    0.000 /usr/lib/python3.8/configparser.py:663(has_section)
+        6    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:867(__exit__)
+       26    0.000    0.000    0.000    0.000 /usr/lib/python3.8/email/feedparser.py:125(__iter__)
+        2    0.000    0.000    0.000    0.000 {built-in method _sre.compile}
+        5    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:125(is_private)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/os.py:1073(__subclasshook__)
+        8    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:129(<genexpr>)
+       12    0.000    0.000    0.000    0.000 {function HTTPResponse.flush at 0x7f0938f84ca0}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/urllib/parse.py:1077(_splituser)
+        8    0.000    0.000    0.000    0.000 {built-in method _thread.allocate_lock}
+        8    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:175(get_registration_listeners)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:527(add_preshutdown_hook)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:110(get_ros_package_path)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:595(isstring)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:76(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:35(_new_module)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1001(flatten_dtype_internal)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3/dist-packages/rospkg/environment.py:191(<listcomp>)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:516(_check_name_wrapper)
+        1    0.000    0.000    0.000    0.000 {method 'listen' of '_socket.socket' objects}
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:81(groups)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:160(__len__)
+        3    0.000    0.000    0.000    0.000 {method 'format' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'translate' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'squeeze' of 'numpy.ndarray' objects}
+        8    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:62(get_topic_manager)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/paramserver.py:45(__init__)
+        2    0.000    0.000    0.000    0.000 <string>:1(__new__)
+       13    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xmlrpc/client.py:802(end_params)
+        4    0.000    0.000    0.000    0.000 /usr/lib/python3.8/posixpath.py:131(splitdrive)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:55(isstring)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:164(__getitem__)
+        5    0.000    0.000    0.000    0.000 /usr/lib/python3.8/collections/__init__.py:889(__missing__)
+        2    0.000    0.000    0.000    0.000 {method 'tolist' of 'memoryview' objects}
+        8    0.000    0.000    0.000    0.000 /usr/lib/python3.8/codecs.py:214(setstate)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:101(initialize_mappings)
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.vars}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:432(_generate_overlap_table)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:175(_path_isabs)
+        7    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:249(match)
+        2    0.000    0.000    0.000    0.000 {method 'translate' of 'bytearray' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_collections_abc.py:72(_check_methods)
+       10    0.000    0.000    0.000    0.000 {built-in method _imp.release_lock}
+       10    0.000    0.000    0.000    0.000 {built-in method _imp.acquire_lock}
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py:68(isstring)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/visualization_msgs/msg/_MarkerArray.py:127(__init__)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:453(_get_iscased)
+        6    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:951(set_queue_size)
+        2    0.000    0.000    0.000    0.000 {method 'cast' of 'memoryview' objects}
+        7    0.000    0.000    0.000    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+        4    0.000    0.000    0.000    0.000 {built-in method _stat.S_ISREG}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_compile.py:492(_get_charset_prefix)
+        1    0.000    0.000    0.000    0.000 {built-in method _imp.is_builtin}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:734(_newname)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:143(__init__)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:389(parent)
+        2    0.000    0.000    0.000    0.000 {built-in method _imp.is_frozen}
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/_collections_abc.py:392(__subclasshook__)
+        6    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:408(emit)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:1110(daemon)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:107(_is_wildcard_tag)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:255(_release_save)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:1206(stream)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/sre_parse.py:172(append)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:342(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/xml/etree/ElementPath.py:177(prepare_self)
+        6    0.000    0.000    0.000    0.000 {built-in method from_bytes}
+        1    0.000    0.000    0.000    0.000 {built-in method fromkeys}
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:69(get_service_manager)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/registration.py:278(is_registered)
+        2    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/_internal.py:873(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:1177(_make_invoke_excepthook)
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:76(<listcomp>)
+        5    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:68(_relax_case)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1004(__init__)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:332(__del__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/codecs.py:186(__init__)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/Graph_LTPL.py:182(__del__)
+        5    0.000    0.000    0.000    0.000 {built-in method builtins.ord}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:258(_acquire_restore)
+        3    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/names.py:144(get_mappings)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:372(set_node_uri)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1151(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:424(__init__)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/npyio.py:1128(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_datasource.py:225(__getitem__)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:269(<listcomp>)
+        3    0.000    0.000    0.000    0.000 {method 'reverse' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/rostime.py:209(set_rostime_initialized)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/roslib/__init__.py:72(is_interactive)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/core.py:429(set_initialized)
+        4    0.000    0.000    0.000    0.000 {method 'isalnum' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'popitem' of 'dict' objects}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/enum.py:693(_missing_)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:144(Codec)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:1095(daemon)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/data_objects/ObjectListInterface.py:47(__del__)
+        1    0.000    0.000    0.000    0.000 {method 'split' of 'bytes' objects}
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py:944(enable_latch)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:959(setFormatter)
+        2    0.000    0.000    0.000    0.000 {built-in method _imp._fix_co_filename}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/logging/__init__.py:965(flush)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/urllib/parse.py:410(_checknetloc)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/lib/_iotools.py:46(_is_string_like)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:1029(get_filename)
+        1    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros.py:61(get_tcpros_handler)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.8/threading.py:513(is_set)
+        1    0.000    0.000    0.000    0.000 /home/kana/.local/lib/python3.8/site-packages/numpy/core/fromnumeric.py:1422(_squeeze_dispatcher)
+        1    0.000    0.000    0.000    0.000 {built-in method math.radians}
+        2    0.000    0.000    0.000    0.000 {method '_is_owned' of '_thread.RLock' objects}
+        2    0.000    0.000    0.000    0.000 /opt/ros/noetic/lib/python3/dist-packages/rosgraph/names.py:114(is_global)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:397(has_location)
+        2    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap_external>:839(create_module)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:216(IncrementalEncoder)
+        1    0.000    0.000    0.000    0.000 /home/kana/catkin_ws/src/mobinha-racing/planning/local_path/graph_ltpl/online_graph/src/OnlineTrajectoryHandler.py:158(__del__)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:251(IncrementalDecoder)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:293(StreamReader)
+        1    0.000    0.000    0.000    0.000 <string>:1(<module>)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.8/encodings/idna.py:290(StreamWriter)
+        1    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+        1    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+
+

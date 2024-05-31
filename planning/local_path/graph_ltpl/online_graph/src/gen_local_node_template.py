@@ -104,7 +104,7 @@ def gen_local_node_template(graph_base: graph_ltpl.data_objects.GraphBase.GraphB
     if not hasattr(graph_base, 'plan_horizon_mode') or graph_base.plan_horizon_mode == 'distance':
         # ensure backward compatibility
         if not hasattr(graph_base, 'plan_horizon_mode'):
-            min_plan_horizon = 200.0
+            min_plan_horizon = 120.0
         else:
             min_plan_horizon = graph_base.min_plan_horizon
 

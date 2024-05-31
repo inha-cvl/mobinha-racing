@@ -89,15 +89,13 @@ class LocalPathTest:
         copy_local_path = copy.deepcopy(self.local_path)
         ratio = self.RH.current_velocity/22.0 if self.RH.current_velocity > 0 else 0.1
         start = int(idx+30*ratio)
-        print(len(copy_local_path), start)
         end = start+60 if len(copy_local_path[start:])>60 else len(copy_local_path)-1
         if start < len(copy_local_path):
             copy_local_path = copy_local_path[start:end]
         else:
             pass
         ccopy_local_path = copy.deepcopy(copy_local_path)
-        kappa_viz = gput.KappaPathViz(copy_local_path)
-        self.RH.publish_kappa(kappa_viz)
+        #self.RH.publish_kappa_viz(copy_local_path)
         copy_local_path.insert(0, copy_local_path[0])
         copy_local_path.append(copy_local_path[-1])
         local_kappa = []
@@ -118,8 +116,6 @@ class LocalPathTest:
             if local_path == None or len(local_path) <= 0:
                 return
             self.local_path = gput.smooth_interpolate(local_path, self.precision)
-            self.local_path_viz = gput.LocalPathViz(self.local_path)
-        
+
         self.local_kappa = self.calc_kappa(idx)
-        self.RH.publish_path(self.local_path_viz)
         return self.local_path, self.local_kappa

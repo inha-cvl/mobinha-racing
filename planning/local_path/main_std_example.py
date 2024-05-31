@@ -97,6 +97,7 @@ traj_set = {'left': None}
 tic = time.time()
 
 while True:
+    print("www")
     # -- SELECT ONE OF THE PROVIDED TRAJECTORIES -----------------------------------------------------------------------
     # (here: brute-force, replace by sophisticated behavior planner)
     for sel_action in ["right", "left", "straight", "follow"]:  # try to force 'right', else try next in list
@@ -116,9 +117,10 @@ while True:
                       last_path=(traj_set[sel_action][0][:, 1:3]),
                       last_vel_course=(traj_set[sel_action][0][:, 5]),
                       iter_time=time.time() - tic)
+        
     tic = time.time()
     traj_set = ltpl_obj.calc_vel_profile(pos_est=pos_est,
                                          vel_est=vel_est,vel_max=25)[0]
 
     # -- LIVE PLOT (if activated - not recommended for performance use) ------------------------------------------------
-    ltpl_obj.visual()
+    #ltpl_obj.visual()

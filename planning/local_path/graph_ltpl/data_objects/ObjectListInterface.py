@@ -107,7 +107,6 @@ class ObjectListInterface(object):
                                 check_inside_bounds(bound1=self.__bound1,
                                                     bound2=self.__bound2,
                                                     pos=[object_el['X'], object_el['Y']])
-                        print(on_track)
                         if on_track:
                             # add prediction
                             # NOTE: since the spatial and temporal domain are decoupled, the selected nodes here are

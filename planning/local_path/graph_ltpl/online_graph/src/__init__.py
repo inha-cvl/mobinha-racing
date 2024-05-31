@@ -6,3 +6,4 @@ import graph_ltpl.online_graph.src.main_online_path_gen
 import graph_ltpl.online_graph.src.OnlineTrajectoryHandler
 import graph_ltpl.online_graph.src.VpForwardBackward
 import graph_ltpl.online_graph.src.VpSQP
+import graph_ltpl.online_graph.src.calc_splines_opt

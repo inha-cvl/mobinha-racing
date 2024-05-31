@@ -223,7 +223,7 @@ class OnlineTrajectoryHandler(object):
         closest_nodes, distance = self.__graph_base.get_closest_nodes(pos=start_pos, limit=1)
 
         # determine goal node two layers ahead
-        goal_layer = (closest_nodes[0][0] + 2) % (self.__graph_base.num_layers - 1)
+        goal_layer = (closest_nodes[0][0]) % (self.__graph_base.num_layers - 1)
         goal_node = self.__graph_base.raceline_index[goal_layer]
 
         self.__start_node = [goal_layer, goal_node]
@@ -424,7 +424,10 @@ class OnlineTrajectoryHandler(object):
                                                              const_path_seg=const_path_seg,
                                                              pos_est=self.__pos_est,
                                                              last_solution_nodes=last_solution_nodes,
-                                                             w_last_edges=self.__w_last_edges))
+                                                             once_gen = planned_once,
+                                                             prev_action_set_coeff = self.__last_action_set_coeff,
+                                                             w_last_edges=self.__w_last_edges
+                                                             ))
 
         # --------------------------------------------------------------------------------------------------------------
         # - Reassemble planned paths with constant trajectory part (not subjected to graph search) ---------------------
@@ -512,6 +515,8 @@ class OnlineTrajectoryHandler(object):
         self.__last_action_set_path_param = action_set_path_param
         self.__last_action_set_red_len = action_set_red_len
 
+       
+        
         # return characteristic parameters (e.g. for logging purposes)
         return self.__last_action_set_path_param, self.__start_node, self.__last_action_set_nodes, const_path_seg
 
