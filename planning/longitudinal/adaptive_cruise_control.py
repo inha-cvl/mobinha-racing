@@ -48,7 +48,6 @@ class AdaptiveCruiseControl:
         self.co = self.smoothed_deceleration(avg_curvature)
     
     def smoothed_deceleration(self, avg_curvature):
-        print(avg_curvature)
         if 11<avg_curvature:
             co = 0.45
         elif 5<avg_curvature <= 11:

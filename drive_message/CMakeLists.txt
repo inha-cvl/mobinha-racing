@@ -21,6 +21,7 @@ add_message_files(
   SensorData.msg
   CANOutput.msg
   LaneLet.msg
+  UserInput.msg
   SystemStatus.msg
 )
 

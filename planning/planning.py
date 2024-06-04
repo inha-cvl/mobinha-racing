@@ -1,54 +1,90 @@
-import rospy
-import pymap3d as pm
-
+#!/usr/bin/env python3
+import os
 import sys
+toppath = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(toppath)
+os.environ['OPENBLAS_NUM_THREADS'] = str(1)
+
+import rospy
 import signal
+import datetime
+import json
+import configparser
+import math
+import graph_ltpl
 
 from ros_handler import ROSHandler
-from local_path.local_path_test import LocalPathTest
 from longitudinal.adaptive_cruise_control import AdaptiveCruiseControl
-from hd_map.map import MAP
+from longitudinal.get_max_velocity import GetMaxVelocity
 
 def signal_handler(sig, frame):
     sys.exit(0)
 
 class Planning():
-    def __init__(self, map):
+    def __init__(self):
         self.RH = ROSHandler()
-        self.map = MAP(map)
-        self.lpt = LocalPathTest(self.RH, self.map)
         self.acc = AdaptiveCruiseControl(self.RH)
+        self.gmv = None
+        self.setting_values()
 
-    def calc_local_position(self):
-        if self.RH.current_position_lat == 0:
-            return None
-        x, y, _ = pm.geodetic2enu(self.RH.current_position_lat, self.RH.current_position_long, 7, self.map.base_lla[0], self.map.base_lla[1], self.map.base_lla[2])
-        return [x, y]
+    def setting_values(self):
+        toppath = os.path.dirname(os.path.realpath(__file__))
+        track_param = configparser.ConfigParser()
+        if not track_param.read(toppath + "/params/driving_task.ini"):
+            raise ValueError('Specified online parameter config file does not exist or is empty!')
 
-    def map_publish(self):
-        lmap_viz, mlmap_viz = self.map.get_vizs()
-        self.RH.publish_map(lmap_viz, mlmap_viz)
+        track_specifier = json.loads(track_param.get('DRIVING_TASK', 'track'))
+        globtraj_input_path =  toppath + "/inputs/traj_ltpl_cl/traj_ltpl_cl_" + track_specifier + ".csv"
+        path_dict = {'globtraj_input_path':globtraj_input_path,
+                    'graph_store_path': toppath + "/inputs/stored_graph.pckl",
+                    'ltpl_offline_param_path': toppath + "/params/ltpl_config_offline.ini",
+                    'ltpl_online_param_path': toppath + "/params/ltpl_config_online.ini",
+                    'log_path': toppath + "/logs/graph_ltpl/",
+                    'graph_log_id': datetime.datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
+                    }
+
+        self.gmv = GetMaxVelocity(self.RH, globtraj_input_path)
+        self.ltpl_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=path_dict,visual_mode=False,log_to_file=False)
+        self.ltpl_obj.graph_init()
+        self.traj_set = {'left': None}
+        self.set_start = False
+        self.local_action_set = []
+        print("LTPL Ready")
+
+    def set_start_pos(self,local_pos):
+        self.ltpl_obj.set_startpos(pos_est=local_pos, heading_est=math.radians(self.RH.current_heading)) 
+        self.set_start = True
+        print("Set Start Position")
 
     def execute(self):
-        rate = rospy.Rate(10)
-        self.map_publish()
-        while not rospy.is_shutdown():
-            local_pos = self.calc_local_position()
-            # TUM
-            # self.RH.publish2(local_pos)
-            lp_result = self.lpt.execute(local_pos)
-            if lp_result == None:
-                local_path, local_kappa = None, None 
-            else:
-                [ local_path, local_kappa ] = lp_result
-            local_velocity = self.acc.execute(local_pos, local_path, local_kappa)
-            self.RH.publish(local_pos, local_path, local_kappa, local_velocity)
+        rate = rospy.Rate(20)
+        while not rospy.is_shutdown():            
+            if self.RH.local_pos == None:
+                continue
+        
+            if not self.set_start:
+                self.set_start_pos(self.RH.local_pos)
+                    
+            for sel_action in ["right", "left", "straight", "follow"]: 
+                if sel_action in self.traj_set.keys():
+                    break
+
+            self.ltpl_obj.calc_paths(prev_action_id=sel_action, object_list=[])
+            local_action_set = []
+            if self.traj_set[sel_action] is not None:
+                local_action_set = self.traj_set[sel_action][0][:, :]
+
+            self.traj_set = self.ltpl_obj.calc_vel_profile(
+                                            pos_est=self.RH.local_pos,
+                                            vel_est=self.RH.current_velocity,
+                                            vel_max=80/3.6)[0]
+            road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
+            self.RH.publish(local_action_set, road_max_vel)
             rate.sleep()
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
-    map = sys.argv[1]
-    planning = Planning(map)
+    planning = Planning()
     planning.execute()
 
 if __name__ == "__main__":
