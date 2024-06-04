@@ -25,7 +25,6 @@ class MyApp(QMainWindow, form_class):
         self.setupUi(self)
         self.RH = ROSHandler()
 
-
         self.set_values()
         self.set_widgets()
         self.set_timers()
@@ -81,11 +80,11 @@ class MyApp(QMainWindow, form_class):
 
 
     def click_mode(self, mode):
-        self.RH.user_input.data[0] = mode
+        self.RH.user_value['user_mode'] = mode
         self.check_timer()
     
     def click_signal(self, v):
-        self.RH.user_input.data[1] = v
+        self.RH.user_value['user_signal'] = v
         self.check_timer()
 
     def check_timer(self):
@@ -98,7 +97,7 @@ class MyApp(QMainWindow, form_class):
     
     def stop_user_input_timer(self):
         self.sig_in = False
-        self.RH.user_input.data[1] = 0
+        self.RH.user_value['user_signal'] = 0
         self.user_input_timer.stop()
         self.RH.publish()
 

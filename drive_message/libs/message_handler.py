@@ -1,3 +1,6 @@
+import tf
+import math
+
 
 def gps_to_decimal_degrees(nmea_pos):
     if len(nmea_pos) > 5:
@@ -44,6 +47,18 @@ def sim_nmea_parser(sentence):
         heading = float(parsed[1])
         return [heading]
 
+def check_error(a,b, bound):
+    if a == 0:
+        return False
+    error_boundary = bound
+    error = abs(a-b)
+    return False if error<error_boundary else True
+    
+def match_heading(x, y, z, w):
+    _, _, yaw = tf.transformations.euler_from_quaternion([x,y,z,w])
+    yaw = (-1*(float(math.degrees(yaw))+450)%360)+180
+    return yaw
+    
 def calc_wheel_velocity(vRR, vRL):
     return (float(vRR) + float(vRL))/7.2    
 

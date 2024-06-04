@@ -5,11 +5,8 @@ import pymap3d
 import sys
 import signal
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Vector3
-from visualization_msgs.msg import Marker
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nmea_msgs.msg import Sentence
-from std_msgs.msg import Int8
-from libs.rviz_utils import *
 from libs.vehicle import Vehicle
 
 from drive_msgs.msg import *
@@ -17,65 +14,16 @@ from drive_msgs.msg import *
 def signal_handler(sig, frame):
     sys.exit(0)
 
-def Sphere(ns, id_, data, scale, color):
-    marker = Marker()
-    marker.type = Marker.SPHERE
-    marker.action = Marker.ADD
-    marker.header.frame_id = 'world'
-    marker.ns = ns
-    marker.id = id_
-    marker.lifetime = rospy.Duration(0)
-    marker.scale.x = scale
-    marker.scale.y = scale
-    marker.scale.z = scale
-    marker.color.r = color[0]/255
-    marker.color.g = color[1]/255
-    marker.color.b = color[2]/255
-    marker.color.a = 0.9
-    marker.pose.position.x = data[0]
-    marker.pose.position.y = data[1]
-    marker.pose.position.z = 0
-    return marker
-
 class CarSimulator:
-    def __init__(self, map):
-        wheelbase = 2.97
-
-        if map == 'songdo-site':
-            self.base_lla = [37.383378,126.656798,7] # Sondo-Site
-            self.ego = Vehicle(-3800.520, 3840.930, -3.133, 0.0, wheelbase) #Songdo
-        elif map=='songdo':
-            self.base_lla = [37.3888319,126.6428739, 7.369]
-            #self.ego = Vehicle(148.707, 310.741,2.478, 0.0, 2.65)
-            self.ego = Vehicle(147.547, 311.788, 2.478, 0.0, wheelbase)  
-        elif map == 'KIAPI':
-            self.base_lla = [35.64588122580907,128.40214778762413, 46.746]
-            self.ego = Vehicle(-127.595, 418.819, 2.380, 0.0, wheelbase)
-        elif map == 'Pangyo':
-            self.base_lla = [37.39991792889962, 127.11264200835348,7]
-            self.ego = Vehicle(-10.687, 0.029, -3.079,0,wheelbase)
-        elif map == 'Harbor':
-            self.base_lla = [37.42390324724057, 126.60753475932731, 7]
-            self.ego = Vehicle(559.144, -112.223, 3.074, 0, wheelbase)
-        elif map == 'KIAPI_Racing':
-            self.base_lla = [35.64750540757964, 128.40264207604886, 7]
-            self.ego = Vehicle(0, 0, 1.664, 0, wheelbase)
-
-        self.roll = 0.0
-        self.pitch = 0.0
-
-        self.ego_car = CarViz('ego_car', 'ego_car_info', [0, 0, 0], [241, 76, 152, 1])
-        self.ego_car_info = CarInfoViz('ego_car', 'ego_car', '',[0,0,0])
-        self.br = tf.TransformBroadcaster()
-
+    def __init__(self):
+        self.ego = None
+        self.base_lla = [0,0,0]
         self.mode = 0
         self.signal = 0
         self._steer = 0
         self._accel = 0
         self._brake = 0
 
-        self.pub_viz_car = rospy.Publisher('/viz/car', Marker, queue_size=1)
-        self.pub_viz_car_info = rospy.Publisher('/viz/car_info', Marker, queue_size=1)
         self.pub_nmea_sentence = rospy.Publisher('/sim_nmea_sentence', Sentence, queue_size=1)
         self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
 
@@ -99,13 +47,34 @@ class CarSimulator:
         self._brake = msg.brake.data
    
     def system_status_cb(self, msg):
+        map_name = msg.mapName.data
+        if self.ego == None:
+            self.set_ego(map_name)
+            self.base_lla = msg.baseLLA
         self.mode = msg.systemMode.data
         self.signal = msg.systemSignal.data
-     
+    
+    def set_ego(self, map):
+        wheelbase = 2.97
+        if map == 'songdo-site':
+            self.ego = Vehicle(-3800.520, 3840.930, -3.133, 0.0, wheelbase) #Songdo
+        elif map=='songdo':
+            self.ego = Vehicle(147.547, 311.788, 2.478, 0.0, wheelbase)  
+        elif map == 'KIAPI':
+            self.ego = Vehicle(-127.595, 418.819, 2.380, 0.0, wheelbase)
+        elif map == 'Pangyo':
+            self.ego = Vehicle(-10.687, 0.029, -3.079,0,wheelbase)
+        elif map == 'Harbor':
+            self.ego = Vehicle(559.144, -112.223, 3.074, 0, wheelbase)
+        elif map == 'KIAPI_Racing':
+            self.ego = Vehicle(0, 0, 1.664, 0, wheelbase)
+
     def run(self):
         rate = rospy.Rate(20)
         cnt = 0
         while not rospy.is_shutdown():
+            if self.ego == None:
+                continue
             dt = 0.05
             if self.mode == 1:
                 x, y, yaw, v = self.ego.next_state(dt, self._steer, self._accel, self._brake)
@@ -153,28 +122,13 @@ class CarSimulator:
 
             self.pub_can_output.publish(can_output)
 
-            info = f"{(v*3.6):.2f}km/h {self.yaw:.2f}deg"
-            self.ego_car_info.text = info
-
-            quaternion = tf.transformations.quaternion_from_euler(math.radians(self.roll), math.radians(self.pitch), math.radians(self.yaw))  # RPY
-            self.br.sendTransform(
-                (x, y, 0),
-                (quaternion[0], quaternion[1],
-                    quaternion[2], quaternion[3]),
-                rospy.Time.now(),
-                'ego_car',
-                'world'
-            )
-            self.pub_viz_car.publish(self.ego_car)
-            self.pub_viz_car_info.publish(self.ego_car_info)
             cnt += 1
             rate.sleep()
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
     rospy.init_node('car_simulator', anonymous=False)
-    map = sys.argv[1]
-    st = CarSimulator(map)
+    st = CarSimulator()
     st.run()
 
 if __name__ == "__main__":

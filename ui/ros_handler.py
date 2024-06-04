@@ -19,11 +19,11 @@ class ROSHandler():
         self.target_value = {'velocity':0, 'steer': 0, 'accel': 0, 'brake': 0}
         self.can_inform = {'eps_status':'Off', 'acc_status':'off'}
         self.system_status = {'mode': 0, 'signal':0}
-        self.user_input = Float32MultiArray()
-        self.user_input.data = [0,0]
+        self.user_input = UserInput()
+        self.user_value = {'user_mode': 0, 'user_signal': 0}
 
     def set_publisher_protocol(self):
-        self.pub_user_input = rospy.Publisher('/ui/user_input',Float32MultiArray, queue_size=1)
+        self.pub_user_input = rospy.Publisher('/UserInput',UserInput, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
@@ -39,7 +39,6 @@ class ROSHandler():
         self.can_inform['eps_status'] = str(msg.EPS_En_Status.data)
         self.can_inform['acc_status'] = str(msg.ACC_En_Status.data)
 
-    
     def vehicle_state_cb(self, msg):
         self.ego_value['velocity'] = int(msg.velocity.data*MPS_TO_KPH)
         self.ego_value['gear'] = str(msg.gear.data)
@@ -57,4 +56,6 @@ class ROSHandler():
         self.system_status['signal'] = int(msg.systemSignal.data)
     
     def publish(self):
+        self.user_input.user_mode.data = self.user_value['user_mode']
+        self.user_input.user_signal.data = self.user_value['user_signal']
         self.pub_user_input.publish(self.user_input)
