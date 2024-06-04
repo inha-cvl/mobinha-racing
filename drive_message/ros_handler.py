@@ -2,7 +2,7 @@ import rospy
 import numpy as np
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import QuaternionStamped
+from geometry_msgs.msg import QuaternionStamped, PoseArray
 from nmea_msgs.msg import Sentence
 from sensor_msgs.msg import NavSatFix
 
@@ -41,11 +41,12 @@ class ROSHandler():
     
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
-        rospy.Subscriber('/sim_nmea_sentence', Sentence, self.nmea_sentence_cb)
+        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
+        rospy.Subscriber('/simulator/objects', PoseArray, self.objects_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
@@ -88,7 +89,18 @@ class ROSHandler():
         steer = np.clip(msg.steer.data*12.9, -500, 500)
         self.can_input.EPS_Cmd.data = steer#msg.steer.data * 12.9 
         self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
-
+    
+    def objects_cb(self, msg):
+        self.detection_data = DetectionData()
+        for obj in msg.poses:
+            object_info = ObjectInfo()
+            object_info.type.data = int(obj.position.z)
+            object_info.position.x = float(obj.position.x)
+            object_info.position.y = float(obj.position.y)
+            object_info.velocity.data = float(obj.orientation.x)
+            object_info.heading.data = float(obj.orientation.y)
+            self.detection_data.objects.append(object_info)
+            
     def system_to_can(self, mode):
         #TODO: gear value checking
         if self.vehicle_state.mode.data == 0:

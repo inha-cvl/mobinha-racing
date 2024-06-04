@@ -6,6 +6,8 @@ cd ../visualizer
 python3 visualizer.py &
 cd ../map_lane
 python3 map_lane.py &
+cd ../simulator
+python3 object_simulator.py &
 # cd ../simulator/
 # python3 car_simulator.py & 
 # cd ../drive_message/

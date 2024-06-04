@@ -24,7 +24,7 @@ class CarSimulator:
         self._accel = 0
         self._brake = 0
 
-        self.pub_nmea_sentence = rospy.Publisher('/sim_nmea_sentence', Sentence, queue_size=1)
+        self.pub_nmea_sentence = rospy.Publisher('/simulator/nmea_sentence', Sentence, queue_size=1)
         self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
 
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)

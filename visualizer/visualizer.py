@@ -17,13 +17,15 @@ class Visualizer:
         self.br = tf.TransformBroadcaster()
         self.ego_pos = [0.0, 0.0]
 
-        self.pub_viz_car = rospy.Publisher('/viz/car', Marker, queue_size=1)
-        self.pub_viz_car_info = rospy.Publisher('/viz/car_info', Marker, queue_size=1)
-        self.pub_path_viz = rospy.Publisher('/planning/local_path', Marker, queue_size=1)
-        self.pub_kappa_viz = rospy.Publisher('/planning/kappa_viz', Marker, queue_size=1)
+        self.pub_viz_car = rospy.Publisher('/visualizer/car', Marker, queue_size=1)
+        self.pub_viz_car_info = rospy.Publisher('/visualizer/car_info', Marker, queue_size=1)
+        self.pub_path_viz = rospy.Publisher('/visualizer/local_path', Marker, queue_size=1)
+        self.pub_kappa_viz = rospy.Publisher('/visualizer/kappa_viz', Marker, queue_size=1)
+        self.pub_objects_viz = rospy.Publisher('/visualizer/objects', MarkerArray, queue_size=1)
         
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
+        rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
 
         rospy.spin()
 
@@ -48,6 +50,14 @@ class Visualizer:
             path.append([pts.x, pts.y])
         viz_path = path_viz(path)
         self.pub_path_viz.publish(viz_path)
+    
+    def detection_data_cb(self, msg):
+        objs = []
+        for obj in msg.objects:
+            objs.append([obj.position.x, obj.position.y, obj.heading.data])
+        viz_objects = ObjectsViz(objs)
+        self.pub_objects_viz.publish(viz_objects)
+        
     
 if __name__ == "__main__":
     visualizer = Visualizer()
