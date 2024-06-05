@@ -22,6 +22,8 @@
   
 ✅ drive_message
 
+✅ control
+
 ✅ planning
 
 ## User Manager bash file !
