@@ -3,13 +3,32 @@
 
 ## Exectue
 ✅ ui
+
 ✅ visualizer
+
 ✅ map_lane
+
 ✅ transmitter
-  ➡️ simulator: car_simulator
-  ➡️ real: transmitter
+
+&nbsp;&nbsp;&nbsp;&nbsp;➡️ simulator: car_simulator
+  
+&nbsp;&nbsp;&nbsp;&nbsp;➡️ real: transmitter
+  
 ✅ perception
-  ➡️ simulator: object_simulator
-  ➡️ real: 🚧
+
+&nbsp;&nbsp;&nbsp;&nbsp;➡️ simulator: object_simulator
+  
+&nbsp;&nbsp;&nbsp;&nbsp;➡️ real: 🚧
+  
 ✅ drive_message
+
 ✅ planning
+
+## User Manager bash file !
+```
+cd manager
+# test on field
+./field.sh
+# test on simulator
+./simulator.sh
+```
