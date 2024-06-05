@@ -68,8 +68,7 @@ class Planning():
             for sel_action in ["right", "left", "straight", "follow"]: 
                 if sel_action in self.traj_set.keys():
                     break
-
-            self.ltpl_obj.calc_paths(prev_action_id=sel_action, object_list=[])
+            self.ltpl_obj.calc_paths(prev_action_id=sel_action, object_list=self.RH.object_list)
             local_action_set = []
             if self.traj_set[sel_action] is not None:
                 local_action_set = self.traj_set[sel_action][0][:, :]
@@ -77,7 +76,8 @@ class Planning():
             self.traj_set = self.ltpl_obj.calc_vel_profile(
                                             pos_est=self.RH.local_pos,
                                             vel_est=self.RH.current_velocity,
-                                            vel_max=80/3.6)[0]
+                                            vel_max=80/3.6,
+                                            safety_d=60)[0]
             road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
             self.RH.publish(local_action_set, road_max_vel)
             rate.sleep()
