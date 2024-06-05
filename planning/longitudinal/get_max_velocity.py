@@ -36,8 +36,10 @@ class GetMaxVelocity:
     
     def get_max_velocity(self, local_pos):
         min_idx = self.find_nearest_idx(local_pos)
-        idx = min_idx + 3 if len(self.global_poses) > 4 else min_idx
-        vel = self.global_velocitys[idx]
-        print(vel)
+        idx = min(min_idx + 3, len(self.global_poses))
+        if idx >= len(self.global_velocitys):
+            vel = 0
+        else:
+            vel = self.global_velocitys[idx]
         self.cut_values(min_idx)
         return vel

@@ -1,4 +1,5 @@
 import rospy
+import math
 
 from drive_msgs.msg import *
 from geometry_msgs.msg import Point
@@ -21,7 +22,8 @@ class ROSHandler():
         self.current_position_lat = 0
         self.current_position_long = 0
         self.local_pos = [0,0]
-        self.prev_start_pos = [0,0] 
+        self.prev_start_pos = [0,0]
+        self.object_list = [] 
         self.transformer = None
         
 
@@ -31,6 +33,7 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
+        rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
 
     def system_status_cb(self, msg):
         base_lla = msg.baseLLA
@@ -50,6 +53,12 @@ class ROSHandler():
             return
         x, y, _ = self.transformer.transform(self.current_position_long, self.current_position_lat, 7) 
         self.local_pos = [x,y]
+    
+    def detection_data_cb(self, msg):
+        object_list = []
+        for i, object in enumerate(msg.objects):
+            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 2.0, 'v': object.velocity.data})
+        self.object_list = object_list
 
     def publish(self, local_action_set, road_max_vel):
         if len(local_action_set) > 0:

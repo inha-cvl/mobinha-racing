@@ -47,7 +47,7 @@ class ObjectSimulator:
                 if time.time()-start_time > 20:
                     self.object_ready = False
                     vel = 0
-                x,y,yaw,v = self.object.next_state(dt, self._steer, self._accel, self._brake)
+                x,y,yaw,v = self.object.next_state(dt, self.object.yaw, self._accel, self._brake)
                 v =+ vel
                 yaw = math.degrees(yaw)
                 pose_array = PoseArray()
@@ -61,6 +61,7 @@ class ObjectSimulator:
                 vel += 0.01
             else:
                 pose_array = PoseArray()
+                start_time = time.time()
             self.pub_sim_object.publish(pose_array)
 
             rate.sleep()
