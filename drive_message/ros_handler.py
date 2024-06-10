@@ -49,10 +49,10 @@ class ROSHandler():
         rospy.Subscriber('/simulator/objects', PoseArray, self.objects_cb)
 
     def can_output_cb(self, msg):
-        self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)
-        self.vehicle_state.velocity.data = calc_wheel_velocity(msg.WHEEL_SPD_RR.data, msg.WHEEL_SPD_RL.data)
-        self.vehicle_state.gear.data = str(msg.G_SEL_DISP.data)
-        self.vehicle_state.signal.data = turn_signal_checker(msg.Turn_Left_En.data, msg.Turn_Right_En.data)
+        self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
+        self.vehicle_state.velocity.data = calc_wheel_velocity(msg.WHEEL_SPD_RR.data, msg.WHEEL_SPD_RL.data)  # m/s
+        self.vehicle_state.gear.data = str(msg.G_SEL_DISP.data)    
+        self.vehicle_state.signal.data = turn_signal_checker(msg.Turn_Left_En.data, msg.Turn_Right_En.data)  # blinker 같음
         self.ego_actuator.accel.data = float(msg.Long_ACCEL.data)
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
@@ -67,7 +67,7 @@ class ROSHandler():
         self.system_status.systemSignal.data = int(msg.user_signal.data)
 
     def nmea_sentence_cb(self, msg):
-        parsed = sim_nmea_parser(msg.sentence)
+        parsed = sim_nmea_parser(msg.sentence)  # need to ask
         if parsed != None:
             if len(parsed) == 2:
                 self.vehicle_state.position.x = parsed[0]
@@ -75,7 +75,7 @@ class ROSHandler():
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]
 
-    def nav_sat_fix_cb(self, msg):
+    def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
         if not self.check_error(self.vehicle_state.position.x, msg.latitude,30):
             self.vehicle_state.position.x = msg.latitude
         if not self.check_error(self.vehicle_state.position.y, msg.longitude,30):
