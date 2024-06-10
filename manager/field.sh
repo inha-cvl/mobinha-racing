@@ -11,6 +11,6 @@ python3 transmitter.py &
 cd ../drive_message/
 python3 drive_message.py & 
 cd ../control/
-python3 control.py & 
-cd ../planning/
-python3 planning.py
+python3 control.py #& 
+# cd ../planning/
+# python3 planning.py

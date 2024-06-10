@@ -105,6 +105,13 @@ class LocalPathTest:
             local_kappa.append(Rk)
         return local_kappa
 
+    def get_velocity(self, max_vel):
+        if self.RH.system_mode < 1:
+            return 0
+        ev = self.RH.current_velocity * MPS_TO_KPH
+        acceleration = (0.5 * (max_vel - ev))
+        out_vel = min(ev+acceleration, max_vel)
+        return out_vel*KPH_TO_MPS
 
     def execute(self, local_pos):
         if local_pos == None:
