@@ -76,9 +76,9 @@ class ROSHandler():
                 self.vehicle_state.heading.data = parsed[0]
 
     def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
-        if not self.check_error(self.vehicle_state.position.x, msg.latitude,30):
+        if not check_error(self.vehicle_state.position.x, msg.latitude,30):
             self.vehicle_state.position.x = msg.latitude
-        if not self.check_error(self.vehicle_state.position.y, msg.longitude,30):
+        if not check_error(self.vehicle_state.position.y, msg.longitude,30):
             self.vehicle_state.position.y = msg.longitude
     
     def heading_cb(self, msg):

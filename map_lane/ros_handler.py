@@ -65,9 +65,6 @@ class ROSHandler():
                 point.x = xy[0]
                 point.y = xy[1]
                 self.navigation_data.plannedRoute.append(point)
-            if path[0] != self.prev_start_pos:
-                self.publish_path_viz(path)
-                self.prev_start_pos = path[0]
         if kappa != None:
             for rk in kappa:
                 self.navigation_data.plannedKappa.append(rk)

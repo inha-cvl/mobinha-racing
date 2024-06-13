@@ -23,7 +23,7 @@ class MapLane():
     def map_initialize(self):
         if self.RH.map_name != None:
             self.map = MAP(self.RH.map_name)
-            self.lpt = LocalPathTest(self.map)
+            self.lpt = LocalPathTest(self.RH, self.map)
 
     def execute(self):
         while self.map == None:
@@ -32,6 +32,7 @@ class MapLane():
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             if self.lpt is None:
+                print("pass")
                 pass
             if self.lpt_use:
                 lp_result = self.lpt.execute(self.RH.local_pos)
