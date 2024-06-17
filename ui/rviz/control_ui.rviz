@@ -23,7 +23,7 @@ Visualization Manager:
       Marker Topic: /visualizer/car
       Name: Car Marker
       Namespaces:
-        ego_car_info: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -31,7 +31,7 @@ Visualization Manager:
       Marker Topic: /visualizer/car_info
       Name: Car Info
       Namespaces:
-        ego_car: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -39,274 +39,7 @@ Visualization Manager:
       Marker Topic: /lmap
       Name: Lanelet
       Namespaces:
-        for_viz_0: true
-        for_viz_1: true
-        for_viz_10: true
-        for_viz_100: true
-        for_viz_101: true
-        for_viz_102: true
-        for_viz_103: true
-        for_viz_104: true
-        for_viz_105: true
-        for_viz_106: true
-        for_viz_107: true
-        for_viz_108: true
-        for_viz_109: true
-        for_viz_11: true
-        for_viz_110: true
-        for_viz_12: true
-        for_viz_13: true
-        for_viz_14: true
-        for_viz_15: true
-        for_viz_16: true
-        for_viz_17: true
-        for_viz_18: true
-        for_viz_19: true
-        for_viz_2: true
-        for_viz_20: true
-        for_viz_21: true
-        for_viz_22: true
-        for_viz_23: true
-        for_viz_24: true
-        for_viz_25: true
-        for_viz_26: true
-        for_viz_27: true
-        for_viz_28: true
-        for_viz_29: true
-        for_viz_3: true
-        for_viz_30: true
-        for_viz_31: true
-        for_viz_32: true
-        for_viz_33: true
-        for_viz_34: true
-        for_viz_35: true
-        for_viz_36: true
-        for_viz_37: true
-        for_viz_38: true
-        for_viz_39: true
-        for_viz_4: true
-        for_viz_40: true
-        for_viz_41: true
-        for_viz_42: true
-        for_viz_43: true
-        for_viz_44: true
-        for_viz_45: true
-        for_viz_46: true
-        for_viz_47: true
-        for_viz_48: true
-        for_viz_49: true
-        for_viz_5: true
-        for_viz_50: true
-        for_viz_51: true
-        for_viz_52: true
-        for_viz_53: true
-        for_viz_54: true
-        for_viz_55: true
-        for_viz_56: true
-        for_viz_57: true
-        for_viz_58: true
-        for_viz_59: true
-        for_viz_6: true
-        for_viz_60: true
-        for_viz_61: true
-        for_viz_62: true
-        for_viz_63: true
-        for_viz_64: true
-        for_viz_65: true
-        for_viz_66: true
-        for_viz_67: true
-        for_viz_68: true
-        for_viz_69: true
-        for_viz_7: true
-        for_viz_70: true
-        for_viz_71: true
-        for_viz_72: true
-        for_viz_73: true
-        for_viz_74: true
-        for_viz_75: true
-        for_viz_76: true
-        for_viz_77: true
-        for_viz_78: true
-        for_viz_79: true
-        for_viz_8: true
-        for_viz_80: true
-        for_viz_81: true
-        for_viz_82: true
-        for_viz_83: true
-        for_viz_84: true
-        for_viz_85: true
-        for_viz_86: true
-        for_viz_87: true
-        for_viz_88: true
-        for_viz_89: true
-        for_viz_9: true
-        for_viz_90: true
-        for_viz_91: true
-        for_viz_92: true
-        for_viz_93: true
-        for_viz_94: true
-        for_viz_95: true
-        for_viz_96: true
-        for_viz_97: true
-        for_viz_98: true
-        for_viz_99: true
-        leftBound_0: true
-        leftBound_1: true
-        leftBound_10: true
-        leftBound_11: true
-        leftBound_12: true
-        leftBound_13: true
-        leftBound_14: true
-        leftBound_15: true
-        leftBound_16: true
-        leftBound_17: true
-        leftBound_18: true
-        leftBound_19: true
-        leftBound_2: true
-        leftBound_20: true
-        leftBound_21: true
-        leftBound_22: true
-        leftBound_23: true
-        leftBound_24: true
-        leftBound_25: true
-        leftBound_26: true
-        leftBound_27: true
-        leftBound_28: true
-        leftBound_29: true
-        leftBound_3: true
-        leftBound_30: true
-        leftBound_31: true
-        leftBound_32: true
-        leftBound_33: true
-        leftBound_34: true
-        leftBound_35: true
-        leftBound_36: true
-        leftBound_37: true
-        leftBound_38: true
-        leftBound_39: true
-        leftBound_4: true
-        leftBound_41: true
-        leftBound_42: true
-        leftBound_43: true
-        leftBound_44: true
-        leftBound_45: true
-        leftBound_46: true
-        leftBound_47: true
-        leftBound_48: true
-        leftBound_49: true
-        leftBound_5: true
-        leftBound_50: true
-        leftBound_51: true
-        leftBound_52: true
-        leftBound_53: true
-        leftBound_54: true
-        leftBound_55: true
-        leftBound_56: true
-        leftBound_57: true
-        leftBound_58: true
-        leftBound_59: true
-        leftBound_60: true
-        leftBound_61: true
-        leftBound_62: true
-        leftBound_63: true
-        leftBound_64: true
-        leftBound_65: true
-        leftBound_66: true
-        leftBound_67: true
-        leftBound_68: true
-        leftBound_69: true
-        leftBound_7: true
-        leftBound_70: true
-        leftBound_71: true
-        leftBound_72: true
-        leftBound_73: true
-        leftBound_74: true
-        leftBound_75: true
-        leftBound_76: true
-        leftBound_77: true
-        leftBound_78: true
-        leftBound_79: true
-        leftBound_8: true
-        leftBound_9: true
-        rightBound_0: true
-        rightBound_1: true
-        rightBound_10: true
-        rightBound_11: true
-        rightBound_12: true
-        rightBound_13: true
-        rightBound_14: true
-        rightBound_15: true
-        rightBound_16: true
-        rightBound_17: true
-        rightBound_18: true
-        rightBound_19: true
-        rightBound_2: true
-        rightBound_20: true
-        rightBound_21: true
-        rightBound_22: true
-        rightBound_23: true
-        rightBound_24: true
-        rightBound_25: true
-        rightBound_26: true
-        rightBound_27: true
-        rightBound_28: true
-        rightBound_29: true
-        rightBound_3: true
-        rightBound_30: true
-        rightBound_31: true
-        rightBound_32: true
-        rightBound_33: true
-        rightBound_34: true
-        rightBound_35: true
-        rightBound_36: true
-        rightBound_37: true
-        rightBound_38: true
-        rightBound_39: true
-        rightBound_4: true
-        rightBound_40: true
-        rightBound_41: true
-        rightBound_42: true
-        rightBound_43: true
-        rightBound_44: true
-        rightBound_45: true
-        rightBound_46: true
-        rightBound_47: true
-        rightBound_48: true
-        rightBound_49: true
-        rightBound_5: true
-        rightBound_50: true
-        rightBound_51: true
-        rightBound_52: true
-        rightBound_53: true
-        rightBound_54: true
-        rightBound_55: true
-        rightBound_56: true
-        rightBound_57: true
-        rightBound_58: true
-        rightBound_59: true
-        rightBound_6: true
-        rightBound_60: true
-        rightBound_61: true
-        rightBound_62: true
-        rightBound_63: true
-        rightBound_64: true
-        rightBound_65: true
-        rightBound_66: true
-        rightBound_67: true
-        rightBound_68: true
-        rightBound_69: true
-        rightBound_7: true
-        rightBound_70: true
-        rightBound_71: true
-        rightBound_72: true
-        rightBound_73: true
-        rightBound_74: true
-        rightBound_75: true
-        rightBound_76: true
-        rightBound_77: true
-        rightBound_78: true
-        rightBound_8: true
-        rightBound_9: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -341,6 +74,47 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: ""
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /cloud_segmentation/nonground
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: jsk_rviz_plugin/BoundingBoxArray
+      Enabled: true
+      Name: BoundingBoxArray
+      Queue Size: 10
+      Topic: /mobinha/perception/lidar/track_box
+      Unreliable: false
+      Value: true
+      alpha: 0.800000011920929
+      color: 255; 255; 255
+      coloring: Flat color
+      line width: 0.004999999888241291
+      only edge: false
+      show coords: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -387,7 +161,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.4403984844684601
       Target Frame: ego_car
-      Yaw: 3.1603944301605225
+      Yaw: 3.1553943157196045
     Saved: ~
 Window Geometry:
   Displays:
@@ -395,9 +169,9 @@ Window Geometry:
   Height: 1016
   Hide Left Dock: true
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd0000000400000000000001c10000039efc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d0000039e000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000100044006900730070006c0061007900730000000016000001c1000000000000000000000001000001100000039efc0200000004fb0000000a00560069006500770073000000003d0000039e000000a400fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d0000035a0000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004180000003efc0100000002fb0000000800540069006d00650000000000000004180000000000000000fb0000000800540069006d00650100000000000004500000000000000000000007440000039e00000004000000040000000800000008fc000000030000000000000000000000020000000000000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001c10000039efc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d0000039e000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000100044006900730070006c0061007900730000000016000001c1000000000000000000000001000001100000039efc0200000004fb0000000a00560069006500770073000000003d0000039e000000a400fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d0000035a0000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004180000003efc0100000002fb0000000800540069006d00650000000000000004180000000000000000fb0000000800540069006d00650100000000000004500000000000000000000007800000039e00000004000000040000000800000008fc000000030000000000000000000000020000000000000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: true
-  Width: 1860
-  X: 1140
-  Y: 326
+  Width: 1920
+  X: 1920
+  Y: 210

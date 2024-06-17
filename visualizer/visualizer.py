@@ -1,7 +1,6 @@
-
-
 import rospy
 import tf
+import tf2_ros
 
 from drive_msgs.msg import *
 from visualization_msgs.msg import Marker
@@ -15,6 +14,19 @@ class Visualizer:
         self.ego_car = CarViz('ego_car', 'ego_car_info', [0, 0, 0], [241, 76, 152, 1])
         self.ego_car_info = CarInfoViz('ego_car', 'ego_car', '',[0,0,0])
         self.br = tf.TransformBroadcaster()
+
+        # calibration
+        self.static_br = tf2_ros.StaticTransformBroadcaster()
+        static_transforms = [
+            ((1.1, 0.0, 1.5), (0, 0, 0, 1), 'os_sensor', 'ego_car'),  # lidar
+            ((1.8, 0.0, 1.0), (0, 0, 0, 1), 'front', 'ego_car'),     # front camera
+            ((1.7, 0.7, 1.0), (0, 0, 0, 1), 'left_front', 'ego_car'),# left 
+            ((1.6, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'ego_car'), # left
+            ((1.7, -0.7, 1.0), (0, 0, 0, 1), 'right_front', 'ego_car'), # right
+            ((1.6, -0.7, 1.0), (0, 0, 0, 1), 'right_rear', 'ego_car')  # right
+        ]
+        self.publish_static_tfs(static_transforms)
+
         self.ego_pos = [0.0, 0.0]
 
         self.pub_viz_car = rospy.Publisher('/visualizer/car', Marker, queue_size=1)
@@ -38,8 +50,7 @@ class Visualizer:
         self.br.sendTransform(
             (self.ego_pos[0], self.ego_pos[1], 0),
             (quaternion[0], quaternion[1],quaternion[2], quaternion[3]),
-            rospy.Time.now(),'ego_car','world')
-        
+            rospy.Time.now(),'ego_car','world')    
         self.pub_viz_car.publish(self.ego_car)
         self.pub_viz_car_info.publish(self.ego_car_info)
     
@@ -57,6 +68,25 @@ class Visualizer:
             objs.append([obj.position.x, obj.position.y, obj.heading.data])
         viz_objects = ObjectsViz(objs)
         self.pub_objects_viz.publish(viz_objects)
+    
+    # calibration
+    def publish_static_tfs(self, transforms):
+        static_transformStamped_vec = []
+        for translation, rotation, child_frame, parent_frame in transforms:
+            static_transformStamped = geometry_msgs.msg.TransformStamped()
+            static_transformStamped.header.stamp = rospy.Time.now()
+            static_transformStamped.header.frame_id = parent_frame
+            static_transformStamped.child_frame_id = child_frame
+            static_transformStamped.transform.translation.x = translation[0]
+            static_transformStamped.transform.translation.y = translation[1]
+            static_transformStamped.transform.translation.z = translation[2]
+            static_transformStamped.transform.rotation.x = rotation[0]
+            static_transformStamped.transform.rotation.y = rotation[1]
+            static_transformStamped.transform.rotation.z = rotation[2]
+            static_transformStamped.transform.rotation.w = rotation[3]
+            static_transformStamped_vec.append(static_transformStamped)
+        
+        self.static_br.sendTransform(static_transformStamped_vec)
         
     
 if __name__ == "__main__":
