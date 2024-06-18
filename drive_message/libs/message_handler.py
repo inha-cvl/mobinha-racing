@@ -1,6 +1,6 @@
 import tf
 import math
-
+import numpy as np
 
 def gps_to_decimal_degrees(nmea_pos):
     if len(nmea_pos) > 5:
@@ -80,3 +80,19 @@ def turn_signal_checker(turn_left_en, turn_right_en):
         return 2
     else:
         return 0
+
+def convert_local_to_enu(ego_pose, ego_heading, obj_pose):
+    if len(ego_pose) < 1:
+        return None
+    else:
+        rad = np.radians(ego_heading)
+        
+        nx = math.cos(rad) * obj_pose[0] - math.sin(rad) * obj_pose[1]
+        ny = math.sin(rad) * obj_pose[0] + math.cos(rad) * obj_pose[1]
+        
+        x = ego_pose[0]+nx
+        y = ego_pose[1]+ny
+        
+        return x,y
+
+    

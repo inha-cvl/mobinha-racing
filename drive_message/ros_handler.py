@@ -5,14 +5,16 @@ from drive_msgs.msg import *
 from geometry_msgs.msg import QuaternionStamped, PoseArray
 from nmea_msgs.msg import Sentence
 from sensor_msgs.msg import NavSatFix
+from jsk_recognition_msgs.msg import BoundingBoxArray
+from visualization_msgs.msg import MarkerArray
 
 from libs.message_handler import *
 
+USE_LIDAR = False
 
 class ROSHandler():
     def __init__(self, map, base_lla):
         rospy.init_node('drive_message', anonymous=False)
-        
         self.set_messages(map, base_lla)
         self.set_publisher_protocol()
         self.set_subscriber_protocol()
@@ -20,6 +22,7 @@ class ROSHandler():
     def set_messages(self, map, base_lla):
         self.can_input = CANInput()
         self.can_input.EPS_Speed.data = 50 # 80 : 15
+        self.ego_local_pose = []
         self.sensor_data = SensorData()
         self.system_status = SystemStatus()
         self.system_status.mapName.data = map
@@ -41,12 +44,17 @@ class ROSHandler():
     
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
+        rospy.Subscriber('/NavigationData', NavigationData, self.nvaigation_data_cb)
         rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
-        rospy.Subscriber('/simulator/objects', PoseArray, self.objects_cb)
+        rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
+        if not USE_LIDAR:
+            rospy.Subscriber('/', MarkerArray, self.cam_objects_cb)
+        else:
+            rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -56,6 +64,9 @@ class ROSHandler():
         self.ego_actuator.accel.data = float(msg.Long_ACCEL.data)
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
+    
+    def navigation_data_cb(self, msg):
+        self.ego_local_pose = (msg.currentLocation.x, msg.currentLocation.y, msg.currentLocation.z)
 
     def signal_cb(self, msg):
         self.system_status.systemSignal.data = int(msg.data)
@@ -90,7 +101,7 @@ class ROSHandler():
         self.can_input.EPS_Cmd.data = steer#msg.steer.data * 12.9 
         self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
     
-    def objects_cb(self, msg):
+    def sim_objects_cb(self, msg):
         self.detection_data = DetectionData()
         for obj in msg.poses:
             object_info = ObjectInfo()
@@ -99,6 +110,39 @@ class ROSHandler():
             object_info.position.y = float(obj.position.y)
             object_info.velocity.data = float(obj.orientation.x)
             object_info.heading.data = float(obj.orientation.y)
+            self.detection_data.objects.append(object_info)
+    
+    def cam_objects_cb(self,msg):
+        self.detection_data = DetectionData()
+        for obj in msg.markers:
+            object_info = ObjectInfo()
+            object_info.type.data = 0
+            conv = convert_local_to_enu(self.ego_local_pose, self.vehicle_state.heading.data, (obj.pose.position.x, obj.pose.position.y))
+            if conv is None:
+                return
+            else:
+                x,y = conv
+            object_info.position.x = x
+            object_info.position.y = y
+            object_info.velocity.data = self.vehicle_state.velocity.data
+            object_info.heading.data = self.vehicle_state.heading.data
+            self.detection_data.objects.append(object_info)
+            
+
+    def lidar_track_box_cb(self, msg):
+        self.detection_data = DetectionData()
+        for obj in msg.boxes:
+            object_info = ObjectInfo()
+            object_info.type.data = 0
+            conv = convert_local_to_enu(self.ego_local_pose, self.vehicle_state.heading.data, (obj.pose.position.x, obj.pose.position.y))
+            if conv is None:
+                return
+            else:
+                x,y = conv
+            object_info.position.x = x
+            object_info.position.y = y
+            object_info.velocity.data = obj.value
+            object_info.heading.data = obj.pose.orientation.z
             self.detection_data.objects.append(object_info)
             
     def system_to_can(self, mode):
