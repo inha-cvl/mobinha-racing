@@ -44,7 +44,7 @@ class ROSHandler():
     
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
-        rospy.Subscriber('/NavigationData', NavigationData, self.nvaigation_data_cb)
+        rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
