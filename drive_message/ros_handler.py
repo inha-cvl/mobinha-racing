@@ -51,10 +51,10 @@ class ROSHandler():
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
-        if not USE_LIDAR:
-            rospy.Subscriber('/', MarkerArray, self.cam_objects_cb)
-        else:
-            rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        # if not USE_LIDAR:
+        #     rospy.Subscriber('/', MarkerArray, self.cam_objects_cb)
+        # else:
+        #     rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake

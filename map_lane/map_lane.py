@@ -13,7 +13,7 @@ class MapLane():
         self.RH = ROSHandler()
         self.map = None
         self.lpt = None
-        self.lpt_use = True
+        self.lpt_use = False
         self.max_vel = 50
 
     def map_publish(self):

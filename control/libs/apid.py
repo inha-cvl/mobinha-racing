@@ -93,7 +93,7 @@ class APID:
         # self.Kp += self.dKp + self.ddKp
         # self.Ki += self.dKi + self.ddKi
         # self.Kd += self.dKd + self.ddKd
-        print(f"{self.final_Kp:.2f}, {self.final_Ki:.2f}, {self.final_Kd:.2f}")
+        #print(f"{self.final_Kp:.2f}, {self.final_Ki:.2f}, {self.final_Kd:.2f}")
 
     def calculate_output(self):
         self.error = self.errs[3]
