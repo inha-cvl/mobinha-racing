@@ -10,7 +10,7 @@ from visualization_msgs.msg import MarkerArray
 
 from libs.message_handler import *
 
-USE_LIDAR = False
+USE_LIDAR = True
 
 class ROSHandler():
     def __init__(self, map, base_lla):
@@ -51,10 +51,11 @@ class ROSHandler():
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
-        # if not USE_LIDAR:
-        #     rospy.Subscriber('/', MarkerArray, self.cam_objects_cb)
-        # else:
-        #     rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+
+        if not USE_LIDAR:
+            rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
+        else:
+            rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -87,18 +88,19 @@ class ROSHandler():
                 self.vehicle_state.heading.data = parsed[0]
 
     def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
-        if not check_error(self.vehicle_state.position.x, msg.latitude,30):
+        if not check_error(self.vehicle_state.position.x, msg.latitude, 0.5):
             self.vehicle_state.position.x = msg.latitude
-        if not check_error(self.vehicle_state.position.y, msg.longitude,30):
+        if not check_error(self.vehicle_state.position.y, msg.longitude, 0.5):
             self.vehicle_state.position.y = msg.longitude
     
     def heading_cb(self, msg):
         yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
-        self.vehicle_state.heading.data = yaw    
+        if not check_error(self.vehicle_state.heading.data, yaw, 90):
+            self.vehicle_state.heading.data = yaw    
 
     def target_actuator_cb(self, msg):
         steer = np.clip(msg.steer.data*12.9, -500, 500)
-        self.can_input.EPS_Cmd.data = steer#msg.steer.data * 12.9 
+        self.can_input.EPS_Cmd.data = steer
         self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
     
     def sim_objects_cb(self, msg):

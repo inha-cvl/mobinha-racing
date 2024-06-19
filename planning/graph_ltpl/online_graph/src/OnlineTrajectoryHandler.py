@@ -215,7 +215,7 @@ class OnlineTrajectoryHandler(object):
                                                                                    pos=start_pos):
             self.__log.warning("Vehicle is out of track, check if correct reference line is provided!")
             in_track = False
-            return in_track, cor_heading
+            return in_track, cor_heading, self.__start_node
             # raise ValueError("VEHICLE SEEMS TO BE OUT OF TRACK!")
 
         # -- SELECT INITIAL PLANNING NODE ------------------------------------------------------------------------------
@@ -236,7 +236,7 @@ class OnlineTrajectoryHandler(object):
         if heading_diff > max_heading_offset:
             self.__log.warning("Heading mismatch between vehicle and track grid, check if vehicle oriented correctly!")
             cor_heading = False
-            return in_track, cor_heading
+            return in_track, cor_heading, self.__start_node
             # raise ValueError("VEHICLE HEADING MISMATCH (TRACK <-> VEHICLE)!")
 
         # calculate spline to start node
@@ -266,7 +266,7 @@ class OnlineTrajectoryHandler(object):
         self.__last_action_set_nodes = {act_id: [[[None, None], self.__start_node]]}
         self.__last_action_set_node_idx = {act_id: [[0, path.shape[0] - 1]]}
 
-        return in_track, cor_heading
+        return in_track, cor_heading, self.__start_node
 
     def update_objects(self,
                        obj_veh: list,

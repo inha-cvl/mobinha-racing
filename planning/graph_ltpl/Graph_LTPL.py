@@ -285,15 +285,14 @@ class Graph_LTPL(object):
         self.__action_set = {"straight": []}
 
         # set initial pose for graph and check if within track
-        in_track, cor_heading = self.__oth.set_initial_pose(start_pos=self.__pos_est,
+        in_track, cor_heading, start_node = self.__oth.set_initial_pose(start_pos=self.__pos_est,
                                                             start_heading=heading_est,
                                                             start_vel=vel_est,
                                                             max_heading_offset=self.__max_heading_offset)
 
         # if out of track or wrong heading, jump to start of loop
         out_of_track = not in_track or not cor_heading
-
-        return out_of_track
+        return out_of_track, start_node
 
     # ------------------------------------------------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@ import libs.save_ as save_
 rospy.init_node('PreRound2', anonymous=False)
 pub_pr2_path = rospy.Publisher('/pr2_path', Marker, queue_size=1)
 
-start_index = 1 # 0 : lane 2, 1 : lane 4
+start_index = 0 # 0 : lane 2, 1 : lane 4
 tile_size = 5
 cut_dist = 15
 precision = 1
@@ -21,7 +21,7 @@ max_vel = 80 / 3.6
 sec_to_reach = 7
 dist_to_reach_max_vel = int((0.5*(max_vel/sec_to_reach)*(sec_to_reach**2)))
 
-lmap = LaneletMap('/home/inha/catkin_ws/src/mobinha-racing/map_lane/hd_map/KIAPI_Racing.json')
+lmap = LaneletMap('/home/kana/catkin_ws/src/mobinha-racing/map_lane/hd_map/KIAPI_Racing.json')
 tmap = TileMap(lmap.lanelets, tile_size)
 mlg = MicroLaneletGraph(lmap, cut_dist)
 graph = mlg.graph
@@ -104,15 +104,15 @@ for i,f in enumerate(final_path):
     s += 1
 
 
-save_.to_csv('./PreRound2b.csv', final_tr)
-save_.to_txt('./PreRound2b_id.txt', final_ids)
+save_.to_csv('./PreRound2a.csv', final_tr)
+save_.to_txt('./PreRound2a_id.txt', final_ids)
 
 print("saved")
 
-# pr2_path = gput.smooth_interpolate(final_path, precision)
-# pr2_path_viz = gput.PreRound2Viz(pr2_path)
+pr2_path = gput.smooth_interpolate(final_path, precision)
+pr2_path_viz = gput.PreRound2Viz(pr2_path)
 
-# rate = rospy.Rate(5)
-# while not rospy.is_shutdown():
-#     pub_pr2_path.publish(pr2_path_viz)
-#     rate.sleep()
+rate = rospy.Rate(5)
+while not rospy.is_shutdown():
+    pub_pr2_path.publish(pr2_path_viz)
+    rate.sleep()

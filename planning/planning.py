@@ -12,6 +12,7 @@ import json
 import configparser
 import math
 import graph_ltpl
+import time
 
 from ros_handler import ROSHandler
 from longitudinal.adaptive_cruise_control import AdaptiveCruiseControl
@@ -52,39 +53,44 @@ class Planning():
         print("LTPL Ready")
 
     def set_start_pos(self,local_pos):
-        self.ltpl_obj.set_startpos(pos_est=local_pos, heading_est=math.radians(self.RH.current_heading)) 
-        self.set_start = True
-        print("Set Start Position")
+        _, start_node = self.ltpl_obj.set_startpos(pos_est=local_pos, heading_est=math.radians(self.RH.
+        current_heading)) 
+        print(start_node)
+        if start_node is not None:
+            self.set_start = True
+            print("Set Start Position")
 
     def execute(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown():            
-            if self.RH.local_pos == None:
+            if self.RH.local_pos is None:
                 continue
         
             if not self.set_start:
                 self.set_start_pos(self.RH.local_pos)
-                    
-            for sel_action in ["right", "left", "straight", "follow"]: 
-                if sel_action in self.traj_set.keys():
-                    break
-            self.ltpl_obj.calc_paths(prev_action_id=sel_action, object_list=self.RH.object_list)
-            local_action_set = []
-            if self.traj_set[sel_action] is not None:
-                local_action_set = self.traj_set[sel_action][0][:, :]
+            else:
+                for sel_action in ["right", "left", "straight", "follow"]: 
+                    if sel_action in self.traj_set.keys():
+                        break
 
-            self.traj_set = self.ltpl_obj.calc_vel_profile(
-                                            pos_est=self.RH.local_pos,
-                                            vel_est=self.RH.current_velocity,
-                                            vel_max=80/3.6,
-                                            safety_d=60)[0]
-            road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
-            self.RH.publish(local_action_set, road_max_vel)
+                self.ltpl_obj.calc_paths(prev_action_id=sel_action, object_list=self.RH.object_list)
+                local_action_set = []
+                if self.traj_set[sel_action] is not None:
+                    local_action_set = self.traj_set[sel_action][0][:, :]
+
+                self.traj_set = self.ltpl_obj.calc_vel_profile(
+                                                pos_est=self.RH.local_pos,
+                                                vel_est=self.RH.current_velocity,
+                                                vel_max=80/3.6,
+                                                safety_d=60)[0]
+                road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
+                self.RH.publish(local_action_set, road_max_vel)
             rate.sleep()
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
     planning = Planning()
+    time.sleep(0.5)
     planning.execute()
 
 if __name__ == "__main__":
