@@ -54,7 +54,7 @@ def nmea_parser(lat0, lng0, sentence):
                 heading = calculate_heading(lat0, lng0, lat, lng)
                 return [lat,lng, heading]
     
-    elif parsed[0] == '$GNHDT':
+    elif parsed[0] == '$GNTHS':
         heading =parsed[1]
         if 'T' in heading:
             heading = heading[0:-4]
