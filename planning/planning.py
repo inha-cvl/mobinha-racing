@@ -55,7 +55,6 @@ class Planning():
     def set_start_pos(self,local_pos):
         _, start_node = self.ltpl_obj.set_startpos(pos_est=local_pos, heading_est=math.radians(self.RH.
         current_heading)) 
-        print(start_node)
         if start_node is not None:
             self.set_start = True
             print("Set Start Position")

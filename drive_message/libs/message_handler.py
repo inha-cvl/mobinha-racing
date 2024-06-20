@@ -10,8 +10,29 @@ def gps_to_decimal_degrees(nmea_pos):
         v = float(integer_part) + float(decimal_part) / 60.0
         return v
     return 0.0
-   
-def nmea_parser(sentence):
+
+
+def calculate_heading(lat1, lon1, lat2, lon2):
+  
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    
+    dLon = lon2 - lon1
+    
+    x = math.sin(dLon) * math.cos(lat2)
+    y = math.cos(lat1) * math.sin(lat2) - (math.sin(lat1) * math.cos(lat2) * math.cos(dLon))
+    
+    initial_bearing = math.atan2(x, y)
+    
+    initial_bearing = math.degrees(initial_bearing)
+    
+    compass_bearing = (initial_bearing + 360) % 360
+    heading = ((-1*(compass_bearing)+450)%360)+180
+    
+    return heading
+
+
+
+def nmea_parser(lat0, lng0, sentence):
     parsed = sentence.split(',')
     if parsed[0] == '$GNGGA':
         lat_gga = parsed[2]
@@ -26,7 +47,12 @@ def nmea_parser(sentence):
             
             lat = gps_to_decimal_degrees(lat_gga)
             lng = gps_to_decimal_degrees(lng_gga)
-            return [lat,lng]
+
+            if lat0 == 0 or lng0 == 0:
+                return [lat, lng, 0]
+            else:
+                heading = calculate_heading(lat0, lng0, lat, lng)
+                return [lat,lng, heading]
     
     elif parsed[0] == '$GNHDT':
         heading =parsed[1]
@@ -36,6 +62,7 @@ def nmea_parser(sentence):
         return [float(heading)]
     else:
         return None
+
 
 def sim_nmea_parser(sentence):
     parsed = sentence.split(',')

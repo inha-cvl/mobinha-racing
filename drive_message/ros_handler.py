@@ -31,6 +31,9 @@ class ROSHandler():
         self.lane_data = LaneData()
         self.detection_data = DetectionData()
         self.ego_actuator = Actuator()
+
+        #TODO: nmea test
+        self.prev_lla = None
             
 
     def set_publisher_protocol(self):
@@ -45,11 +48,11 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
-        rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
-        rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
+        #rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
+        #rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
 
         if not USE_LIDAR:
@@ -79,24 +82,32 @@ class ROSHandler():
         self.system_status.systemSignal.data = int(msg.user_signal.data)
 
     def nmea_sentence_cb(self, msg):
-        parsed = sim_nmea_parser(msg.sentence)  # need to ask
+        if self.prev_lla is None:
+            parsed = nmea_parser(0, 0, msg.sentence)  # need to ask
+        else:
+            parsed = nmea_parser(self.prev_lla[0], self.prev_lla[1], msg.sentence)
         if parsed != None:
-            if len(parsed) == 2:
+            if len(parsed) == 3:
                 self.vehicle_state.position.x = parsed[0]
                 self.vehicle_state.position.y = parsed[1]
+                if self.prev_lla is None:
+                    self.prev_lla = (parsed[0], parsed[1])
+                    return
+                else: 
+                    self.vehicle_state.heading.data = parsed[2]
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]
 
     def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
-        if not check_error(self.vehicle_state.position.x, msg.latitude, 0.5):
+        if not check_error(self.vehicle_state.position.x, msg.latitude, 30):
             self.vehicle_state.position.x = msg.latitude
-        if not check_error(self.vehicle_state.position.y, msg.longitude, 0.5):
+        if not check_error(self.vehicle_state.position.y, msg.longitude, 30):
             self.vehicle_state.position.y = msg.longitude
     
     def heading_cb(self, msg):
         yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
-        if not check_error(self.vehicle_state.heading.data, yaw, 90):
-            self.vehicle_state.heading.data = yaw    
+        # if not check_error(self.vehicle_state.heading.data, yaw, 90):
+        self.vehicle_state.heading.data = yaw    
 
     def target_actuator_cb(self, msg):
         steer = np.clip(msg.steer.data*12.9, -500, 500)
