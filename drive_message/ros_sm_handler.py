@@ -221,6 +221,7 @@ class ROSHandler():
                 self.vehicle_state.heading.data = parsed[0]
 
     def nav_sat_fix_cb(self, msg):
+        self.vehicle_state.header = msg.header
         if not self.check_error(self.vehicle_state.position.x, msg.latitude,30):
             self.vehicle_state.position.x = msg.latitude
         if not self.check_error(self.vehicle_state.position.y, msg.longitude,30):

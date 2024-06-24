@@ -18,16 +18,18 @@ class Visualizer:
         # calibration
         self.static_br = tf2_ros.StaticTransformBroadcaster()
         static_transforms = [
+            ((1.3025, 0.0, 1.5), (0, 0, 0, 1), 'base_link', 'ego_car'),  # center
             ((1.1, 0.0, 1.5), (0, 0, 0, 1), 'os_sensor', 'ego_car'),  # lidar
             ((1.8, 0.0, 1.0), (0, 0, 0, 1), 'front', 'ego_car'),     # front camera
             ((1.7, 0.7, 1.0), (0, 0, 0, 1), 'left_front', 'ego_car'),# left 
-            ((1.6, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'ego_car'), # left
+            ((1.4, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'ego_car'), # left
             ((1.7, -0.7, 1.0), (0, 0, 0, 1), 'right_front', 'ego_car'), # right
-            ((1.6, -0.7, 1.0), (0, 0, 0, 1), 'right_rear', 'ego_car')  # right
+            ((1.4, -0.7, 1.0), (0, 0, 0, 1), 'right_rear', 'ego_car')  # right
         ]
         self.publish_static_tfs(static_transforms)
 
         self.ego_pos = [0.0, 0.0]
+        self.ego_time = rospy.Time(0)
 
         self.pub_viz_car = rospy.Publisher('/visualizer/car', Marker, queue_size=1)
         self.pub_viz_car_info = rospy.Publisher('/visualizer/car_info', Marker, queue_size=1)
@@ -47,10 +49,14 @@ class Visualizer:
         info = f"{(v*3.6):.2f}km/h {yaw:.2f}deg"
         self.ego_car_info.text = info
         quaternion = tf.transformations.quaternion_from_euler(math.radians(0), math.radians(0), math.radians(yaw))  # RPY
-        self.br.sendTransform(
-            (self.ego_pos[0], self.ego_pos[1], 0),
-            (quaternion[0], quaternion[1],quaternion[2], quaternion[3]),
-            rospy.Time.now(),'ego_car','world')    
+        
+        if self.ego_time != msg.header.stamp:
+            self.br.sendTransform(
+                (self.ego_pos[0], self.ego_pos[1], 0),
+                (quaternion[0], quaternion[1],quaternion[2], quaternion[3]),
+                self.ego_time,'ego_car','world')
+            self.ego_time = msg.header.stamp
+        
         self.pub_viz_car.publish(self.ego_car)
         self.pub_viz_car_info.publish(self.ego_car_info)
     
@@ -74,7 +80,7 @@ class Visualizer:
         static_transformStamped_vec = []
         for translation, rotation, child_frame, parent_frame in transforms:
             static_transformStamped = geometry_msgs.msg.TransformStamped()
-            static_transformStamped.header.stamp = rospy.Time.now()
+            #static_transformStamped.header.stamp = rospy.Time(0)
             static_transformStamped.header.frame_id = parent_frame
             static_transformStamped.child_frame_id = child_frame
             static_transformStamped.transform.translation.x = translation[0]
