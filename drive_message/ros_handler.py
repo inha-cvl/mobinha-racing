@@ -34,7 +34,12 @@ class ROSHandler():
 
         #TODO: nmea test
         self.prev_lla = None
-            
+        
+        #TODO # lap_number
+        self.lap_cnt = 0
+        self.start_point = (0, 0, 0)
+        self.radius = 20
+        self.lap_flag = False
 
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
@@ -49,6 +54,7 @@ class ROSHandler():
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.sim_nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         #rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
@@ -71,7 +77,11 @@ class ROSHandler():
     
     def navigation_data_cb(self, msg):
         self.ego_local_pose = (msg.currentLocation.x, msg.currentLocation.y, msg.currentLocation.z)
-
+        # print(self.ego_local_pose)
+        #TODO # lap_number
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.ego_local_pose, self.start_point, self.radius, self.lap_flag)
+        self.system_status.lapCount.data = self.lap_cnt
+        
     def signal_cb(self, msg):
         self.system_status.systemSignal.data = int(msg.data)
 
@@ -95,6 +105,15 @@ class ROSHandler():
                     return
                 else: 
                     self.vehicle_state.heading.data = parsed[2]
+            elif len(parsed) == 1:
+                self.vehicle_state.heading.data = parsed[0]
+    
+    def sim_nmea_sentence_cb(self, msg):
+        parsed = sim_nmea_parser(msg.sentence) 
+        if parsed != None:
+            if len(parsed) == 2:
+                self.vehicle_state.position.x = parsed[0]
+                self.vehicle_state.position.y = parsed[1]
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]
 

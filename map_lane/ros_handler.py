@@ -31,7 +31,8 @@ class ROSHandler():
         self.mlmap_viz_pub = rospy.Publisher('/mlmap', MarkerArray, queue_size=1)
         self.path_viz_pub = rospy.Publisher('/planning/local_path', Marker, queue_size=1)
         self.kappa_viz_pub = rospy.Publisher('/planning/kappa_viz', Marker, queue_size=1)
-        
+        self.lane_data_pub = rospy.Publisher('/LaneData', LaneData, queue_size=1)
+
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
@@ -75,3 +76,22 @@ class ROSHandler():
         self.lmap_viz_pub.publish(lmap_viz)
         #self.mlmap_viz_pub.publish(mlmap_viz)
     
+    def publish_lane_data(self, curr_lane_num):
+        laneLet = LaneLet()
+        laneLet.currentLane = curr_lane_num
+
+        laneData = LaneData()
+        laneData.currentLane = laneLet
+        # if laneLet.currentLane != 0:
+            # print(laneLet.currentLane)
+        self.lane_data_pub.publish(laneData)
+    
+    '''
+    def publish_lane_data(self, curr_lane_num):
+        laneData = LaneData()
+        laneLet = LaneLet()
+        laneLet.id.data = lane_data['id'] 
+        laneLet.laneNumber.data = lane_data[2]
+        laneData.currentLane = laneLet
+        self.lane_data_pub.publish(laneData)
+    '''

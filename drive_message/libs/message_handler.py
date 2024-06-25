@@ -122,4 +122,17 @@ def convert_local_to_enu(ego_pose, ego_heading, obj_pose):
         
         return x,y
 
-    
+#TODO # lap_number
+def check_lap_count(cnt, local_pos, reference_point, radius, lap_flag):
+    if local_pos is None:
+        return cnt, lap_flag
+    distance = math.sqrt((local_pos[0] - reference_point[0])**2 + (local_pos[1] - reference_point[1])**2)
+    if distance < radius and lap_flag:
+        print(distance, radius)
+        cnt += 1
+        print(f"Lap count: {cnt}")
+        lap_flag = False
+    elif distance > radius:
+        lap_flag = True
+    return cnt, lap_flag
+

@@ -33,7 +33,7 @@ class MyApp(QMainWindow, form_class):
         self.sig_in = False
         self.mode_strings = ['Autonomous Driving OFF','Auotnomous Driving ON', 'EPS Only Mode', 'ACC Only Mode']
         self.signal_strings = ['Off', 'Left Change', 'Right Change', 'Hazard', 'Straight']
-
+        
     def set_widgets(self):
         self.rviz_widget = RvizWidget(self)
         self.speedometer_widget = SpeedometerWidget(self)
@@ -66,13 +66,16 @@ class MyApp(QMainWindow, form_class):
         self.brake_widget.set_target(self.RH.target_value['brake'])
         self.gear_widget.set_gear(self.RH.ego_value['gear'])
 
-        self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'])
+        self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'],
+                                 self.RH.lane_number, self.RH.system_status['lap_count'])
 
         self.can_table_update(self.RH.can_inform)
         
-    def system_label_update(self, mode, signal):
+    def system_label_update(self, mode, signal, lane_number, lap_count):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
         self.systemLabel2.setText(self.signal_strings[int(signal)])
+        self.laneNumberLabel.setText(f"Lane: {lane_number}")
+        self.lapCountLabel.setText(f"Lap: {lap_count}")
     
     def can_table_update(self, can_inform):
         self.canTable.setItem(0, 1, QTableWidgetItem(can_inform['eps_status']))

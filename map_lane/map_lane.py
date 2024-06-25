@@ -5,6 +5,8 @@ from ros_handler import ROSHandler
 
 from local_path_test import LocalPathTest
 from hd_map.map import MAP
+from get_lane_number import GetLaneNumber
+
 def signal_handler(sig, frame):
     sys.exit(0)
 
@@ -24,6 +26,7 @@ class MapLane():
         if self.RH.map_name != None:
             self.map = MAP(self.RH.map_name)
             self.lpt = LocalPathTest(self.RH, self.map)
+            self.gln = GetLaneNumber(self.RH, self.map)
 
     def execute(self):
         while self.map == None:
@@ -44,6 +47,14 @@ class MapLane():
                 # if not work, 
                 # local_velocity = self.max_vel / 3.6
                 self.RH.publish(local_path, local_kappa, local_velocity)
+            # lane_number
+            lane_data = self.gln.execute(self.RH.local_pos)
+            if lane_data == None:
+                curr_lane_num = None
+            else:
+                curr_lane_num = lane_data
+            self.RH.publish_lane_data(curr_lane_num)
+            # print(curr_lane_num)
             rate.sleep()
                 
 
