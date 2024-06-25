@@ -48,7 +48,7 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        #rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb) # simulator
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
@@ -82,19 +82,28 @@ class ROSHandler():
         self.system_status.systemSignal.data = int(msg.user_signal.data)
 
     def nmea_sentence_cb(self, msg):
-        if self.prev_lla is None:
-            parsed = nmea_parser(0, 0, msg.sentence)  # need to ask
-        else:
-            parsed = nmea_parser(self.prev_lla[0], self.prev_lla[1], msg.sentence)
+        self.vehicle_state.header = msg.header
+        # if self.prev_lla is None:
+        #     parsed = nmea_parser(0, 0, msg.sentence)  # need to ask
+        # else:
+        #     parsed = nmea_parser(self.prev_lla[0], self.prev_lla[1], msg.sentence)
+        # if parsed != None:
+        #     if len(parsed) == 3:
+        #         self.vehicle_state.position.x = parsed[0]
+        #         self.vehicle_state.position.y = parsed[1]
+        #         if self.prev_lla is None:
+        #             self.prev_lla = (parsed[0], parsed[1])
+        #             return
+        #         else: 
+        #             self.vehicle_state.heading.data = parsed[2]
+        #     elif len(parsed) == 1:
+        #         self.vehicle_state.heading.data = parsed[0]
+
+        parsed = sim_nmea_parser(msg.sentence)
         if parsed != None:
-            if len(parsed) == 3:
+            if len(parsed) == 2:
                 self.vehicle_state.position.x = parsed[0]
                 self.vehicle_state.position.y = parsed[1]
-                if self.prev_lla is None:
-                    self.prev_lla = (parsed[0], parsed[1])
-                    return
-                else: 
-                    self.vehicle_state.heading.data = parsed[2]
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]
 
@@ -108,7 +117,7 @@ class ROSHandler():
     def heading_cb(self, msg):
         yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
         # if not check_error(self.vehicle_state.heading.data, yaw, 90):
-        self.vehicle_state.heading.data = yaw    
+        self.vehicle_state.heading.data = yaw  
 
     def target_actuator_cb(self, msg):
         steer = np.clip(msg.steer.data*12.9, -500, 500)
@@ -142,10 +151,11 @@ class ROSHandler():
             object_info.heading.data = self.vehicle_state.heading.data
             self.detection_data.objects.append(object_info)
             
-
     def lidar_track_box_cb(self, msg):
         self.detection_data = DetectionData()
         for obj in msg.boxes:
+            if abs(obj.pose.position.y) > 8:
+                continue
             object_info = ObjectInfo()
             object_info.type.data = 0
             conv = convert_local_to_enu(self.ego_local_pose, self.vehicle_state.heading.data, (obj.pose.position.x, obj.pose.position.y))
@@ -158,12 +168,10 @@ class ROSHandler():
                 cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
                 z_angle_rad = np.arctan2(siny_cosp, cosy_cosp)
                 z_angle_deg = np.degrees(z_angle_rad)
-                
             object_info.position.x = x
             object_info.position.y = y
             object_info.velocity.data = obj.value
-            object_info.heading.data = z_angle_deg
-
+            object_info.heading.data = self.vehicle_state.heading.data - z_angle_deg
             self.detection_data.objects.append(object_info)
             
     def system_to_can(self, mode):
