@@ -74,7 +74,7 @@ class ROSHandler():
 
     def publish_map_viz(self, lmap_viz, mlmap_viz):
         self.lmap_viz_pub.publish(lmap_viz)
-        #self.mlmap_viz_pub.publish(mlmap_viz)
+        self.mlmap_viz_pub.publish(mlmap_viz)
     
     def publish_lane_data(self, curr_lane_num):
         laneLet = LaneLet()

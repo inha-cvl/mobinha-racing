@@ -24,17 +24,17 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    name = 'Solbat2'
+    name = 'KIAPI_Racing'
 
     parser.add_argument('--ngii_path', type=str, default='./%s'%(name))
     parser.add_argument('--precision', type=float, default=1)
-    parser.add_argument('--base_lla', type=tuple, default=( 37.370892294,126.632218057,7),help='(lat, lon, alt)')
+    parser.add_argument('--base_lla', type=tuple, default=(35.64750540757964,128.40264207604886,7),help='(lat, lon, alt)')
     
         #35.64750540757964,128.40264207604886,7),help='(lat, lon, alt)')
        # 37.39991792889962, 127.11264200835348, 7), 
     #37.42390324724057, 126.60753475932731 : HARBOR
 
-    parser.add_argument('--is_utm', type=bool, default=False)
+    parser.add_argument('--is_utm', type=bool, default=True)
     args = parser.parse_args()
 
     main(args)
