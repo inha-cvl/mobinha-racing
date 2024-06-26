@@ -57,7 +57,7 @@ class ROSHandler():
     def detection_data_cb(self, msg):
         object_list = []
         for i, object in enumerate(msg.objects):
-            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 2.0, 'v': object.velocity.data})
+            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 3.0, 'v': object.velocity.data})
         self.object_list = object_list
 
     def publish(self, local_action_set, road_max_vel):
@@ -65,7 +65,7 @@ class ROSHandler():
             self.navigation_data = NavigationData()
             self.navigation_data.currentLocation.x = self.local_pos[0]
             self.navigation_data.currentLocation.y = self.local_pos[1]
-            self.navigation_data.plannedVelocity.data = min(local_action_set[1][5], road_max_vel)
+            self.navigation_data.plannedVelocity.data = road_max_vel#min(local_action_set[1][5], road_max_vel)
             for set in local_action_set:
                 point = Point()
                 point.x = set[1]

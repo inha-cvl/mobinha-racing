@@ -319,7 +319,6 @@ class Graph_LTPL(object):
 
         # update internal object handles
         self.__obj_veh = self.__obj_list_handler.process_object_list(object_list=object_list)
-
         # update zones
         if blocked_zones is not None:
             for blocked_zone_id in blocked_zones.keys():
@@ -343,7 +342,7 @@ class Graph_LTPL(object):
     def calc_vel_profile(self,
                          pos_est: np.ndarray,
                          vel_est: float,
-                         vel_max: float = 100.0,
+                         vel_max: float = 110.0,
                          gg_scale: np.ndarray = 1.0,
                          local_gg: dict = (5.0, 5.0),
                          ax_max_machines: np.ndarray = np.atleast_2d([100.0, 5.0]),

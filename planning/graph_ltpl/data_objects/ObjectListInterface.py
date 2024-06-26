@@ -119,7 +119,7 @@ class ObjectListInterface(object):
                             else:
                                 # if no prediction provided, (at least) calculate (simple) prediction for delay comp.
 
-                                dt = 0.2  # 200ms prediction horizon
+                                dt = 0.1  # 200ms prediction horizon
                                 pred = np.zeros((1, 2))
                                 pred[0, 0] = object_el['X'] - np.sin(object_el['theta']) * object_el['v'] * dt
                                 pred[0, 1] = object_el['Y'] + np.cos(object_el['theta']) * object_el['v'] * dt

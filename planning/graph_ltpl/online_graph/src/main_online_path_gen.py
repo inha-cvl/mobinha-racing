@@ -77,6 +77,8 @@ def main_online_path_gen(graph_base: graph_ltpl.data_objects.GraphBase.GraphBase
                                 obj_zone=obj_zone,
                                 last_solution_nodes=last_solution_nodes,
                                 w_last_edges=w_last_edges)
+    
+    print(closest_obj_index, closest_obj_node)
 
     # check for objects in constant path segment (if provided)
     obj_in_const_path = False

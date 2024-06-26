@@ -29,7 +29,7 @@ class ObjectSimulator:
     def goal_cb(self, msg):
        quaternion = (msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
        _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
-       self.object = Vehicle(msg.pose.position.x, msg.pose.position.y, yaw, 20, 2.97)
+       self.object = Vehicle(msg.pose.position.x, msg.pose.position.y, yaw, 0, 2.97)
        self.object_ready = True
        
     def target_actuator_cb(self, msg):
