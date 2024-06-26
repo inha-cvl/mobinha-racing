@@ -185,7 +185,7 @@ class ROSHandler():
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.objects_cb)
 
-        # rospy.Subscriber('/vehicleState', VehicleState, self.vehicle_state_callback) # VehicleState 설정 전
+        #rospy.Subscriber('/vehicleState', VehicleState, self.vehicle_state_callback) # VehicleState 설정 전
         rospy.Subscriber('/navigationData', NavigationData, self.navigation_data_callback)
         rospy.Subscriber('/detectionData', DetectionData, self.detection_data_callback)
 
@@ -221,6 +221,7 @@ class ROSHandler():
                 self.vehicle_state.heading.data = parsed[0]
 
     def nav_sat_fix_cb(self, msg):
+        self.vehicle_state.header = msg.header
         if not self.check_error(self.vehicle_state.position.x, msg.latitude,30):
             self.vehicle_state.position.x = msg.latitude
         if not self.check_error(self.vehicle_state.position.y, msg.longitude,30):
