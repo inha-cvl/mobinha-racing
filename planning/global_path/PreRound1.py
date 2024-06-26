@@ -26,7 +26,7 @@ max_vel = 80 / 3.6
 sec_to_reach = 7
 dist_to_reach_max_vel = int((0.5*(max_vel/sec_to_reach)*(sec_to_reach**2)))
 
-lmap = LaneletMap('/home/kana/catkin_ws/src/mobinha-racing/map_lane/hd_map/KIAPI_Racing.json')
+lmap = LaneletMap('/home/kana/catkin_ws/src/mobinha-racing/map_lane/hd_map/maps/KIAPI_Racing.json')
 tmap = TileMap(lmap.lanelets, tile_size)
 mlg = MicroLaneletGraph(lmap, cut_dist)
 graph = mlg.graph
@@ -42,8 +42,8 @@ final_vs = []
 
 for i in range(1,6):
     start_ll = gput.lanelet_matching(start_pose)
-    r1, idnidx1, ids1, vs1 = gput.get_straight_path(start_ll, 400, '64', 'Right')
-    r2, idnidx2, ids2, vs2 = gput.get_straight_path(idnidx1, 7000, '21', 'Right') 
+    r1, idnidx1, ids1, vs1 = gput.get_straight_path(start_ll, 900, '76', 'Right')
+    r2, idnidx2, ids2, vs2 = gput.get_straight_path(idnidx1, 7000, '20', 'Right') 
     
     #'Right' means choose 104 node before joker lap (select left link)
     lap_path = r1+r2
@@ -52,7 +52,7 @@ for i in range(1,6):
     start_pose = r2[-1] 
     if i == 5:
         idnidx3 = gput.get_merged_point(idnidx2, diag_len, 2)
-        r3, _, ids3,vs3 = gput.get_straight_path(idnidx3, 20, '27')
+        r3, _, ids3,vs3 = gput.get_straight_path(idnidx3, 20, '26')
         lap_path = lap_path+r3
         lap_ids = lap_ids+ids3
         lap_vs = lap_vs+vs3
@@ -85,11 +85,11 @@ save_.to_csv('./paths/PreRound1.csv', final_tr)
 save_.to_txt('./ids/PreRound1_id.txt', final_ids)
 
 print("saved")
-# pr1_path_viz = gput.PreRound1Viz(final_path)
-# vel_prof_viz = gput.VelProfileViz(final_path, vel_p)
+pr1_path_viz = gput.PreRound1Viz(final_path)
+vel_prof_viz = gput.VelProfileViz(final_path, vel_p)
 
-# rate = rospy.Rate(0.5)
-# while not rospy.is_shutdown():
-#     pub_pr1_path.publish(pr1_path_viz)
-#     pub_pr1_vel_prof.publish(vel_prof_viz)
-#     rate.sleep()
+rate = rospy.Rate(0.5)
+while not rospy.is_shutdown():
+    pub_pr1_path.publish(pr1_path_viz)
+    pub_pr1_vel_prof.publish(vel_prof_viz)
+    rate.sleep()
