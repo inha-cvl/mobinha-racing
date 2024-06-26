@@ -40,8 +40,6 @@ class MyApp(QMainWindow, form_class):
         self.speed_graph = SpeedSubscriberWidget("speed", self)
         self.steer_graph = SpeedSubscriberWidget("steer", self)
         self.wheel_widget = WheelWidget(self)
-        self.accel_widget = GaugeWidget("Accel",self)
-        self.brake_widget = GaugeWidget("Brake",self)
         self.gear_widget = GearWidget(self)
         self.initUI()
     
@@ -60,10 +58,6 @@ class MyApp(QMainWindow, form_class):
         self.speed_graph.set_speed(self.RH.ego_value['velocity'], self.RH.target_value['velocity'])
         self.steer_graph.set_speed(self.RH.ego_value['steer'], self.RH.target_value['steer'])
         self.wheel_widget.set_yaw(self.RH.ego_value['steer'], self.RH.target_value['steer'])
-        self.accel_widget.set_value(self.RH.ego_value['accel'])
-        self.brake_widget.set_value(self.RH.ego_value['brake'])
-        self.accel_widget.set_target(self.RH.target_value['accel'])
-        self.brake_widget.set_target(self.RH.target_value['brake'])
         self.gear_widget.set_gear(self.RH.ego_value['gear'])
 
         self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'],
@@ -110,8 +104,6 @@ class MyApp(QMainWindow, form_class):
         self.clusterSpeedLayout.addWidget(self.speedometer_widget)
         self.clusterSteerLayout.addWidget(self.wheel_widget)
         self.clusterLeftDownLayout.addWidget(self.gear_widget)
-        self.clusterRightLayout.addWidget(self.accel_widget)
-        self.clusterRightLayout.addWidget(self.brake_widget)
 
         self.speedLayout.addWidget(self.speed_graph)
         self.steerLayout.addWidget(self.steer_graph)

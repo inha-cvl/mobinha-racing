@@ -26,7 +26,7 @@ class SpeedometerWidget(QWidget):
         super().__init__(parent)
         self.speed = 0.0
         self.target_speed = 0.0
-        self.setFixedWidth(200)
+        self.setFixedWidth(150)
         self.setContentsMargins(0, 0, 0, 0)
 
     def set_speed(self, e,t):
@@ -108,7 +108,7 @@ class WheelWidget(QWidget):
         super().__init__(parent)
         self.yaw = 0.0
         self.target_yaw = 0.0
-        self.setFixedWidth(200)
+        self.setFixedWidth(150)
         self.setContentsMargins(0, 0, 0, 0)
 
     def set_yaw(self, e,t):
@@ -170,7 +170,7 @@ class GaugeWidget(QWidget):
         self.setLayout(layout)
     
     def update_gauge(self):
-        gradient = QLinearGradient(0, 0, 0, 200)
+        gradient = QLinearGradient(0, 0, 0, 50)
         gradient.setColorAt(0, QColor(255, 0, 0, max(30, int(255 * (self.value / 100)))))  # 빨간색 (시작)
         gradient.setColorAt(1, QColor(255, 255, 0, int(255 * (self.value / 100))))  # 노란색 (끝)
         brush = QBrush(gradient)
@@ -178,7 +178,7 @@ class GaugeWidget(QWidget):
         self.gauge_label.setPixmap(pixmap)
 
     def draw_gauge(self, brush):
-        pixmap = self.create_gauge_pixmap(100, 200, brush)
+        pixmap = self.create_gauge_pixmap(100, 50, brush)
         return pixmap
 
     def create_gauge_pixmap(self, width, height, brush):
@@ -209,7 +209,6 @@ class GaugeWidget(QWidget):
         painter.setFont(QFont('Arial', 10))
         painter.drawText(QPointF(75, pos-3), f"{self.v:.2f}")
         painter.drawText(QPointF(15, target_pos-3), f"{self.t:.2f}")
-
 
         painter.end()
 
