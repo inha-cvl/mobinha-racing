@@ -61,7 +61,6 @@ class ROSHandler():
     # lane_number
     def lane_data_cb(self, msg):
         if msg.currentLane.currentLane != 0:
-            rospy.loginfo(f"Received LaneData: {msg.currentLane.currentLane}")
             self.lane_number = msg.currentLane.currentLane
     
     def publish(self):

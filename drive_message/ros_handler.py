@@ -109,7 +109,8 @@ class ROSHandler():
                 self.vehicle_state.heading.data = parsed[0]        
     
     def sim_nmea_sentence_cb(self, msg):
-        parsed = sim_nmea_parser(msg.sentence) 
+        self.vehicle_state.header = msg.header
+        parsed = sim_nmea_parser(msg.sentence)
         if parsed != None:
             if len(parsed) == 2:
                 self.vehicle_state.position.x = parsed[0]
