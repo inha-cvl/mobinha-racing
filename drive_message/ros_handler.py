@@ -93,7 +93,7 @@ class ROSHandler():
     def nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
         if self.prev_lla is None:
-            parsed = nmea_parser(0, 0, msg.sentence)  # need to ask
+            parsed = nmea_parser(0, 0, msg.sentence) 
         else:
             parsed = nmea_parser(self.prev_lla[0], self.prev_lla[1], msg.sentence)
         if parsed != None:
