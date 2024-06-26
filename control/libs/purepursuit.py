@@ -48,9 +48,9 @@ class PurePursuit(object):
                     self.RH.publish_lh(path_point)
                     break
         
-        steering_angle_deg = math.degrees(steering_angle)
-        if  self.RH.current_velocity * MPS_TO_KPH > 30:
-            steering_angle = steering_angle_deg * 1.3
+        steering_angle = math.degrees(steering_angle)
+        if self.RH.current_velocity * MPS_TO_KPH > 30:
+            steering_angle = steering_angle * 1.3
 
         return steering_angle
 
