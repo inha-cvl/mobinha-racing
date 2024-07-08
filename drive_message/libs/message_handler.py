@@ -122,6 +122,9 @@ def convert_local_to_enu(ego_pose, ego_heading, obj_pose):
         
         return x,y
 
+def distance(point1, point2):
+    return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
 #TODO # lap_number
 def check_lap_count(cnt, local_pos, reference_point, radius, lap_flag):
     if local_pos is None:

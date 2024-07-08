@@ -21,10 +21,10 @@ class Visualizer:
             ((1.3025, 0.0, 0.0), (0, 0, 0, 1), 'ego_car', 'gps'),   # center
             ((1.1, 0.0, 1.5), (0, 0, 0, 1), 'os_sensor', 'gps'),    # lidar
             ((1.8, 0.0, 1.0), (0, 0, 0, 1), 'front', 'gps'),        # front camera
-            ((1.7, 0.7, 1.0), (0, 0, 0, 1), 'left_front', 'gps'),   # left 
-            ((1.4, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'gps'),    # left
-            ((1.7, -0.7, 1.0), (0, 0, 0, 1), 'right_front', 'gps'), # right
-            ((1.4, -0.7, 1.0), (0, 0, 0, 1), 'right_rear', 'gps')   # right
+            #((1.7, 0.7, 1.0), (0, 0, 0, 1), 'left_front', 'gps'),   # left 
+            #((1.4, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'gps'),    # left
+            #((1.7, -0.7, 1.0), (0, 0, 0, 1), 'right_front', 'gps'), # right
+            #((1.4, -0.7, 1.0), (0, 0, 0, 1), 'right_rear', 'gps')   # right
         ]
         self.publish_static_tfs(static_transforms)
 
