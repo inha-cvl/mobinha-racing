@@ -140,6 +140,20 @@ def get_possible_successor(node, prior='Left'):
 
     return successor
 
+# hees solchan global path
+def get_pocket_successor(node, prior='Left'):
+    successor = get_possible_successor(node, prior)
+    successor_idx = None
+
+    if successor is not None:
+        current_waypoints = lanelets[node]['waypoints']
+        target_point = current_waypoints[-1] if current_waypoints else (0, 0)
+        
+        successor_waypoints = lanelets[successor]['waypoints']
+        successor_idx = find_nearest_idx(successor_waypoints, target_point)
+
+    return [successor, successor_idx]
+
 def get_whole_neighbor(node):
     num = 1
     find_node = node
