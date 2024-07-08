@@ -128,9 +128,7 @@ def check_lap_count(cnt, local_pos, reference_point, radius, lap_flag):
         return cnt, lap_flag
     distance = math.sqrt((local_pos[0] - reference_point[0])**2 + (local_pos[1] - reference_point[1])**2)
     if distance < radius and lap_flag:
-        print(distance, radius)
         cnt += 1
-        print(f"Lap count: {cnt}")
         lap_flag = False
     elif distance > radius:
         lap_flag = True

@@ -27,8 +27,8 @@ class ROSHandler():
 
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
-        self.lmap_viz_pub = rospy.Publisher('/lmap', MarkerArray, queue_size=1)
-        self.mlmap_viz_pub = rospy.Publisher('/mlmap', MarkerArray, queue_size=1)
+        self.lmap_viz_pub = rospy.Publisher('/lmap', MarkerArray, queue_size=10, latch=True)
+        self.mlmap_viz_pub = rospy.Publisher('/mlmap', MarkerArray, queue_size=10, latch=True)
         self.path_viz_pub = rospy.Publisher('/planning/local_path', Marker, queue_size=1)
         self.kappa_viz_pub = rospy.Publisher('/planning/kappa_viz', Marker, queue_size=1)
         self.lane_data_pub = rospy.Publisher('/LaneData', LaneData, queue_size=1)
@@ -82,16 +82,5 @@ class ROSHandler():
 
         laneData = LaneData()
         laneData.currentLane = laneLet
-        # if laneLet.currentLane != 0:
-            # print(laneLet.currentLane)
+
         self.lane_data_pub.publish(laneData)
-    
-    '''
-    def publish_lane_data(self, curr_lane_num):
-        laneData = LaneData()
-        laneLet = LaneLet()
-        laneLet.id.data = lane_data['id'] 
-        laneLet.laneNumber.data = lane_data[2]
-        laneData.currentLane = laneLet
-        self.lane_data_pub.publish(laneData)
-    '''

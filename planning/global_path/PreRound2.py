@@ -21,7 +21,7 @@ max_vel = 80 / 3.6
 sec_to_reach = 7
 dist_to_reach_max_vel = int((0.5*(max_vel/sec_to_reach)*(sec_to_reach**2)))
 
-lmap = LaneletMap('/home/kana/catkin_ws/src/mobinha-racing/map_lane/hd_map/KIAPI_Racing.json')
+lmap = LaneletMap('/home/kana/catkin_ws/src/mobinha-racing/map_lane/hd_map/maps/KIAPI_Racing.json')
 tmap = TileMap(lmap.lanelets, tile_size)
 mlg = MicroLaneletGraph(lmap, cut_dist)
 graph = mlg.graph

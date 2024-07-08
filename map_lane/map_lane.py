@@ -19,8 +19,7 @@ class MapLane():
         self.max_vel = 50
 
     def map_publish(self):
-        lmap_viz, mlmap_viz = self.map.get_vizs()
-        self.RH.publish_map_viz(lmap_viz, mlmap_viz)
+        self.RH.publish_map_viz(self.map.lmap_viz, self.map.mlmap_viz)
     
     def map_initialize(self):
         if self.RH.map_name != None:
@@ -35,7 +34,6 @@ class MapLane():
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             if self.lpt is None:
-                print("pass")
                 pass
             if self.lpt_use:
                 lp_result = self.lpt.execute(self.RH.local_pos)
@@ -54,7 +52,6 @@ class MapLane():
             else:
                 curr_lane_num = lane_data
             self.RH.publish_lane_data(curr_lane_num)
-            # print(curr_lane_num)
             rate.sleep()
                 
 
