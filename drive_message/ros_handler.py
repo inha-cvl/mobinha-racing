@@ -41,6 +41,11 @@ class ROSHandler():
         self.radius = 20
         self.lap_flag = False
 
+        #TODO # object crop
+        self.planned_route = []
+        self.route_length = 100
+        self.offset = 1.5
+
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
         self.system_status_pub = rospy.Publisher('/SystemStatus', SystemStatus, queue_size=1)
@@ -53,7 +58,7 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        #rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.sim_nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
@@ -77,7 +82,10 @@ class ROSHandler():
     
     def navigation_data_cb(self, msg):
         self.ego_local_pose = (msg.currentLocation.x, msg.currentLocation.y, msg.currentLocation.z)
-
+        for point in msg.plannedRoute:
+            self.planned_route.append(point)
+            if len(self.planned_route) > self.route_length:
+                self.planned_route.pop(0)
         self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.ego_local_pose, self.start_point, self.radius, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
         
@@ -161,12 +169,12 @@ class ROSHandler():
             object_info.velocity.data = self.vehicle_state.velocity.data
             object_info.heading.data = self.vehicle_state.heading.data
             self.detection_data.objects.append(object_info)
-            
+    
     def lidar_track_box_cb(self, msg):
         self.detection_data = DetectionData()
         for obj in msg.boxes:
-            if abs(obj.pose.position.y) > 8:
-                continue
+            # if abs(obj.pose.position.y) > 8:
+            #     continue
             object_info = ObjectInfo()
             object_info.type.data = 0
             conv = convert_local_to_enu(self.ego_local_pose, self.vehicle_state.heading.data, (obj.pose.position.x, obj.pose.position.y))
@@ -174,16 +182,21 @@ class ROSHandler():
                 return
             else:
                 x,y = conv
-                q = obj.pose.orientation
-                siny_cosp = 2 * (q.w * q.z + q.x * q.y)
-                cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
-                z_angle_rad = np.arctan2(siny_cosp, cosy_cosp)
-                z_angle_deg = np.degrees(z_angle_rad)
-            object_info.position.x = x
-            object_info.position.y = y
-            object_info.velocity.data = obj.value
-            object_info.heading.data = self.vehicle_state.heading.data - z_angle_deg
-            self.detection_data.objects.append(object_info)
+                # crop
+                for route_point in self.planned_route:
+                    distance_to_route = distance((x, y), (route_point.x, route_point.y))
+                    if distance_to_route <= self.offset:
+                        q = obj.pose.orientation
+                        siny_cosp = 2 * (q.w * q.z + q.x * q.y)
+                        cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
+                        z_angle_rad = np.arctan2(siny_cosp, cosy_cosp)
+                        z_angle_deg = np.degrees(z_angle_rad)
+                        object_info.position.x = x
+                        object_info.position.y = y
+                        object_info.velocity.data = obj.value
+                        object_info.heading.data = self.vehicle_state.heading.data - z_angle_deg
+                        self.detection_data.objects.append(object_info)
+                        break
             
     def system_to_can(self, mode):
         #TODO: gear value checking
