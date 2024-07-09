@@ -5,8 +5,7 @@ import pymap3d
 import sys
 import signal
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped
-from nmea_msgs.msg import Sentence
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose2D
 from libs.vehicle import Vehicle
 
 from drive_msgs.msg import *
@@ -24,7 +23,7 @@ class CarSimulator:
         self._accel = 0
         self._brake = 0
 
-        self.pub_nmea_sentence = rospy.Publisher('/simulator/nmea_sentence', Sentence, queue_size=1)
+        self.pub_simulator_pose = rospy.Publisher('/simulator/pose', Pose2D, queue_size=1)
         self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
 
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
@@ -82,15 +81,11 @@ class CarSimulator:
                 x, y, yaw, v = self.ego.x, self.ego.y, self.ego.yaw, self.ego.v
             self.yaw = math.degrees(yaw)
             lat, lon, alt = pymap3d.enu2geodetic(x, y, 0, self.base_lla[0], self.base_lla[1], self.base_lla[2])
-            nmea_sentence = Sentence()
-            if cnt % 2 == 0:
-                sentence = f"$GPGGA,123519,{lat*100},N,{lon*100},E,1,08,0.9,545.4,M,46.9,M,,*47"
-            else:
-                sentence = f"$GPHDT,{self.yaw},T*hh"
-            nmea_sentence.header.stamp = rospy.Time.now()
-            nmea_sentence.header.frame_id = "gps"
-            nmea_sentence.sentence = sentence
-            self.pub_nmea_sentence.publish(nmea_sentence)
+            pose2d = Pose2D()
+            pose2d.x = lat
+            pose2d.y = lon
+            pose2d.theta = self.yaw
+            self.pub_simulator_pose.publish(pose2d)
 
             can_output = CANOutput()
             mode_to_signal = {
