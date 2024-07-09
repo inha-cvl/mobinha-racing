@@ -2,8 +2,9 @@ import rospy
 import numpy as np
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import QuaternionStamped, PoseArray
+from geometry_msgs.msg import QuaternionStamped, PoseArray, Pose2D
 from nmea_msgs.msg import Sentence
+from std_msgs.msg import Header
 from sensor_msgs.msg import NavSatFix
 from jsk_recognition_msgs.msg import BoundingBoxArray
 from visualization_msgs.msg import MarkerArray
@@ -53,18 +54,21 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
-        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.sim_nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
+
+        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
-        rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
 
         if not USE_LIDAR:
             rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
         else:
             rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        
+        # Simulator
+        rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
+        rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -108,15 +112,12 @@ class ROSHandler():
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]        
     
-    def sim_nmea_sentence_cb(self, msg):
-        self.vehicle_state.header = msg.header
-        parsed = sim_nmea_parser(msg.sentence)
-        if parsed != None:
-            if len(parsed) == 2:
-                self.vehicle_state.position.x = parsed[0]
-                self.vehicle_state.position.y = parsed[1]
-            elif len(parsed) == 1:
-                self.vehicle_state.heading.data = parsed[0]
+    def sim_pose_cb(self, msg):
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
+        self.vehicle_state.position.x = msg.x
+        self.vehicle_state.position.y = msg.y
+        self.vehicle_state.heading.data = msg.theta
 
     def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
         self.vehicle_state.header = msg.header
