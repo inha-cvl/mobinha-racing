@@ -10,6 +10,7 @@ from jsk_recognition_msgs.msg import BoundingBoxArray
 from visualization_msgs.msg import MarkerArray
 
 from libs.message_handler import *
+from libs.obstalce_handler import ObstacleHandler
 
 USE_LIDAR = True
 
@@ -17,13 +18,13 @@ class ROSHandler():
     def __init__(self, map, base_lla):
         rospy.init_node('drive_message', anonymous=False)
         self.set_messages(map, base_lla)
+        self.set_values()
         self.set_publisher_protocol()
         self.set_subscriber_protocol()
 
     def set_messages(self, map, base_lla):
         self.can_input = CANInput()
         self.can_input.EPS_Speed.data = 50 # 80 : 15
-        self.ego_local_pose = []
         self.sensor_data = SensorData()
         self.system_status = SystemStatus()
         self.system_status.mapName.data = map
@@ -33,16 +34,13 @@ class ROSHandler():
         self.detection_data = DetectionData()
         self.ego_actuator = Actuator()
 
-        #TODO: nmea test
+    def set_values(self):
+        self.oh = ObstacleHandler()
+        self.ego_local_pose = []
         self.prev_lla = None
-        
-        #TODO # lap_number
         self.lap_cnt = 0
         self.start_point = (0, 0, 0)
-        self.radius = 20
-        self.lap_flag = False
-
-        #TODO # object crop
+        self.lane_number = 0
         self.planned_route = []
         self.route_length = 100
         self.offset = 1.5
@@ -51,7 +49,6 @@ class ROSHandler():
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
         self.system_status_pub = rospy.Publisher('/SystemStatus', SystemStatus, queue_size=1)
         self.vehicle_state_pub = rospy.Publisher('/VehicleState', VehicleState, queue_size=1)
-        self.lane_data_pub = rospy.Publisher('/LaneData', LaneData, queue_size=1)
         self.detection_data_pub = rospy.Publisher('/DetectionData', DetectionData, queue_size=1)
         self.can_input_pub = rospy.Publisher('/CANInput', CANInput, queue_size=1)
         self.ego_actuator_pub = rospy.Publisher('/EgoActuator', Actuator, queue_size=1)
@@ -61,7 +58,7 @@ class ROSHandler():
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
-
+        rospy.Subscriber('LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
@@ -90,8 +87,12 @@ class ROSHandler():
             self.planned_route.append(point)
             if len(self.planned_route) > self.route_length:
                 self.planned_route.pop(0)
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.ego_local_pose, self.start_point, self.radius, self.lap_flag)
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.ego_local_pose, self.start_point, radius=20, lap_flag=False)
         self.system_status.lapCount.data = self.lap_cnt
+
+    def lane_data_cb(self, msg:LaneData):
+        if msg.currentLane.currentLane != 0:
+            self.lane_number = msg.currentLane.currentLane
         
     def signal_cb(self, msg):
         self.system_status.systemSignal.data = int(msg.data)
@@ -160,47 +161,37 @@ class ROSHandler():
         for obj in msg.markers:
             object_info = ObjectInfo()
             object_info.type.data = 0
-            conv = convert_local_to_enu(self.ego_local_pose, self.vehicle_state.heading.data, (obj.pose.position.x, obj.pose.position.y))
+            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
             if conv is None:
                 return
             else:
-                x,y = conv
-            object_info.position.x = x
-            object_info.position.y = y
-            object_info.velocity.data = self.vehicle_state.velocity.data
-            object_info.heading.data = self.vehicle_state.heading.data
-            self.detection_data.objects.append(object_info)
-    
+                nx,ny = conv
+                object_info.position.x = nx
+                object_info.position.y = ny
+                object_info.velocity.data = self.vehicle_state.velocity.data
+                object_info.heading.data = self.vehicle_state.heading.data
+                self.detection_data.objects.append(object_info)
+        
     def lidar_track_box_cb(self, msg):
         self.detection_data = DetectionData()
         for obj in msg.boxes:
-            # if abs(obj.pose.position.y) > 8:
-            #     continue
             object_info = ObjectInfo()
             object_info.type.data = 0
-            conv = convert_local_to_enu(self.ego_local_pose, self.vehicle_state.heading.data, (obj.pose.position.x, obj.pose.position.y))
+            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
             if conv is None:
                 return
             else:
-                x,y = conv
-                # crop
-                for route_point in self.planned_route:
-                    distance_to_route = distance((x, y), (route_point.x, route_point.y))
-                    if distance_to_route <= self.offset:
-                        q = obj.pose.orientation
-                        siny_cosp = 2 * (q.w * q.z + q.x * q.y)
-                        cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
-                        z_angle_rad = np.arctan2(siny_cosp, cosy_cosp)
-                        z_angle_deg = np.degrees(z_angle_rad)
-                        object_info.position.x = x
-                        object_info.position.y = y
-                        object_info.velocity.data = obj.value
-                        object_info.heading.data = self.vehicle_state.heading.data - z_angle_deg
-                        self.detection_data.objects.append(object_info)
-                        break
+                nx,ny = conv
+                fred_d = self.oh.object2frenet([nx, ny])
+                if not self.oh.filtering_by_lane_num(self.lane_number, fred_d):
+                    continue                    
+                object_info.position.x = nx
+                object_info.position.y = ny
+                object_info.velocity.data = obj.value
+                object_info.heading.data = get_absolute_heading(self.vehicle_state.heading.data, obj.pose.orientation)
+                self.detection_data.objects.append(object_info)
             
     def system_to_can(self, mode):
-        #TODO: gear value checking
         if self.vehicle_state.mode.data == 0:
             self.can_input.EPS_En.data = 1 if mode in (1, 2) else 0
             self.can_input.ACC_En.data = 1 if mode in (1, 3) else 0
@@ -214,6 +205,6 @@ class ROSHandler():
         self.sensor_data_pub.publish(self.sensor_data)
         self.system_status_pub.publish(self.system_status)
         self.vehicle_state_pub.publish(self.vehicle_state)
-        self.lane_data_pub.publish(self.lane_data)
         self.detection_data_pub.publish(self.detection_data)
         self.ego_actuator_pub.publish(self.ego_actuator)
+        self.oh.update_value(self.ego_local_pose, self.vehicle_state.heading.data)
