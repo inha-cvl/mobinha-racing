@@ -8,3 +8,4 @@ std_msgs/Float32 AEB_decel_value  # UInt8 is used, considering the range and sca
 std_msgs/Int8 Aliv_Cnt
 std_msgs/Float32 EPS_Cmd
 std_msgs/Float32 ACC_Cmd
+#std_msgs/UInt8 SIG_REPAIR

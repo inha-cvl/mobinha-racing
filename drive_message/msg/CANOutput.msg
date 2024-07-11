@@ -32,3 +32,9 @@ std_msgs/String LAT_ACCEL  # Lateral acceleration, scaled 0.01 (m/s^2)
 std_msgs/String YAW_RATE  # Yaw rate, scaled 0.01 (deg/s)
 std_msgs/String BRK_CYLINDER  # Brake cylinder pressure, scaled 0.1
 std_msgs/String Long_ACCEL  # Longitudinal acceleration, scaled 0.01 (m/s^2)
+# std_msgs/String SIG_GO  # 0x00: Disabled, 0x01: Enabled
+# std_msgs/String SIG_STOP  # 0x00: Disabled, 0x01: Enabled
+# std_msgs/String SIG_PIT_STOP  # 0x00: Disabled, 0x01: Enabled
+# std_msgs/String SIG_SLOW_ON  # 0x00: Disabled, 0x01: Enabled
+# std_msgs/String SIG_SLOW_OFF  # 0x00: Disabled, 0x01: Enabled
+# std_msgs/String reserved  # reserved for future function expansion
