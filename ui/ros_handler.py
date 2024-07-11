@@ -1,7 +1,7 @@
 import rospy
 
 from drive_msgs.msg import *
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Int8
 
 STEER_RATIO = 12.9
 MPS_TO_KPH = 3.6
@@ -25,6 +25,7 @@ class ROSHandler():
 
     def set_publisher_protocol(self):
         self.pub_user_input = rospy.Publisher('/UserInput',UserInput, queue_size=1)
+        self.pub_kiapi_signal = rospy.Publisher('/KiapiSignal', Int8, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
@@ -67,3 +68,8 @@ class ROSHandler():
         self.user_input.user_mode.data = self.user_value['user_mode']
         self.user_input.user_signal.data = self.user_value['user_signal']
         self.pub_user_input.publish(self.user_input)
+    
+    # KIAPI CAN signal
+    def publish_kiapi_signal(self, signal_value):
+        self.pub_kiapi_signal.publish(signal_value)
+        print(signal_value)
