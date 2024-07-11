@@ -86,3 +86,10 @@ class ObstacleHandler:
 
         self.prev_local_pose = self.local_pose
         return frenet_d
+    
+    def get_absolute_heading(self, obs_orientation):
+        siny_cosp = 2 * (obs_orientation.w * obs_orientation.z + obs_orientation.x * obs_orientation.y)
+        cosy_cosp = 1 - 2 * (obs_orientation.y * obs_orientation.y + obs_orientation.z * obs_orientation.z)
+        z_angle_rad = np.arctan2(siny_cosp, cosy_cosp)
+        z_angle_deg = np.degrees(z_angle_rad)
+        return self.current_heading - z_angle_deg
