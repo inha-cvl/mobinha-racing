@@ -150,7 +150,7 @@ def CarViz(frame_id, name_space, position, color):
 def ObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color = [145, 255, 232, 1]
+    color = [255, 114, 48, 1]
     for n, obj in enumerate(objects):
         marker = ObjectViz(n+1000, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)
@@ -161,8 +161,8 @@ def ObjectViz(_id, position, heading, color):
     marker.header.frame_id = 'world'
     marker.ns = 'object'
     marker.id = _id
-    marker.type = Marker.MESH_RESOURCE
-    marker.mesh_resource = 'file://{}/car.dae'.format(dir_path)
+    marker.type = Marker.SPHERE
+    #marker.mesh_resource = 'file://{}/car.dae'.format(dir_path)
     marker.action = Marker.ADD
     marker.lifetime = rospy.Duration(0)
     marker.scale.x = 1.5
