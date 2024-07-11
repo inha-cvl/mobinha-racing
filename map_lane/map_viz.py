@@ -4,7 +4,7 @@ from hd_map.map import MAP
 
 rospy.init_node('Map', anonymous=False)
 
-map = MAP('Solbat')
+map = MAP('KIAPI_Racing')
 lmap_viz = map.lmap_viz
 mlmap_viz = map.mlmap_viz
 

@@ -24,8 +24,9 @@ class MapLane():
     def map_initialize(self):
         if self.RH.map_name != None:
             self.map = MAP(self.RH.map_name)
-            self.lpt = LocalPathTest(self.RH, self.map)
             self.gln = GetLaneNumber(self.RH, self.map)
+            if self.lpt_use:
+                self.lpt = LocalPathTest(self.RH, self.map)
 
     def execute(self):
         while self.map == None:
@@ -47,7 +48,7 @@ class MapLane():
                 self.RH.publish(local_path, local_kappa, local_velocity)
             # lane_number
             lane_data = self.gln.execute(self.RH.local_pos)
-            if lane_data == None:
+            if lane_data is None:
                 curr_lane_num = None
             else:
                 curr_lane_num = lane_data

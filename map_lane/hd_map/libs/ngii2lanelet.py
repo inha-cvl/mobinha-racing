@@ -134,6 +134,8 @@ class NGII2LANELET:
         from_node = {}
 
         stoplines = {}
+        goallines = {}
+        banklines = {}
         safetysigns = {}
 
         for n, a2_link in tqdm(enumerate(ngii.a2_link), desc="a2_link: ", total=len(ngii.a2_link)):
@@ -263,7 +265,7 @@ class NGII2LANELET:
 
         for b2_surfacelinemark in tqdm(ngii.b2_surfacelinemark, desc="b2_surfacelinemark: ", total=len(ngii.b2_surfacelinemark)):
             if b2_surfacelinemark.Kind is not None:
-                if b2_surfacelinemark.Kind != '530':
+                if int(b2_surfacelinemark.Kind) < 530:
                     ## right link
                     ori_id = b2_surfacelinemark.R_LinkID
                     right_id = ori2new.get(ori_id)
@@ -301,7 +303,7 @@ class NGII2LANELET:
                             else:
                                 for_vis.append([rightBound, 'solid' if b2_surfacelinemark.Type[2] == '1' else 'dotted'])
 
-                else:  # stop line
+                elif b2_surfacelinemark.Kind == '530':  #pitzone
                     stopline_id = b2_surfacelinemark.ID
                     lines = []
                     for tx, ty, alt in b2_surfacelinemark.geometry.coords:
@@ -310,6 +312,25 @@ class NGII2LANELET:
 
                     stoplines[stopline_id] = lines
                     for_vis.append([lines, 'stop_line'])
+                elif b2_surfacelinemark.Kind == '531':  #goal
+                    stopline_id = b2_surfacelinemark.ID
+                    lines = []
+                    for tx, ty, alt in b2_surfacelinemark.geometry.coords:
+                        x, y, z = self.to_cartesian(tx, ty, alt)
+                        lines.append((x, y))
+
+                    goallines[stopline_id] = lines
+                    for_vis.append([lines, 'goal_line'])
+                elif b2_surfacelinemark.Kind == '532':  #bank
+                    stopline_id = b2_surfacelinemark.ID
+                    lines = []
+                    for tx, ty, alt in b2_surfacelinemark.geometry.coords:
+                        x, y, z = self.to_cartesian(tx, ty, alt)
+                        lines.append((x, y))
+
+                    banklines[stopline_id] = lines
+                    for_vis.append([lines, 'bank_line'])
+
 
         for id_, data in lanelets.items():
             if data['length'] < 35.0:
@@ -344,4 +365,6 @@ class NGII2LANELET:
         self.map_data['groups'] = groups
         self.map_data['for_vis'] = for_vis
         self.map_data['stoplines'] = stoplines
+        self.map_data['goallines'] = goallines
+        self.map_data['banklines'] = banklines
         self.map_data['safetysigns'] = safetysigns
