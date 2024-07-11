@@ -3,8 +3,8 @@ import libs.gp_utils as gput
 class GetLaneNumber:
     def __init__(self, ros_handler, map):
         self.RH = ros_handler
-        self.Map = map
-        self.setting_values
+        self.MAP = map
+        self.setting_values()
 
     def setting_values(self):
         gput.lanelets = self.MAP.lanelets
@@ -17,7 +17,8 @@ class GetLaneNumber:
         return curr_lane_num
 
     def execute(self, local_pos):
-        if local_pos == None:
+        if local_pos is None:
             return None
-        self.curr_lane_num = self.current_lane_number(local_pos)
-        return self.curr_lane_num
+        else:
+            self.curr_lane_num = self.current_lane_number(local_pos)
+            return self.curr_lane_num

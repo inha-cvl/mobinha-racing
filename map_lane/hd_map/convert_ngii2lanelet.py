@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--ngii_path', type=str, default='./%s'%(name))
     parser.add_argument('--precision', type=float, default=1)
-    parser.add_argument('--base_lla', type=tuple, default=(35.64750540757964,128.40264207604886,7),help='(lat, lon, alt)')
+    parser.add_argument('--base_lla', type=tuple, default=(35.65492524,128.39351431,7),help='(lat, lon, alt)')
     
         #35.64750540757964,128.40264207604886,7),help='(lat, lon, alt)')
        # 37.39991792889962, 127.11264200835348, 7), 

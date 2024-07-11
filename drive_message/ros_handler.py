@@ -188,7 +188,7 @@ class ROSHandler():
                 object_info.position.x = nx
                 object_info.position.y = ny
                 object_info.velocity.data = obj.value
-                object_info.heading.data = get_absolute_heading(self.vehicle_state.heading.data, obj.pose.orientation)
+                object_info.heading.data = self.oh.get_absolute_heading(self.vehicle_state.heading.data, obj.pose.orientation)
                 self.detection_data.objects.append(object_info)
             
     def system_to_can(self, mode):

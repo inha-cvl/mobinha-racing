@@ -9,19 +9,25 @@ def LaneletMapViz(lanelet, for_viz):
     array = MarkerArray()
     for id_, data in lanelet.items():
         for n, (leftBound, leftType) in enumerate(zip(data['leftBound'], data['leftType'])):
-            marker = Bound('leftBound', id_, n, leftBound,leftType, (1.0, 1.0, 1.0, 1.0))
+            marker = Bound('leftBound', id_, n, leftBound,leftType, 0.15, (1.0, 1.0, 1.0, 1.0))
             array.markers.append(marker)
 
         for n, (rightBound, rightType) in enumerate(zip(data['rightBound'], data['rightType'])):
-            marker = Bound('rightBound', id_, n, rightBound,rightType, (1.0, 1.0, 1.0, 1.0))
+            marker = Bound('rightBound', id_, n, rightBound,rightType,  0.15, (1.0, 1.0, 1.0, 1.0))
             array.markers.append(marker)
 
     for n, (points, type_) in enumerate(for_viz):
         if type_ == 'stop_line':
-            marker = Bound('for_viz', n, n, points,'solid', (1.0, 1.0, 1.0, 1.0))
+            marker = Bound('for_viz', n, n, points,'solid',  1, (255/255, 123/255, 66/255, 1.0))
+            array.markers.append(marker)
+        elif type_ == 'goal_line':
+            marker = Bound('for_viz', n, n, points,'solid', 2, (238/255, 255/255, 5/255, 1.0))
+            array.markers.append(marker)
+        elif type_ == 'bank_line':
+            marker = Bound('for_viz', n, n, points, 'solid', 1, (5/255, 197/255, 255/255, 1.0))
             array.markers.append(marker)
         else:
-            marker = Bound('for_viz', n, n, points, type_, (1.0, 1.0, 1.0, 1.0))
+            marker = Bound('for_viz', n, n, points, type_, 0.15, (1.0, 1.0, 1.0, 1.0))
             array.markers.append(marker)
 
     return array
@@ -93,14 +99,14 @@ def MicroLaneletGraphViz(lanelet, graph):
 
     return array
 
-def Bound(ns, id_, n, points, type_, color):
+def Bound(ns, id_, n, points, type_, scale, color):
     if type_ == 'solid':
-        marker = Line('%s_%s' % (ns, id_), n, 0.15, color, 0)
+        marker = Line('%s_%s' % (ns, id_), n, scale, color, 0)
         for pt in points:
             marker.points.append(Point(x=pt[0], y=pt[1], z=0.0))
 
     elif type_ == 'dotted':
-        marker = Points('%s_%s' % (ns, id_), n, 0.15, color)
+        marker = Points('%s_%s' % (ns, id_), n, scale, color)
         for pt in points:
             marker.points.append(Point(x=pt[0], y=pt[1], z=0.0))
 
