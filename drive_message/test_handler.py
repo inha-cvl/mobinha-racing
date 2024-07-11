@@ -11,6 +11,7 @@ from visualization_msgs.msg import MarkerArray
 
 from libs.message_handler import *
 from libs.sensor_check import *
+from sensor_status_handler import SensorStatusHandler
 
 USE_LIDAR = True
 
@@ -21,13 +22,16 @@ class ROSHandler():
         self.set_publisher_protocol()
         self.set_subscriber_protocol()
 
-        # check system status
-        self.gps_check = FrequencyCheck('/fix', NavSatFix, 1.0)
-        if not USE_LIDAR:
-            self.detection_check = FrequencyCheck('/detection_markers', MarkerArray, 1.0)  # Example topic and message type
-        else:
-            self.detection_check = FrequencyCheck('/mobinha/perception/lidar/track_box', BoundingBoxArray, 1.0)  # Example topic and message type
+        #TODO check system status
+        # self.gps_check = FrequencyCheck('/fix', NavSatFix, 1.0)
+        # if not USE_LIDAR:
+        #     self.detection_check = FrequencyCheck('/detection_markers', MarkerArray, 1.0)
+        # else:
+        #     self.detection_check = FrequencyCheck('/mobinha/perception/lidar/track_box', BoundingBoxArray, 1.0) 
         # Soon add other sensors
+
+        self.sensor_status_handler = SensorStatusHandler()
+        rospy.Timer(rospy.Duration(0.5), self.check_sensor_status1R)
 
     def set_messages(self, map, base_lla):
         self.can_input = CANInput()
@@ -85,7 +89,6 @@ class ROSHandler():
         self.ego_actuator.accel.data = float(msg.Long_ACCEL.data)
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
-        self.check_sensor_state()
 
     def navigation_data_cb(self, msg):
         self.ego_local_pose = (msg.currentLocation.x, msg.currentLocation.y, msg.currentLocation.z)
@@ -95,7 +98,6 @@ class ROSHandler():
                 self.planned_route.pop(0)
         self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.ego_local_pose, self.start_point, self.radius, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
-        self.check_sensor_state()
         
     def signal_cb(self, msg):
         self.system_status.systemSignal.data = int(msg.data)
@@ -105,7 +107,6 @@ class ROSHandler():
         self.system_to_can(mode)
         self.system_status.systemMode.data = mode
         self.system_status.systemSignal.data = int(msg.user_signal.data)
-        self.check_sensor_state()
 
     def nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
@@ -124,7 +125,6 @@ class ROSHandler():
                     self.vehicle_state.heading.data = parsed[2]
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]
-        self.check_sensor_state()
     
     def sim_nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
@@ -135,7 +135,6 @@ class ROSHandler():
                 self.vehicle_state.position.y = parsed[1]
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]
-        self.check_sensor_state()
 
     def nav_sat_fix_cb(self, msg):
         self.vehicle_state.header = msg.header
@@ -143,18 +142,15 @@ class ROSHandler():
             self.vehicle_state.position.x = msg.latitude
         if not check_error(self.vehicle_state.position.y, msg.longitude, 30):
             self.vehicle_state.position.y = msg.longitude
-        self.check_sensor_state()
     
     def heading_cb(self, msg):
         yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
         self.vehicle_state.heading.data = yaw  
-        self.check_sensor_state()
 
     def target_actuator_cb(self, msg):
         steer = np.clip(msg.steer.data*12.9, -500, 500)
         self.can_input.EPS_Cmd.data = steer
         self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
-        self.check_sensor_state()
     
     def sim_objects_cb(self, msg):
         self.detection_data = DetectionData()
@@ -166,7 +162,6 @@ class ROSHandler():
             object_info.velocity.data = float(obj.orientation.x)
             object_info.heading.data = float(obj.orientation.y)
             self.detection_data.objects.append(object_info)
-        self.check_sensor_state()
     
     def cam_objects_cb(self,msg):
         self.detection_data = DetectionData()
@@ -183,7 +178,6 @@ class ROSHandler():
             object_info.velocity.data = self.vehicle_state.velocity.data
             object_info.heading.data = self.vehicle_state.heading.data
             self.detection_data.objects.append(object_info)
-        self.check_sensor_state()
     
     def lidar_track_box_cb(self, msg):
         self.detection_data = DetectionData()
@@ -209,7 +203,6 @@ class ROSHandler():
                         object_info.heading.data = self.vehicle_state.heading.data - z_angle_deg
                         self.detection_data.objects.append(object_info)
                         break
-        self.check_sensor_state()
             
     def system_to_can(self, mode):
         if self.vehicle_state.mode.data == 0:
@@ -220,13 +213,58 @@ class ROSHandler():
             self.can_input.EPS_En.data = 0
             self.can_input.ACC_En.data = 0
 
-    # check sensor state for system health(temp)
-    def check_sensor_state(self):
+    #TODO check sensor state for system health(temp) 
+    # def check_sensor_state(self):
+    #     system_health = 0  # 0: OK, 1: Warning, 2: Error
+    #     if not self.gps_check.check():
+    #         system_health == 2
+    #     if not self.detection_check.check():
+    #         system_health == 1
+    #     self.system_status.systemHealth.data = system_health
+
+    def check_sensor_status1R(self):
         system_health = 0  # 0: OK, 1: Warning, 2: Error
-        if not self.gps_check.check():
-            system_health == 2
-        if not self.detection_check.check():
-            system_health == 1
+        if not self.sensor_status_handler.check_camera_status():
+            rospy.logwarn("Camera is not working properly")
+            if self.lap_cnt == 0:
+                system_health = 2
+            elif self.lap_cnt >= 1:
+                system_health = 1
+        if not self.sensor_status_handler.check_lidar_status():
+            rospy.logwarn("LiDAR is not working properly")
+            if self.lap_cnt == 0:
+                system_health = 2
+            elif self.lap_cnt >= 1:
+                system_health = 1
+        if not self.sensor_status_handler.check_gps_status():
+            rospy.logwarn("GPS is not working properly")
+            system_health = 2
+        if not self.sensor_status_handler.check_can_status():
+            rospy.logwarn("CAN is not working properly")
+            system_health = 2
+
+        self.system_status.systemHealth.data = system_health
+
+    def check_sensor_status2R(self):
+        system_health = 0  # 0: OK, 1: Warning, 2: Error
+        if not self.sensor_status_handler.check_camera_status():
+            rospy.logwarn("Camera is not working properly")
+            system_health = 2
+        if not self.sensor_status_handler.check_lidar_status():
+            rospy.logwarn("LiDAR is not working properly")
+            system_health = 2
+        if not self.sensor_status_handler.check_gps_status():
+            rospy.logwarn("GPS is not working properly")
+            system_health = 2
+        if not self.sensor_status_handler.check_can_status():
+            rospy.logwarn("CAN is not working properly")
+            system_health = 2
+
+        self.system_status.systemHealth.data = system_health
+
+    def check_sensor_statusFinal(self):
+        system_health = 0  # 0: OK, 1: Warning, 2: Error
+
         self.system_status.systemHealth.data = system_health
 
     def publish(self):

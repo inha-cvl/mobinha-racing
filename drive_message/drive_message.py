@@ -4,7 +4,6 @@ import sys
 import signal
 
 from ros_handler import ROSHandler
-# from ros_sm_handler import ROSHandler
 from libs.map_config import * 
 
 def signal_handler(sig, frame):
