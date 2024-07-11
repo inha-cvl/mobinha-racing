@@ -66,7 +66,7 @@ class CarSimulator:
         elif map == 'Harbor':
             self.ego = Vehicle(559.144, -112.223, 3.074, 0, wheelbase)
         elif map == 'KIAPI_Racing':
-            self.ego = Vehicle(0, 0, 1.664, 0, wheelbase)
+            self.ego = Vehicle(10.759, 2.147, -2.99, 0, wheelbase)
 
     def run(self):
         rate = rospy.Rate(20)
@@ -111,6 +111,7 @@ class CarSimulator:
             can_output.Turn_Right_En.data = turn_sig[2]
             can_output.Hazard_En.data = turn_sig[1]
             can_output.G_SEL_DISP.data = 'D'
+            can_output.LAT_ACCEL.data = str(self._accel)
             can_output.Long_ACCEL.data = str(self._accel)
             can_output.BRK_CYLINDER.data = str(self._brake)
             can_output.StrAng.data = str(self._steer)
