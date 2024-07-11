@@ -5,8 +5,8 @@ from math import *
 from scipy.ndimage import gaussian_filter1d
 
 from geometry_msgs.msg import Point
-from visualization_msgs.msg import Marker
-from quadratic_spline_interpolate import QuadraticSplineInterpolate
+from visualization_msgs.msg import Marker, MarkerArray
+from libs.quadratic_spline_interpolate import QuadraticSplineInterpolate
 
 lanelets = None
 tiles = None
@@ -51,12 +51,17 @@ def lanelet_matching(t_pt):
     else:
         return None
 
+
+def convert_kmh_to_ms(speed_kmh):
+    return speed_kmh / 3.6
+
 def get_straight_path(idnidx, path_len, stop_id, prior='Left'):
     s_n = idnidx[0]
     s_i = idnidx[1]
     wps = copy.deepcopy(lanelets[s_n]['waypoints'])
     lls_len = len(wps)
     ids = [s_n]*lls_len
+    vs = [lanelets[s_n]['speedLimit']-1]*lls_len
     u_n = s_n
     u_i = s_i+int(path_len)#*M_TO_IDX)
     e_i = u_i
@@ -76,12 +81,15 @@ def get_straight_path(idnidx, path_len, stop_id, prior='Left'):
         u_wp = lanelets[u_n]['waypoints']
         lls_len = len(u_wp)
         ids.extend([u_n]*lls_len)
+        v = lanelets[u_n]['speedLimit']-1
+        vs.extend([v]*lls_len)
         wps += u_wp
 
     r = wps[s_i:e_i]
     path_ids = ids[s_i:e_i]
+    path_vs = vs[s_i:e_i]
 
-    return r, [u_n, u_i], path_ids
+    return r, [u_n, u_i], path_ids, path_vs
 
 def get_cut_idx_ids(id):
     idx_list = lanelets[id]['cut_idx']
@@ -95,7 +103,7 @@ def get_cut_idx_ids(id):
     return ids
 
 def get_merged_point(idnidx, path_len, to=1):
-        wps, [u_n, u_i],_ = get_straight_path(idnidx, path_len, '')
+        wps, [u_n, u_i],_,_ = get_straight_path(idnidx, path_len, '')
         c_pt = wps[-1]
         l_id, r_id = get_neighbor( u_n)
         n_id = l_id if to == 1 else r_id
@@ -131,6 +139,20 @@ def get_possible_successor(node, prior='Left'):
         successor = lanelets[node]['successor'][i]
 
     return successor
+
+# hees solchan global path
+def get_pocket_successor(node, prior='Left'):
+    successor = get_possible_successor(node, prior)
+    successor_idx = None
+
+    if successor is not None:
+        current_waypoints = lanelets[node]['waypoints']
+        target_point = current_waypoints[-1] if current_waypoints else (0, 0)
+        
+        successor_waypoints = lanelets[successor]['waypoints']
+        successor_idx = find_nearest_idx(successor_waypoints, target_point)
+
+    return [successor, successor_idx]
 
 def get_whole_neighbor(node):
     num = 1
@@ -235,8 +257,8 @@ def calc_kappa(epoints, npoints):
             Rk = d2xdy2/((1+(dxdy)**2)**(3/2))
     return Rk
 
-def get_profiles(path_len, max_vel, sec_to_reach):
-    total_time = int((path_len / max_vel))
+def get_profiles(vs, sec_to_reach):
+    total_time = int((len(vs) / 80))
     peak_time = sec_to_reach/2
     accel_time = sec_to_reach
     t = np.linspace(0, total_time, total_time*10)
@@ -262,6 +284,88 @@ def get_profiles(path_len, max_vel, sec_to_reach):
     distance = np.cumsum(velocity) * (t[1] - t[0])
 
     return acceleration, velocity, distance
+
+def convert_kmh_to_ms(speed_kmh):
+    return speed_kmh / 3.6
+
+def adjust_velocity_profile(velocity_profile):
+    accel_distance = 15
+    decel_distance = 30
+    init_accel_len = 15
+    final_decel_len = 30
+    time_interval = 1
+
+    initial_acceleration_profile = np.linspace(0, velocity_profile[0], init_accel_len).tolist()
+    
+    final_deceleration_profile = np.linspace(velocity_profile[-1], 0, final_decel_len).tolist()
+    
+    adjusted_profile = initial_acceleration_profile
+    i = init_accel_len
+
+    while i < len(velocity_profile) - final_decel_len:
+        if velocity_profile[i] != velocity_profile[i-1]:
+            if velocity_profile[i] < velocity_profile[i-1]:
+                # 감속 구간: 이후 값이 시작하기 전부터 감속 시작
+                transition_start = max(i - decel_distance, init_accel_len)
+                transition = np.linspace(velocity_profile[i-1], velocity_profile[i], decel_distance).tolist()                
+                adjusted_profile = adjusted_profile[:transition_start] + transition + [velocity_profile[i]]
+                i += 1
+            else:
+                # 속도 증가 구간
+                transition = np.linspace(velocity_profile[i-1], velocity_profile[i], accel_distance).tolist()
+                adjusted_profile.extend(transition[1:])
+                i += accel_distance - 1
+        else:
+            adjusted_profile.append(velocity_profile[i])
+            i += 1
+
+    adjusted_profile.extend(final_deceleration_profile)
+
+    # Calculate acceleration profile
+    acceleration_profile = [0] * len(adjusted_profile)
+    
+    # Initial acceleration
+    for i in range(1, init_accel_len):
+        acceleration_profile[i] = 2.5 * i / init_accel_len
+    
+    # Final deceleration
+    for i in range(len(adjusted_profile) - final_decel_len, len(adjusted_profile)):
+        acceleration_profile[i] = -3* (i - (len(adjusted_profile) - final_decel_len)) / final_decel_len
+    
+    # Middle part
+    i = init_accel_len
+    while i < len(adjusted_profile) - final_decel_len:
+        if adjusted_profile[i] != adjusted_profile[i-1]:
+            if adjusted_profile[i] > adjusted_profile[i-1]:
+                # Accelerating
+                for j in range(accel_distance):
+                    acceleration_profile[i + j] = 2.5 * (j + 1) / accel_distance
+                for j in range(accel_distance):
+                    acceleration_profile[i + accel_distance + j] = 2.5 * (accel_distance - j - 1) / accel_distance
+            elif adjusted_profile[i] < adjusted_profile[i-1]:
+                # Decelerating
+                for j in range(decel_distance):
+                    acceleration_profile[i + j] = -3 * (j + 1) / decel_distance
+                for j in range(decel_distance):
+                    acceleration_profile[i + decel_distance + j] = -3 * (decel_distance - j - 1) / decel_distance
+            i += 2 * decel_distance
+        else:
+            i += 1
+    
+    distance = [0]  # Start with initial distance as 0
+
+    for i in range(1, len(adjusted_profile)):
+        distance_traveled = adjusted_profile[i-1] * time_interval + 0.5 * acceleration_profile[i-1] * (time_interval ** 2)
+        distance.append(distance[-1] + distance_traveled)
+    
+    distance = np.array(distance)
+
+    adjusted_profile = [convert_kmh_to_ms(speed) for speed in adjusted_profile]
+
+    return adjusted_profile, acceleration_profile, distance
+
+
+
 
 def get_lane_width(id):
     h_w = lane_width / 2
@@ -319,3 +423,27 @@ def Line(ns, id_, scale, color, len):
     marker.pose.orientation.w = 1.0
     return marker
     
+def VelProfileViz(waypoints, vel_profile):
+    marker_array = MarkerArray()
+    for idx, (pt, vel) in enumerate(zip(waypoints, vel_profile)):
+        marker_array.markers.append(TextMarker(pt, vel, idx+1000, 1, (1.0,1,1, 1.0)))
+    return marker_array
+
+def TextMarker(pt, vel, id_, scale, color):
+    marker = Marker()
+    marker.type = Marker.TEXT_VIEW_FACING
+    marker.action = Marker.ADD
+    marker.header.frame_id = 'world'
+    marker.ns = 'vel_text'
+    marker.id = id_
+    marker.lifetime = rospy.Duration(0)
+    marker.scale.z = scale
+    marker.color.r = color[0]
+    marker.color.g = color[1]
+    marker.color.b = color[2]
+    marker.color.a = color[3]
+    marker.pose.position.x = pt[0]
+    marker.pose.position.y = pt[1]
+    marker.pose.position.z = 2 # slightly above the waypoint
+    marker.text = f"{vel:.2f} m/s"
+    return marker

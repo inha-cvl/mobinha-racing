@@ -12,7 +12,7 @@ class APID:
         self.dKp, self.dKi, self.dKd = 0, 0, 0
         self.ddKp, self.ddKi, self.ddKd = 0, 0, 0
 
-        self.errs = [-1, -1, -1, -1, -1] # k-3, k-2, k-1, k, k+1 
+        self.errs = [-1, -1, -1, -1, -1] 
         self.outs = [-1, -1, -1, -1, -1]
         self.ctrls = [-1, -1, -1, -1, -1]
 
@@ -93,16 +93,21 @@ class APID:
         self.dKd = max(-dlim, min(self.dKd, dlim))
 
     def update_parameters(self):
-        self.Kp += self.dKp + self.ddKp
-        self.Ki += self.dKi + self.ddKi
-        self.Kd += self.dKd + self.ddKd
+        self.final_Kp = self.Kp + self.dKp + self.ddKp
+        self.final_Ki = self.Ki + self.dKi + self.ddKi
+        self.final_Kd = self.Kd + self.dKd + self.ddKd
+        # self.Kp += self.dKp + self.ddKp
+        # self.Ki += self.dKi + self.ddKi
+        # self.Kd += self.dKd + self.ddKd
+        #print(f"{self.final_Kp:.2f}, {self.final_Ki:.2f}, {self.final_Kd:.2f}")
 
     def calculate_output(self):
         self.error = self.errs[3]
         self.integral = sum(self.error_history)
         self.derivative = self.errs[3] - self.errs[2]
 
-        output = (self.Kp * self.error) + (self.Ki * self.integral) + (self.Kd * self.derivative)
+        # output = (self.Kp * self.error) + (self.Ki * self.integral) + (self.Kd * self.derivative)
+        output = (self.final_Kp * self.error) + (self.final_Ki * self.integral) + (self.final_Kd * self.derivative)
         self.cur += output
         return max(-100, min(output, 100))
 

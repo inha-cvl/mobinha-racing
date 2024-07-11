@@ -2,144 +2,121 @@
 import math
 import tf
 import rospy
-import numpy as np
 import pymap3d
 
-from geometry_msgs.msg import Pose
-from visualization_msgs.msg import Marker
+from drive_msgs.msg import *
+
+from geometry_msgs.msg import Pose2D
 from morai_msgs.msg import GPSMessage, EgoVehicleStatus
 from sensor_msgs.msg import Imu
-from morai_msgs.msg import ObjectStatusList, CtrlCmd, Lamps
-from geometry_msgs.msg import Pose, PoseArray, Vector3
-from std_msgs.msg import Int8, Float32MultiArray
-from jsk_recognition_msgs.msg import BoundingBoxArray, BoundingBox
-
-from libs.rviz_utils import *
-
-def Sphere(ns, id_, data, scale, color):
-    marker = Marker()
-    marker.type = Marker.SPHERE
-    marker.action = Marker.ADD
-    marker.header.frame_id = 'world'
-    marker.ns = ns
-    marker.id = id_
-    marker.lifetime = rospy.Duration(0)
-    marker.scale.x = scale
-    marker.scale.y = scale
-    marker.scale.z = scale
-    marker.color.r = color[0]/255
-    marker.color.g = color[1]/255
-    marker.color.b = color[2]/255
-    marker.color.a = 0.9
-    marker.pose.position.x = data[0]
-    marker.pose.position.y = data[1]
-    marker.pose.position.z = 0
-    return marker
-
+from morai_msgs.msg import ObjectStatusList, CtrlCmd
+from geometry_msgs.msg import Pose, PoseArray
 
 class Morai:
     def __init__(self):
         self.base_lla = [35.64750540757964, 128.40264207604886, 7]
-        self.pose = Pose()
+        self.pose = Pose2D()
         self.ctrl_msg = CtrlCmd()
-        self.lamps = Lamps()
         self.mode = 0
-        self.egoxy = [0,0, 0, 0]
+        self.egoxy = [0, 0, 0, 0]
         
-        self.ego_car = CarViz('ego_car', 'ego_car_info', [0, 0, 0], [241, 76, 152, 1])
-        self.ego_car_info = CarInfoViz('ego_car', 'ego_car', '',[0,0,0])
-        self.br = tf.TransformBroadcaster()
-
-        self.pub_ego_car = rospy.Publisher('/car/ego_car', Marker, queue_size=1)
-        self.pub_ego_car_info = rospy.Publisher('/car/ego_car_info', Marker, queue_size=1)
-        self.pub_pose = rospy.Publisher('/car/pose', Pose, queue_size=1)
+        self.pub_sim_pose = rospy.Publisher('/simulator/pose', Pose2D, queue_size=1)
+        self.pub_sim_object = rospy.Publisher('/simulator/objects', PoseArray, queue_size=1)
+        self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
         self.ctrl_pub = rospy.Publisher('/ctrl_cmd_0', CtrlCmd, queue_size=1)  # Vehicl Control
-        self.track_box_pub = rospy.Publisher('/simulator/track_box', BoundingBoxArray, queue_size=1)
-        self.mode_pub = rospy.Publisher('/car/mode', Int8, queue_size=1)
-        self.pub_fake_obstacles = rospy.Publisher('/simulator/obstacle', MarkerArray, queue_size=1)
         rospy.Subscriber("/gps", GPSMessage, self.gps_cb)
         rospy.Subscriber("/imu", Imu, self.imu_cb)
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.ego_topic_cb)
         rospy.Subscriber("/Object_topic", ObjectStatusList,self.object_topic_cb)
-        rospy.Subscriber('/selfdrive/actuator', Vector3, self.actuator_cb)
-        rospy.Subscriber('/mode', Int8, self.mode_cb)
+        rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
+        rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         
     def gps_cb(self, msg):
-        self.pose.position.x = msg.latitude
-        self.pose.position.y = msg.longitude
+        self.pose.x = msg.latitude
+        self.pose.y = msg.longitude
     
-    def mode_cb(self, msg):
-        self.mode = msg.data
-
     def imu_cb(self, msg):
         quaternion = (msg.orientation.x, msg.orientation.y,msg.orientation.z, msg.orientation.w)
         _, _,yaw = tf.transformations.euler_from_quaternion(quaternion)
-        self.pose.position.z = math.degrees(yaw)
-
+        self.pose.theta = math.degrees(yaw)
+    
+    def system_status_cb(self, msg):
+        self.mode = msg.systemMode.data
 
     def ego_topic_cb(self, msg):
-        self.pose.orientation.x = msg.velocity.x
-        self.pose.orientation.y = msg.wheel_angle
-        self.pose.orientation.z = msg.accel
-        self.pose.orientation.w = msg.brake
-
         self.egoxy[0] = msg.position.x
         self.egoxy[1] = msg.position.y
-     
-        x, y, _ = pymap3d.geodetic2enu(self.pose.position.x, self.pose.position.y, 0, self.base_lla[0], self.base_lla[1], self.base_lla[2])
-        h = self.pose.position.z
-        v = msg.velocity.x
-        self.ego_car_info.text = f"{(v*3.6):.2f}km/h {h:.2f}deg"
-        qt = tf.transformations.quaternion_from_euler(0, 0, math.radians(h))  # RPY
-        self.br.sendTransform((x,y, 0),(qt[0], qt[1],qt[2], qt[3]),rospy.Time.now(),'ego_car','world')
+
+        can_output = CANOutput()
+        mode_to_signal = {
+            0:('Ready', 'Ready'),# Off 
+            1:('All_On', 'All_On'), # On
+            2:('EPS_On', 'EPS_On'), # Steering Only
+            3:('ACC_On', 'ACC_On') # Acce/Brake Only
+        }
+        (eps_status, acc_status) = mode_to_signal.get(self.mode)
+        can_output.EPS_Control_Status.data = eps_status
+        can_output.ACC_Control_Board_Status.data = acc_status
+        
+        if msg.velocity.x > 0:
+            v = msg.velocity.x 
+        else:
+            v = 0
+        can_output.WHEEL_SPD_RR.data = str((7.2/2)*v) 
+        can_output.WHEEL_SPD_RL.data = str((7.2/2)*v)
+        signal_to_turn = {
+            0:['Off','Off','Off'],
+            1:['On','Off','Off'],
+            2:['Off','Off','On'],
+            3:['Off','On','Off'],
+            4:['Off', 'Off', 'Off'],
+        }
+        turn_sig = signal_to_turn.get(0)
+        can_output.Turn_Left_En.data = turn_sig[0]
+        can_output.Turn_Right_En.data = turn_sig[2]
+        can_output.Hazard_En.data = turn_sig[1]
+        can_output.G_SEL_DISP.data = 'D'
+        can_output.Long_ACCEL.data = str(msg.accel)
+        can_output.BRK_CYLINDER.data = str(msg.brake)
+        can_output.StrAng.data = str(msg.wheel_angle)
+        x, y, _ = pymap3d.geodetic2enu(self.pose.x, self.pose.y, 0, self.base_lla[0], self.base_lla[1], self.base_lla[2])
         self.egoxy[2] = x
         self.egoxy[3] = y
+        self.pub_can_output.publish(can_output)
 
-    def actuator_cb(self, data):
-        self.ctrl_msg.steering = math.radians(data.x)
-        self.ctrl_msg.accel = (data.y/100)*4
-        self.ctrl_msg.brake = (data.z/100)*4
+    def target_actuator_cb(self, data):
+        self.ctrl_msg.steering = math.radians(data.steer.data)
+        self.ctrl_msg.accel = (data.accel.data/2)
+        self.ctrl_msg.brake = (data.brake.data/3)
 
     def object_topic_cb(self, data):
-        object_list = BoundingBoxArray()
-        marker_array = MarkerArray()
+        pose_array = PoseArray()
         dx = self.egoxy[2]-self.egoxy[0]
         dy = self.egoxy[3]-self.egoxy[1]
         for i, obj in enumerate(data.npc_list):
-            bbox = BoundingBox()
             pose = Pose()
             pose.position.x = obj.position.x + dx
             pose.position.y = obj.position.y + dy
-            pose.orientation.z = obj.heading+90
-            bbox.pose = pose
-            bbox.value = obj.velocity.x/3.6
-            bbox.label = 1
-            object_list.boxes.append(bbox)
-            marker_array.markers.append(Sphere(f'obj{i}', i, [pose.position.x,pose.position.y] , 5.0, (0,0,255)))
+            pose.position.z = 1
+            pose.orientation.x = obj.velocity.x/3.6 if obj.velocity.x > 0 else 0
+            pose.orientation.y = obj.heading
+            pose_array.poses.append(pose)
         for i, obj in enumerate(data.obstacle_list):
-            bbox = BoundingBox()
             pose = Pose()
             pose.position.x = obj.position.x + dx
             pose.position.y = obj.position.y + dy
-            pose.orientation.z = obj.heading+90
-            bbox.pose = pose
-            bbox.value = obj.velocity.x/3.6
-            bbox.label = 1
-            object_list.boxes.append(bbox)
-            marker_array.markers.append(Sphere(f'obj{i}', i, [pose.position.x,pose.position.y] , 5.0, (0,0,255)))
-
-        self.pub_fake_obstacles.publish(marker_array)
-        self.track_box_pub.publish(object_list)
+            pose.position.z = 1
+            pose.orientation.x = obj.velocity.x/3.6 if obj.velocity.x > 0 else 0
+            pose.orientation.y = obj.heading
+            pose_array.poses.append(pose)
+        self.pub_sim_object.publish(pose_array)
 
     def publisher(self):
-        self.pub_pose.publish(self.pose)
+        self.pub_sim_pose.publish(self.pose)
         self.ctrl_pub.publish(self.ctrl_msg)
-        self.mode_pub.publish(Int8(self.mode))
-        self.pub_ego_car.publish(self.ego_car)
-        self.pub_ego_car_info.publish(self.ego_car_info)
-
+        
     def run(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(30)
         while not rospy.is_shutdown():
             self.publisher()
             rate.sleep()

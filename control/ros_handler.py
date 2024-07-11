@@ -7,7 +7,7 @@ from visualization_msgs.msg import Marker
 
 class ROSHandler():
     def __init__(self):
-        rospy.init_node('Control', anonymous=False)
+        rospy.init_node('control', anonymous=False)
         
         self.set_values()
         self.set_publisher_protocol()
@@ -24,7 +24,6 @@ class ROSHandler():
 
     def set_publisher_protocol(self):
         self.target_actuator_pub = rospy.Publisher('/control/target_actuator', Actuator, queue_size=1)
-        
         self.lh_test_pub = rospy.Publisher('/lh', Marker, queue_size=1)
     
     def set_subscriber_protocol(self):

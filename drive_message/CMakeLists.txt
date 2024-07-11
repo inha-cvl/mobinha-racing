@@ -13,6 +13,7 @@ add_message_files(
   DIRECTORY msg
   FILES
   Actuator.msg
+  ObjectInfo.msg
   DetectionData.msg
   NavigationData.msg
   VehicleState.msg
@@ -21,6 +22,7 @@ add_message_files(
   SensorData.msg
   CANOutput.msg
   LaneLet.msg
+  UserInput.msg
   SystemStatus.msg
 )
 
