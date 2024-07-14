@@ -39,11 +39,9 @@ class ROSHandler():
         self.ego_local_pose = []
         self.prev_lla = None
         self.lap_cnt = 0
-        self.start_point = (0, 0, 0)
+        self.lap_flag = False
+        self.goal_point = rospy.get_param("/goal_coordinate")
         self.lane_number = 0
-        self.planned_route = []
-        self.route_length = 100
-        self.offset = 1.5
 
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
@@ -81,13 +79,23 @@ class ROSHandler():
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
     
+    def system_to_can(self, mode):
+        if self.vehicle_state.mode.data == 0:
+            self.can_input.EPS_En.data = 1 if mode in (1, 2) else 0
+            self.can_input.ACC_En.data = 1 if mode in (1, 3) else 0
+
+        elif mode == 0 and self.vehicle_state.mode.data >= 1:
+            self.can_input.EPS_En.data = 0
+            self.can_input.ACC_En.data = 0
+        
+    
     def navigation_data_cb(self, msg):
         self.ego_local_pose = (msg.currentLocation.x, msg.currentLocation.y, msg.currentLocation.z)
-        for point in msg.plannedRoute:
-            self.planned_route.append(point)
-            if len(self.planned_route) > self.route_length:
-                self.planned_route.pop(0)
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.ego_local_pose, self.start_point, radius=20, lap_flag=False)
+        if len(msg.plannedRoute) > 10:
+            check_forward =  (msg.plannedRoute[10].x, msg.plannedRoute[10].y)
+        else:
+            check_forward =  (msg.currentLocation.x, msg.currentLocation.y)
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, check_forward,  self.goal_point, 11,self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
 
     def lane_data_cb(self, msg:LaneData):
@@ -102,6 +110,7 @@ class ROSHandler():
         self.system_to_can(mode)
         self.system_status.systemMode.data = mode
         self.system_status.systemSignal.data = int(msg.user_signal.data)
+        self.system_status.kiapiSignal.data = int(msg.kiapi_signal.data)
 
     def nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
@@ -191,15 +200,7 @@ class ROSHandler():
                 object_info.heading.data = self.oh.get_absolute_heading(self.vehicle_state.heading.data, obj.pose.orientation)
                 self.detection_data.objects.append(object_info)
             
-    def system_to_can(self, mode):
-        if self.vehicle_state.mode.data == 0:
-            self.can_input.EPS_En.data = 1 if mode in (1, 2) else 0
-            self.can_input.ACC_En.data = 1 if mode in (1, 3) else 0
-
-        elif mode == 0 and self.vehicle_state.mode.data >= 1:
-            self.can_input.EPS_En.data = 0
-            self.can_input.ACC_En.data = 0
-        
+    
     def publish(self):
         self.can_input_pub.publish(self.can_input)
         self.sensor_data_pub.publish(self.sensor_data)
