@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1161</width>
+    <width>1355</width>
     <height>892</height>
    </rect>
   </property>
@@ -147,7 +147,7 @@ color: rgb(245,252,20);</string>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
+               <verstretch>1</verstretch>
               </sizepolicy>
              </property>
              <property name="maximumSize">
@@ -571,7 +571,7 @@ image-position:top;
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
+               <verstretch>1</verstretch>
               </sizepolicy>
              </property>
              <property name="maximumSize">
@@ -893,8 +893,7 @@ color: rgb(255, 255, 255);</string>
                      <enum>Qt::DefaultContextMenu</enum>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">background-color: rgb(240,122,43);
-color: rgb(255, 255, 255);</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string/>
@@ -943,7 +942,7 @@ color: rgb(255, 255, 255);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>471</width>
+                 <width>511</width>
                  <height>51</height>
                 </rect>
                </property>
@@ -959,6 +958,12 @@ color: rgb(255, 255, 255);</string>
                 </property>
                 <item>
                  <widget class="QPushButton" name="buttonGo">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -972,6 +977,12 @@ color: rgb(255, 255, 255);</string>
                 </item>
                 <item>
                  <widget class="QPushButton" name="buttonStop">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -985,6 +996,12 @@ color: rgb(255, 255, 255);</string>
                 </item>
                 <item>
                  <widget class="QPushButton" name="buttonSlowOn">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -998,6 +1015,12 @@ color: rgb(255, 255, 255);</string>
                 </item>
                 <item>
                  <widget class="QPushButton" name="buttonSlowOff">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -1011,6 +1034,12 @@ color: rgb(255, 255, 255);</string>
                 </item>
                 <item>
                  <widget class="QPushButton" name="buttonPitStop">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>

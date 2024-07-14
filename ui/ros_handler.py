@@ -20,12 +20,11 @@ class ROSHandler():
         self.can_inform = {'eps_status':'Off', 'acc_status':'off'}
         self.system_status = {'mode': 0, 'signal':0, 'lap_count': 0}
         self.user_input = UserInput()
-        self.user_value = {'user_mode': 0, 'user_signal': 0}
+        self.user_value = {'user_mode': 0, 'user_signal': 0, 'kiapi_signal':0}
         self.lane_number = 0
 
     def set_publisher_protocol(self):
         self.pub_user_input = rospy.Publisher('/UserInput',UserInput, queue_size=1)
-        self.pub_kiapi_signal = rospy.Publisher('/KiapiSignal', Int8, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
@@ -67,9 +66,5 @@ class ROSHandler():
     def publish(self):
         self.user_input.user_mode.data = self.user_value['user_mode']
         self.user_input.user_signal.data = self.user_value['user_signal']
+        self.user_input.kiapi_signal.data = self.user_value['kiapi_signal']
         self.pub_user_input.publish(self.user_input)
-    
-    # KIAPI CAN signal
-    def publish_kiapi_signal(self, signal_value):
-        self.pub_kiapi_signal.publish(signal_value)
-        print(signal_value)

@@ -86,20 +86,21 @@ class MyApp(QMainWindow, form_class):
 
     # KIAPI CAN signal
     def click_can_signal(self, signal_value):
-        self.RH.publish_kiapi_signal(signal_value)
+        self.RH.user_value['kiapi_signal'] = signal_value
         self.check_timer()
 
     def check_timer(self):
         if not self.sig_in:
             self.sig_in = True
             self.user_input_timer.start(500)
-            QTimer.singleShot(3000, self.stop_user_input_timer)
+            QTimer.singleShot(5000, self.stop_user_input_timer)
         else:
             self.stop_user_input_timer
     
     def stop_user_input_timer(self):
         self.sig_in = False
         self.RH.user_value['user_signal'] = 0
+        self.RH.user_value['kiapi_signal'] = 0
         self.user_input_timer.stop()
         self.RH.publish()
 
@@ -122,9 +123,10 @@ class MyApp(QMainWindow, form_class):
         top_buttons2 = [None,self.buttonLeft, self.buttonRight, self.buttonLeftRight, self.buttonUp]
         for i in range(1,5):
             top_buttons2[i].clicked.connect(partial(self.click_signal, int(i)))
-        signal_buttons = [self.buttonGo, self.buttonStop, self.buttonSlowOn, self.buttonSlowOff, self.buttonPitStop]
-        for i, button in enumerate(signal_buttons):
-            button.clicked.connect(partial(self.click_can_signal, int(i)))
+
+        signal_buttons = [None, self.buttonGo, self.buttonStop, self.buttonSlowOn, self.buttonSlowOff, self.buttonPitStop]
+        for i in range(1,6):
+            signal_buttons[i].clicked.connect(partial(self.click_can_signal, int(i)))
 
 def main():
     app = QApplication(sys.argv)
