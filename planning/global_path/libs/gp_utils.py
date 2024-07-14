@@ -391,8 +391,8 @@ def get_lane_width(id):
     return l_w, r_w
     
 
-def PreRound1Viz(waypoints):
-    return Path(waypoints, 999, 0.2, 1.5, (255/255,79/255, 66/255, 0.5))
+def PathViz(waypoints, color):
+    return Path(waypoints, 999, 0.2, 1.5, color)
 
 def PreRound2Viz(waypoints):
     return Path(waypoints, 999, 0.2, 1.5, (150/255,59/255, 255/255, 0.5))

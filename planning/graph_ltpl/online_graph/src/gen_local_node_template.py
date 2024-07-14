@@ -176,7 +176,6 @@ def gen_local_node_template(graph_base: graph_ltpl.data_objects.GraphBase.GraphB
                                planning_end_layer=end_layer,
                                remove_filters=False)
         edges.extend(intersecting_edges)
-
         # prediction
         for pos_pred in vehicle.get_prediction():
             intersecting_edges, obj_layer = graph_ltpl.online_graph.src.get_intersec_edges. \

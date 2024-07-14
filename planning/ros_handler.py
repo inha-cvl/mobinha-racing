@@ -1,5 +1,6 @@
 import rospy
 import math
+import numpy as np
 
 from drive_msgs.msg import *
 from geometry_msgs.msg import Point
@@ -16,6 +17,7 @@ class ROSHandler():
 
     def set_values(self):
         self.system_mode = 0
+        self.kiapi_signal = 0
         self.current_velocity = 0
         self.current_heading = 0
         self.current_signal = 0
@@ -23,9 +25,13 @@ class ROSHandler():
         self.current_position_long = 0
         self.local_pos = [0,0]
         self.prev_start_pos = [0,0]
-        self.object_list = [] 
+        self.object_list = []
+        self.object_list2 =  np.array([])
         self.transformer = None
-        
+        self.current_lat_accel = 0
+        self.current_long_accel = 0
+        self.lap_count = 0
+
 
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
@@ -34,6 +40,7 @@ class ROSHandler():
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
+        rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
 
     def system_status_cb(self, msg):
         base_lla = msg.baseLLA
@@ -43,6 +50,8 @@ class ROSHandler():
             self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
         self.system_mode = msg.systemMode.data 
         self.current_signal = msg.systemSignal.data
+        self.lap_count = msg.lapCount.data
+        self.kiapi_signal = msg.kiapiSignal.data
     
     def vehicle_state_cb(self, msg):
         self.current_velocity = msg.velocity.data
@@ -54,18 +63,25 @@ class ROSHandler():
         x, y, _ = self.transformer.transform(self.current_position_long, self.current_position_lat, 7) 
         self.local_pos = [x,y]
     
+    def can_output_cb(self, msg):
+        self.current_long_accel = float(msg.Long_ACCEL.data)
+        self.current_lat_accel = float(msg.LAT_ACCEL.data)
+    
     def detection_data_cb(self, msg):
         object_list = []
+        position_list = []
         for i, object in enumerate(msg.objects):
-            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 3.0, 'v': object.velocity.data})
+            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 4.0, 'v': object.velocity.data})
+            position_list.append([object.position.x, object.position.y])
         self.object_list = object_list
+        self.object_list2 = np.array(position_list)
 
     def publish(self, local_action_set, road_max_vel):
-        if len(local_action_set) > 0:
+        if local_action_set is not None and len(local_action_set) > 0:
             self.navigation_data = NavigationData()
             self.navigation_data.currentLocation.x = self.local_pos[0]
             self.navigation_data.currentLocation.y = self.local_pos[1]
-            self.navigation_data.plannedVelocity.data = road_max_vel#min(local_action_set[1][5], road_max_vel)
+            self.navigation_data.plannedVelocity.data = min(local_action_set[1][5], road_max_vel)
             for set in local_action_set:
                 point = Point()
                 point.x = set[1]
@@ -73,3 +89,19 @@ class ROSHandler():
                 self.navigation_data.plannedRoute.append(point)
                 self.navigation_data.plannedKappa.append(set[4])
             self.navigation_data_pub.publish(self.navigation_data)
+    
+    def publish_frenet(self, path, kappa, velocity):
+        self.navigation_data = NavigationData()
+        self.navigation_data.currentLocation.x = self.local_pos[0]
+        self.navigation_data.currentLocation.y = self.local_pos[1]
+        if path != None:
+            for i, x in enumerate(path.x):
+                point = Point()
+                point.x = x
+                point.y = path.y[i]
+                self.navigation_data.plannedRoute.append(point)
+        if kappa != None:
+            for rk in kappa:
+                self.navigation_data.plannedKappa.append(rk)
+        self.navigation_data.plannedVelocity.data = velocity
+        self.navigation_data_pub.publish(self.navigation_data)

@@ -3,22 +3,33 @@ import numpy as np
 import copy 
 
 class GetMaxVelocity:
-    def __init__(self, ros_handler, global_csv):
+    def __init__(self, ros_handler, global_path_name):
         self.RH = ros_handler
         self.global_poses = []
         self.global_velocitys = []
         self.cut_dist = 30
-        self.set_values(global_csv)
+        self.set_values(global_path_name)
 
-    def set_values(self, csv_file):
+    # def set_values(self,global_path_name):
+    #     csv_file = f'./global_path/paths/{global_path_name}.csv'
+    #     with open(csv_file, 'r', encoding='utf-8') as f:
+    #         rdr = csv.reader(f)
+    #         for i, line in enumerate(rdr):
+    #             if i < 2:
+    #                 continue
+    #             splited = line[0].split(',')
+    #             self.global_poses.append([float(splited[0]),float(splited[1])])
+    #             self.global_velocitys.append(float(splited[10]))
+
+    def set_values(self,global_path_name):
+        csv_file = f'./global_path/paths/{global_path_name}.csv'
         with open(csv_file, 'r', encoding='utf-8') as f:
             rdr = csv.reader(f)
             for i, line in enumerate(rdr):
                 if i < 2:
                     continue
-                splited = line[0].split(';')
-                self.global_poses.append([float(splited[0]),float(splited[1])])
-                self.global_velocitys.append(float(splited[10]))
+                self.global_poses.append([float(line[0]),float(line[1])])
+                self.global_velocitys.append(float(line[10]))
 
     def find_nearest_idx(self, local_pos):
         end_i = self.cut_dist if len(self.global_poses) > self.cut_dist else -1
