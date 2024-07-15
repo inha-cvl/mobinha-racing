@@ -35,7 +35,6 @@ class ROSHandler():
         self.system_mode = msg.systemMode.data 
     
     def navigation_data_cb(self, msg):
-        self.current_location = Point(x=msg.currentLocation.x, y=msg.currentLocation.y)
         self.planned_velocity = msg.plannedVelocity.data
         self.planned_route = []
         for point in msg.plannedRoute:
@@ -44,6 +43,7 @@ class ROSHandler():
     def vehicle_state_cb(self, msg):
         self.current_velocity = msg.velocity.data
         self.current_heading = msg.heading.data
+        self.current_location = Point(x=msg.enu.x, y=msg.enu.y)
     
     def publish(self, acc, steer):
         if acc > 0:

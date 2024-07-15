@@ -1,5 +1,4 @@
 import configparser
-import numpy as np
 
 class APID:
     def __init__(self, ros_handler):
@@ -44,15 +43,10 @@ class APID:
 
         output = self.calculate_output()
 
-        speed_log = [0, 40, 60, 80]
-        acc_max_log = [4, 2.5, 2.2, 1.8]
-        
-        acc_max = np.interp(self.RH.current_velocity, speed_log, acc_max_log, extrapolate=True)
-        print("from apid.py, acc_lim is", acc_max)
         if output < 0:
             output = (3 / 100) * output #Brake
         else:
-            output = (acc_max / 100) * output #Accel
+            output = (2 / 100) * output #Accel
         return output
     
     def update_history(self, ref, cur):
