@@ -58,8 +58,6 @@ class ROSHandler():
 
     def publish(self, path, kappa, velocity):
         self.navigation_data = NavigationData()
-        self.navigation_data.currentLocation.x = self.local_pos[0]
-        self.navigation_data.currentLocation.y = self.local_pos[1]
         if path != None:
             for xy in path:
                 point = Point()
