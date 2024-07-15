@@ -49,7 +49,7 @@ class Visualizer:
         info = f"{(v*3.6):.2f}km/h {yaw:.2f}deg"
         self.ego_car_info.text = info
         quaternion = tf.transformations.quaternion_from_euler(math.radians(0), math.radians(0), math.radians(yaw))  # RPY
-        
+        self.ego_pos = [msg.enu.x,msg.enu.y]
         if self.ego_time != msg.header.stamp:
             self.br.sendTransform(
                 (self.ego_pos[0], self.ego_pos[1], 0),
@@ -61,7 +61,6 @@ class Visualizer:
         self.pub_viz_car_info.publish(self.ego_car_info)
     
     def navigation_data_cb(self, msg):
-        self.ego_pos = [msg.currentLocation.x,msg.currentLocation.y]
         path = []
         for pts in msg.plannedRoute:
             path.append([pts.x, pts.y])
