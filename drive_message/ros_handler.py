@@ -1,5 +1,6 @@
 import rospy
 import numpy as np
+from pyproj import Proj, Transformer
 
 from drive_msgs.msg import *
 from geometry_msgs.msg import QuaternionStamped, PoseArray, Pose2D
@@ -18,7 +19,7 @@ class ROSHandler():
     def __init__(self, map, base_lla):
         rospy.init_node('drive_message', anonymous=False)
         self.set_messages(map, base_lla)
-        self.set_values()
+        self.set_values(base_lla)
         self.set_publisher_protocol()
         self.set_subscriber_protocol()
 
@@ -33,15 +34,19 @@ class ROSHandler():
         self.lane_data = LaneData()
         self.detection_data = DetectionData()
         self.ego_actuator = Actuator()
-
-    def set_values(self):
+    
+    def set_values(self, base_lla):
         self.oh = ObstacleHandler()
-        self.ego_local_pose = []
+        self.local_pose = []
         self.prev_lla = None
         self.lap_cnt = 0
         self.lap_flag = False
         self.goal_point = rospy.get_param("/goal_coordinate")
         self.lane_number = 0
+        self.kiapi_signals = ['None', 'Go', 'Stop', 'Slow_On', 'Slow_Off', 'Pit_Stop']
+        proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
+        proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
+        self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
 
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
@@ -53,7 +58,6 @@ class ROSHandler():
     
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
-        rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('LaneData', LaneData, self.lane_data_cb)
@@ -87,17 +91,7 @@ class ROSHandler():
         elif mode == 0 and self.vehicle_state.mode.data >= 1:
             self.can_input.EPS_En.data = 0
             self.can_input.ACC_En.data = 0
-        
-    
-    def navigation_data_cb(self, msg):
-        self.ego_local_pose = (msg.currentLocation.x, msg.currentLocation.y, msg.currentLocation.z)
-        if len(msg.plannedRoute) > 10:
-            check_forward =  (msg.plannedRoute[10].x, msg.plannedRoute[10].y)
-        else:
-            check_forward =  (msg.currentLocation.x, msg.currentLocation.y)
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, check_forward,  self.goal_point, 11,self.lap_flag)
-        self.system_status.lapCount.data = self.lap_cnt
-
+            
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.currentLane != 0:
             self.lane_number = msg.currentLane.currentLane
@@ -110,7 +104,16 @@ class ROSHandler():
         self.system_to_can(mode)
         self.system_status.systemMode.data = mode
         self.system_status.systemSignal.data = int(msg.user_signal.data)
-        self.system_status.kiapiSignal.data = int(msg.kiapi_signal.data)
+        self.system_status.kiapiSignal.data = self.kiapi_signals[int(msg.kiapi_signal.data)]
+    
+    def add_enu(self, lat, lng):
+        x, y, _ = self.transformer.transform(lng, lat, 7)
+        self.vehicle_state.enu.x = x
+        self.vehicle_state.enu.y = y
+
+        self.local_pose = (x,y)
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
+        self.system_status.lapCount.data = self.lap_cnt
 
     def nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
@@ -122,6 +125,7 @@ class ROSHandler():
             if len(parsed) == 3:
                 self.vehicle_state.position.x = parsed[0]
                 self.vehicle_state.position.y = parsed[1]
+                self.add_enu(parsed[0], parsed[1])
                 if self.prev_lla is None:
                     self.prev_lla = (parsed[0], parsed[1])
                     return
@@ -135,18 +139,17 @@ class ROSHandler():
         self.vehicle_state.header.stamp = rospy.Time.now()
         self.vehicle_state.position.x = msg.x
         self.vehicle_state.position.y = msg.y
+        self.add_enu(msg.x, msg.y)
         self.vehicle_state.heading.data = msg.theta
 
     def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
         self.vehicle_state.header = msg.header
-        if not check_error(self.vehicle_state.position.x, msg.latitude, 30):
-            self.vehicle_state.position.x = msg.latitude
-        if not check_error(self.vehicle_state.position.y, msg.longitude, 30):
-            self.vehicle_state.position.y = msg.longitude
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+        self.add_enu(msg.latitude, msg.longitude)
     
     def heading_cb(self, msg):
         yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
-        # if not check_error(self.vehicle_state.heading.data, yaw, 90):
         self.vehicle_state.heading.data = yaw  
 
     def target_actuator_cb(self, msg):
@@ -208,4 +211,4 @@ class ROSHandler():
         self.vehicle_state_pub.publish(self.vehicle_state)
         self.detection_data_pub.publish(self.detection_data)
         self.ego_actuator_pub.publish(self.ego_actuator)
-        self.oh.update_value(self.ego_local_pose, self.vehicle_state.heading.data)
+        self.oh.update_value(self.local_pose, self.vehicle_state.heading.data)

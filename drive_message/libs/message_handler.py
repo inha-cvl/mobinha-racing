@@ -1,6 +1,7 @@
 import tf
 import math
 import numpy as np
+import time
 
 def gps_to_decimal_degrees(nmea_pos):
     if len(nmea_pos) > 5:
@@ -128,7 +129,7 @@ def distance(point1, point2):
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
 #TODO # lap_number
-def check_lap_count(cnt, local_pos, reference_point, radius, lap_flag=False):
+def check_lap_count(cnt, local_pos, reference_point, radius, lap_flag):
     if local_pos is None:
         return cnt, lap_flag
     distance = math.sqrt((local_pos[0] - reference_point[0])**2 + (local_pos[1] - reference_point[1])**2)
