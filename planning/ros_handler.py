@@ -4,7 +4,7 @@ import numpy as np
 
 from drive_msgs.msg import *
 from geometry_msgs.msg import Point
-from pyproj import Proj, Transformer
+from visualization_msgs.msg import Marker
 
 
 class ROSHandler():
@@ -35,6 +35,7 @@ class ROSHandler():
 
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
+        self.path_pub = rospy.Publisher('/test_path', Marker, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
@@ -43,11 +44,7 @@ class ROSHandler():
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
 
     def system_status_cb(self, msg):
-        base_lla = msg.baseLLA
-        if self.transformer == None:
-            proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
-            proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
-            self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
+        self.map_name = msg.mapName.data   
         self.system_mode = msg.systemMode.data 
         self.current_signal = msg.systemSignal.data
         self.lap_count = msg.lapCount.data
@@ -58,10 +55,7 @@ class ROSHandler():
         self.current_heading = msg.heading.data
         self.current_position_lat = msg.position.x
         self.current_position_long = msg.position.y
-        if self.transformer == None:
-            return
-        x, y, _ = self.transformer.transform(self.current_position_long, self.current_position_lat, 7) 
-        self.local_pos = [x,y]
+        self.local_pos = (msg.enu.x, msg.enu.y)
     
     def can_output_cb(self, msg):
         self.current_long_accel = float(msg.Long_ACCEL.data)
@@ -79,8 +73,6 @@ class ROSHandler():
     def publish(self, local_action_set, road_max_vel):
         if local_action_set is not None and len(local_action_set) > 0:
             self.navigation_data = NavigationData()
-            self.navigation_data.currentLocation.x = self.local_pos[0]
-            self.navigation_data.currentLocation.y = self.local_pos[1]
             self.navigation_data.plannedVelocity.data = min(local_action_set[1][5], road_max_vel)
             for set in local_action_set:
                 point = Point()
@@ -92,8 +84,6 @@ class ROSHandler():
     
     def publish_frenet(self, path, kappa, velocity):
         self.navigation_data = NavigationData()
-        self.navigation_data.currentLocation.x = self.local_pos[0]
-        self.navigation_data.currentLocation.y = self.local_pos[1]
         if path != None:
             for i, x in enumerate(path.x):
                 point = Point()
@@ -105,3 +95,6 @@ class ROSHandler():
                 self.navigation_data.plannedKappa.append(rk)
         self.navigation_data.plannedVelocity.data = velocity
         self.navigation_data_pub.publish(self.navigation_data)
+    
+    def publish_path(self, path_viz):
+        self.path_pub.publish(path_viz)

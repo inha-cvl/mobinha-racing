@@ -40,7 +40,7 @@ class FrenetLocalPath:
     def calc_frenet_paths(self, c_speed, c_accel, c_d, c_d_d, c_d_dd, s0, road_widths, max_speed):
         frenet_paths = []
         # generate path to each offset goal
-        for di in np.arange(-road_widths['w_left'], road_widths['w_right'], self.d_road_w):
+        for di in np.arange(-road_widths[0], road_widths[1], self.d_road_w):
 
             # Lateral motion planning
             for Ti in np.arange(self.min_t, self.max_t, self.dt):

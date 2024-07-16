@@ -1,16 +1,20 @@
 import numpy as np
 import copy
+import heapq as hq
+
 import rospy
 from math import *
 from scipy.ndimage import gaussian_filter1d
 
+import global_path
+
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker, MarkerArray
-from libs.quadratic_spline_interpolate import QuadraticSplineInterpolate
 
 lanelets = None
 tiles = None
 tile_size = None
+graph = None
 lane_width = None
 
 def euc_distance(pt1, pt2):
@@ -196,6 +200,78 @@ def find_most_successor(check_l):
     return most_successor
 
 
+def node_matching(idnidx):
+    node_id = idnidx[0]
+    if lanelets[idnidx[0]].get('cut_idx') is not None:
+        for n, (s_idx, e_idx) in enumerate(lanelets[idnidx[0]]['cut_idx']):
+            if idnidx[1] >= s_idx and idnidx[1] < e_idx:
+                node_id += '_%s' % (n)
+                break
+
+    return node_id
+
+def dijkstra(start, finish):
+    distances = {}
+    previous = {}
+    nodes = []
+
+    for vertex in graph:
+        if vertex == start:
+            distances[vertex] = 0
+            hq.heappush(nodes, [distances[vertex], vertex])
+        else:
+            distances[vertex] = float('inf')
+            hq.heappush(nodes, [distances[vertex], vertex])
+        previous[vertex] = None
+
+    while nodes:
+        current = hq.heappop(nodes)[1]
+
+        if current == finish:
+            path = []
+            if previous[current] is not None:
+                while previous[current]:
+                    path.append(current)
+                    current = previous[current]
+                path.append(start)
+                path.reverse()
+                cost = distances[finish]
+                return (path, cost)
+
+            else:
+                return None
+
+        neighbors = graph[current]
+
+        for neighbor in neighbors:
+            if neighbor == start:
+                continue
+            # cost(start->current) + cost(current->neighbor)
+            bridge_cost = distances[current] + neighbors[neighbor]
+
+            # found shortest path! -> update!
+            if bridge_cost < distances[neighbor]:
+                distances[neighbor] = bridge_cost
+                previous[neighbor] = current
+
+                for node in nodes:
+                    if node[1] == neighbor:
+                        node[0] = bridge_cost
+                        break
+                hq.heapify(nodes)  # heapq relocate
+
+    return None
+
+
+
+
+def cut_by_start_goal(sidnidx, gidnidx, path_from_id):
+    waypoints = path_from_id[0]
+    print(waypoints[0], sidnidx[1], gidnidx[1])
+    s_idx = min(range(len(waypoints)), key=lambda i: euc_distance(waypoints[i], sidnidx[1]))
+    g_idx = min(range(len(waypoints)), key=lambda i: euc_distance(waypoints[i], gidnidx[1]))
+    return path_from_id[0][s_idx:g_idx+1],path_from_id[1][s_idx:g_idx+1],path_from_id[2][s_idx:g_idx+1]
+
 def get_neighbor(node):
     l_id = lanelets[node]['adjacentLeft']
     r_id = lanelets[node]['adjacentRight']
@@ -211,13 +287,16 @@ def smooth_interpolate(points, precision):
     points = filter_same_points(points)
     smoothed_path = gaussian_smoothing_2d(points)
     wx, wy = zip(*smoothed_path)
-    itp = QuadraticSplineInterpolate(list(wx), list(wy))
-    itp_points = []
-    for ds in np.arange(0.0, itp.s[-1], precision):
-        x, y = itp.calc_position(ds)
-        itp_points.append((float(x), float(y)))
+    if len(wx) > 1 and len(wy) > 1:
+        itp = global_path.libs.quadratic_spline_interpolate.QuadraticSplineInterpolate(list(wx), list(wy))
+        itp_points = []
+        for ds in np.arange(0.0, itp.s[-1], precision):
+            x, y = itp.calc_position(ds)
+            itp_points.append((float(x), float(y)))
 
-    return itp_points
+        return itp_points
+    else:
+        return []
 
 def filter_same_points(points):
     filtered_points = []
@@ -230,6 +309,43 @@ def filter_same_points(points):
         pre_pt = pt
 
     return filtered_points
+
+
+def node_to_waypoints(shortest_path):
+    final_path = []
+    final_ids = []
+    final_vs = []
+
+    for i, id in enumerate(shortest_path):
+        alpha_path = []
+        v = 0
+        _id = id
+
+        split_id = id.split('_')
+        if len(split_id) == 2:
+            s_idx, e_idx = (lanelets[split_id[0]]['cut_idx'][int(split_id[1])])
+            alpha_path.append(lanelets[split_id[0]]['waypoints'][int((s_idx+e_idx)//2)])
+            v = lanelets[split_id[0]]['speedLimit']-1
+            _id = str(split_id[0])
+           
+        else:
+            alpha_path.extend(lanelets[id]['waypoints'])
+            v = lanelets[id]['speedLimit']-1
+            _id = str(id)
+        
+        
+        intp_path = smooth_interpolate(alpha_path, 1)
+        if len(intp_path) > 0:
+            lls_len = len(intp_path)
+            final_path.extend(intp_path)
+        else:
+            lls_len = len(alpha_path)
+            final_path.extend(alpha_path)
+
+        final_vs.extend([v]*lls_len)
+        final_ids.extend([_id]*lls_len)
+            
+    return final_path, final_ids, final_vs
 
 def calc_norm_vec(points):
     theta = atan2(points[1][1]-points[0][1], points[1][0]-points[0][0])

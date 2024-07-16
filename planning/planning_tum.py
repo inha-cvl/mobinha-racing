@@ -53,7 +53,7 @@ class Planning():
         toppath = os.path.dirname(os.path.realpath(__file__))
         globtraj_input_path =  toppath + "/inputs/traj_ltpl_cl/traj_ltpl_cl_" + specifier + ".csv"
         path_dict = {'globtraj_input_path':globtraj_input_path,
-                    'graph_store_path': toppath + "/inputs/stored_graph.pckl",
+                    'graph_store_path': toppath + f"/inputs/stored_{specifier}_graph.pckl",
                     'ltpl_offline_param_path': toppath + "/params/ltpl_config_offline.ini",
                     'ltpl_online_param_path': toppath + "/params/ltpl_config_online.ini",
                     'log_path': toppath + "/logs/graph_ltpl/",
@@ -80,8 +80,7 @@ class Planning():
             ltpl_obj = copy.deepcopy(self.race_obj)
             track_specifier = self.specifiers[1]
         
-        _, start_node = ltpl_obj.set_startpos(pos_est=self.RH.local_pos, heading_est=math.radians(self.RH.
-        current_heading))
+        _, start_node = ltpl_obj.set_startpos(pos_est=self.RH.local_pos, heading_est=math.radians(self.RH.current_heading))
         if start_node is not None:
             self.set_start = True
             self.start_move = True
@@ -95,7 +94,9 @@ class Planning():
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             check_lap = self.check_lap()
             if check_lap == 'PASS':
+                print(self.prev_lap, self.RH.lap_count)
                 self.prev_lap = self.RH.lap_count
+                #print(self.prev_lap, self.RH.lap_count)
             while not self.set_start:            
                 if self.RH.local_pos is not None:
                     self.set_start_pos()

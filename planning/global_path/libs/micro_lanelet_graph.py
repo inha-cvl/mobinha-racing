@@ -1,5 +1,5 @@
 import copy
-from libs.gp_utils import *
+from global_path.libs.gp_utils import *
 
 class MicroLaneletGraph:
     def __init__(self, lmap, cut_dist):

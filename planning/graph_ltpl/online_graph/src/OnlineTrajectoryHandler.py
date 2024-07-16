@@ -905,7 +905,7 @@ class OnlineTrajectoryHandler(object):
 
                         # Append zeros if reduced planning horizon
                         if v_idx != num_el or v_idx <= 2:
-                            print("Modification of the vx-profile due to reduced planning horizon!")
+                            #print("Modification of the vx-profile due to reduced planning horizon!")
                             vx = np.append(vx, [0.0] * (num_el - v_idx))
 
                         # check if velocity profile is a valid solution
