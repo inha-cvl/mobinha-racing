@@ -534,8 +534,8 @@ image-position:top;
                      </font>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">background-color: rgb(250, 67, 189);
-color: rgb(255, 255, 255);</string>
+                     <string notr="true">QLabel {border: 2px solid black;
+                border-radius: 5px;}</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -567,8 +567,8 @@ color: rgb(255, 255, 255);</string>
                      </font>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">background-color: rgb(71, 222, 154);
-color: rgb(255, 255, 255);</string>
+                     <string notr="true">QLabel {border: 2px solid black;
+                border-radius: 5px;}</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -640,6 +640,12 @@ color: rgb(255, 255, 255);</string>
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(238, 238, 236);</string>
+                   </property>
                    <property name="text">
                     <string>Go</string>
                    </property>
@@ -666,6 +672,12 @@ color: rgb(255, 255, 255);</string>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
+                   </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(238, 238, 236);</string>
                    </property>
                    <property name="text">
                     <string>Stop</string>
@@ -694,6 +706,12 @@ color: rgb(255, 255, 255);</string>
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(238, 238, 236);</string>
+                   </property>
                    <property name="text">
                     <string>Slow On</string>
                    </property>
@@ -721,6 +739,12 @@ color: rgb(255, 255, 255);</string>
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(238, 238, 236);</string>
+                   </property>
                    <property name="text">
                     <string>Slow Off</string>
                    </property>
@@ -747,6 +771,12 @@ color: rgb(255, 255, 255);</string>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
+                   </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(238, 238, 236);</string>
                    </property>
                    <property name="text">
                     <string>Pit Stop</string>
@@ -784,7 +814,7 @@ color: rgb(255, 255, 255);</string>
                  <item>
                   <widget class="QWidget" name="widget_5" native="true">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                      <horstretch>8</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -795,9 +825,9 @@ color: rgb(255, 255, 255);</string>
                       <item>
                        <widget class="QWidget" name="widget_2" native="true">
                         <property name="sizePolicy">
-                         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                           <horstretch>0</horstretch>
-                          <verstretch>5</verstretch>
+                          <verstretch>6</verstretch>
                          </sizepolicy>
                         </property>
                         <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -813,7 +843,7 @@ color: rgb(255, 255, 255);</string>
                       <item>
                        <widget class="QWidget" name="widget_3" native="true">
                         <property name="sizePolicy">
-                         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                           <horstretch>0</horstretch>
                           <verstretch>1</verstretch>
                          </sizepolicy>
@@ -925,7 +955,7 @@ color: rgb(255, 255, 255);</string>
                      <bool>true</bool>
                     </property>
                     <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
@@ -939,7 +969,7 @@ color: rgb(255, 255, 255);</string>
                     <property name="font">
                      <font>
                       <family>Ubuntu</family>
-                      <pointsize>14</pointsize>
+                      <pointsize>12</pointsize>
                       <weight>75</weight>
                       <bold>true</bold>
                      </font>
@@ -951,7 +981,8 @@ color: rgb(255, 255, 255);</string>
                      <enum>Qt::DefaultContextMenu</enum>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true"/>
+                     <string notr="true">QLabel {border: 2px solid black;
+                border-radius: 5px;}</string>
                     </property>
                     <property name="text">
                      <string/>
@@ -969,10 +1000,13 @@ color: rgb(255, 255, 255);</string>
                     <property name="orientation">
                      <enum>Qt::Vertical</enum>
                     </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
                     <property name="sizeHint" stdset="0">
                      <size>
                       <width>20</width>
-                      <height>40</height>
+                      <height>100</height>
                      </size>
                     </property>
                    </spacer>

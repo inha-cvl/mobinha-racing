@@ -18,7 +18,7 @@ class ROSHandler():
         self.ego_value = {'velocity':0, 'steer': 0, 'accel': 0, 'brake': 0, 'gear':'P'}
         self.target_value = {'velocity':0, 'steer': 0, 'accel': 0, 'brake': 0}
         self.can_inform = {'eps_status':'Off', 'acc_status':'off'}
-        self.system_status = {'mode': 0, 'signal':0, 'lap_count': 0}
+        self.system_status = {'mode': 0, 'signal':0, 'lap_count': 0, 'kiapi_signal':0,}
         self.user_input = UserInput()
         self.user_value = {'user_mode': 0, 'user_signal': 0, 'kiapi_signal':0}
         self.lane_number = 0
@@ -57,6 +57,7 @@ class ROSHandler():
         self.system_status['mode'] = int(msg.systemMode.data)
         self.system_status['signal'] = int(msg.systemSignal.data)
         self.system_status['lap_count'] = msg.lapCount.data
+        self.system_status['kiapi_signal'] = msg.kiapiSignal.data
 
     # lane_number
     def lane_data_cb(self, msg):

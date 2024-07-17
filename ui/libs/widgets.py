@@ -26,8 +26,7 @@ class SpeedometerWidget(QWidget):
         super().__init__(parent)
         self.speed = 0.0
         self.target_speed = 0.0
-        self.setFixedWidth(150)
-        self.setContentsMargins(0, 0, 0, 0)
+        self.setContentsMargins(-5,-5,-5,-5)
 
     def set_speed(self, e,t):
         self.speed = e
@@ -108,8 +107,7 @@ class WheelWidget(QWidget):
         super().__init__(parent)
         self.yaw = 0.0
         self.target_yaw = 0.0
-        self.setFixedWidth(150)
-        self.setContentsMargins(0, 0, 0, 0)
+        self.setContentsMargins(-20, -20, -20, -20)
 
     def set_yaw(self, e,t):
         self.yaw = e

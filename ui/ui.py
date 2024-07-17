@@ -33,7 +33,10 @@ class MyApp(QMainWindow, form_class):
         self.sig_in = False
         self.mode_strings = ['Autonomous Driving OFF','Auotnomous Driving ON', 'EPS Only Mode', 'ACC Only Mode']
         self.signal_strings = ['Off', 'Left Change', 'Right Change', 'Hazard', 'Straight']
-        
+        self.kiapi_signal_buttons = [None, self.buttonGo, self.buttonStop, self.buttonSlowOn, self.buttonSlowOff, self.buttonPitStop]
+        self.kiapi_signal_strings = ['NONE', 'GO', 'STOP', 'SLOW_ON', 'SLOW_OFF', 'PIT_STOP']
+        self.prev_kiapi_signal = 0
+
     def set_widgets(self):
         self.rviz_widget = RvizWidget(self)
         self.speedometer_widget = SpeedometerWidget(self)
@@ -60,10 +63,11 @@ class MyApp(QMainWindow, form_class):
         self.wheel_widget.set_yaw(self.RH.ego_value['steer'], self.RH.target_value['steer'])
         self.gear_widget.set_gear(self.RH.ego_value['gear'])
 
-        self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'],
+        self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'],              
                                  self.RH.lane_number, self.RH.system_status['lap_count'])
 
         self.can_table_update(self.RH.can_inform)
+        self.kiapi_signal_update(self.RH.system_status['kiapi_signal'])
         
     def system_label_update(self, mode, signal, lane_number, lap_count):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
@@ -75,6 +79,19 @@ class MyApp(QMainWindow, form_class):
         self.canTable.setItem(0, 1, QTableWidgetItem(can_inform['eps_status']))
         self.canTable.setItem(1, 1, QTableWidgetItem(can_inform['acc_status']))
 
+    def kiapi_signal_update(self, kiapi_signal):
+        if kiapi_signal == '':
+            return
+        idx = self.kiapi_signal_strings.index(kiapi_signal)
+        if idx != 0 and self.prev_kiapi_signal != idx:
+            for i, kiapi_button in enumerate(self.kiapi_signal_buttons):
+                if i == 0:
+                    continue
+                if i == idx:
+                    kiapi_button.setStyleSheet(""" QPushButton {background-color: #0066ff;color: white;}""")
+                else:
+                    kiapi_button.setStyleSheet(""" QPushButton {background-color: #eeeeec; color: black;}""")
+        
 
     def click_mode(self, mode):
         self.RH.user_value['user_mode'] = mode
@@ -85,7 +102,7 @@ class MyApp(QMainWindow, form_class):
         self.check_timer()
 
     # KIAPI CAN signal
-    def click_can_signal(self, signal_value):
+    def click_kiapi_signal(self, signal_value):
         self.RH.user_value['kiapi_signal'] = signal_value
         self.check_timer()
 
@@ -123,10 +140,8 @@ class MyApp(QMainWindow, form_class):
         top_buttons2 = [None,self.buttonLeft, self.buttonRight, self.buttonLeftRight, self.buttonUp]
         for i in range(1,5):
             top_buttons2[i].clicked.connect(partial(self.click_signal, int(i)))
-
-        signal_buttons = [None, self.buttonGo, self.buttonStop, self.buttonSlowOn, self.buttonSlowOff, self.buttonPitStop]
         for i in range(1,6):
-            signal_buttons[i].clicked.connect(partial(self.click_can_signal, int(i)))
+            self.kiapi_signal_buttons[i].clicked.connect(partial(self.click_kiapi_signal, int(i)))
 
 def main():
     app = QApplication(sys.argv)
