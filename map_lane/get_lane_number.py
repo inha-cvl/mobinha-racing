@@ -12,9 +12,12 @@ class GetLaneNumber:
         gput.tile_size = self.MAP.tile_size
     
     def current_lane_number(self, local_pos):
-        l_id, _ = gput.lanelet_matching(local_pos)
-        curr_lane_num = gput.lanelets[l_id]['laneNo']
-        return curr_lane_num
+        idnidx = gput.lanelet_matching(local_pos)
+        if idnidx is not None:
+            curr_lane_num = gput.lanelets[idnidx[0]]['laneNo']
+            return curr_lane_num
+        else:
+            return -1
 
     def execute(self, local_pos):
         if local_pos is None:

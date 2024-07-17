@@ -103,7 +103,7 @@ def Bound(ns, id_, n, points, type_, scale, color):
     if type_ == 'solid':
         marker = Line('%s_%s' % (ns, id_), n, scale, color, 0)
         for pt in points:
-            marker.points.append(Point(x=pt[0], y=pt[1], z=0.0))
+            marker.points.append(Point(x=pt[0], y=pt[1], z=1.0))
 
     elif type_ == 'dotted':
         marker = Points('%s_%s' % (ns, id_), n, scale, color)
