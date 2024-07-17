@@ -38,9 +38,3 @@ std_msgs/String Long_ACCEL  # Longitudinal acceleration, scaled 0.01 (m/s^2)
 # std_msgs/String SIG_SLOW_ON  # 0x00: Disabled, 0x01: Enabled
 # std_msgs/String SIG_SLOW_OFF  # 0x00: Disabled, 0x01: Enabled
 # std_msgs/String reserved  # reserved for future function expansion
-# std_msgs/String SIG_GO  # 0x00: Disabled, 0x01: Enabled
-# std_msgs/String SIG_STOP  # 0x00: Disabled, 0x01: Enabled
-# std_msgs/String SIG_PIT_STOP  # 0x00: Disabled, 0x01: Enabled
-# std_msgs/String SIG_SLOW_ON  # 0x00: Disabled, 0x01: Enabled
-# std_msgs/String SIG_SLOW_OFF  # 0x00: Disabled, 0x01: Enabled
-# std_msgs/String reserved  # reserved for future function expansion

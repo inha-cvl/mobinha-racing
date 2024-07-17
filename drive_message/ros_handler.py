@@ -39,11 +39,11 @@ class ROSHandler():
         self.oh = ObstacleHandler()
         self.local_pose = []
         self.prev_lla = None
-        self.lap_cnt = 0
+        self.lap_cnt = rospy.get_param("/now_lap")
         self.lap_flag = False
         self.goal_point = rospy.get_param("/goal_coordinate")
         self.lane_number = 0
-        self.kiapi_signals = ['None', 'Go', 'Stop', 'Slow_On', 'Slow_Off', 'Pit_Stop']
+        self.kiapi_signals = ['NONE', 'GO', 'STOP', 'SLOW_ON', 'SLOW_OFF', 'PIT_STOP']
         proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
         proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
         self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
@@ -60,7 +60,7 @@ class ROSHandler():
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
-        rospy.Subscriber('LaneData', LaneData, self.lane_data_cb)
+        rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
@@ -82,6 +82,10 @@ class ROSHandler():
         self.ego_actuator.accel.data = float(msg.Long_ACCEL.data)
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
+        #TODO: KIAPI Signal Parsing
+        '''
+        self.system_status.kiapiSignal.data = get_kiapi_signal(self.kiapi_signals, msg.SIG_GO.data, msg.SIG_STOP.data, msg.SIG_PIT_STOP.data, msg.SIG_SLOW_ON.data, msg.SIG_SLOW_OFF.data)
+        '''
     
     def system_to_can(self, mode):
         if self.vehicle_state.mode.data == 0:
@@ -95,9 +99,6 @@ class ROSHandler():
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.currentLane != 0:
             self.lane_number = msg.currentLane.currentLane
-        
-    def signal_cb(self, msg):
-        self.system_status.systemSignal.data = int(msg.data)
 
     def user_input_cb(self, msg): #mode, signal, state, health
         mode = int(msg.user_mode.data)
