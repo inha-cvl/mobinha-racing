@@ -4,8 +4,8 @@ import numpy as np
 
 from drive_msgs.msg import *
 from geometry_msgs.msg import Point
-from visualization_msgs.msg import Marker
-
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 
 class ROSHandler():
     def __init__(self):
@@ -35,7 +35,7 @@ class ROSHandler():
 
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
-        self.path_pub = rospy.Publisher('/test_path', Marker, queue_size=1)
+        self.global_path_pub = rospy.Publisher('/global_path', Path, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
@@ -96,5 +96,16 @@ class ROSHandler():
         self.navigation_data.plannedVelocity.data = velocity
         self.navigation_data_pub.publish(self.navigation_data)
     
-    def publish_path(self, path_viz):
-        self.path_pub.publish(path_viz)
+    def publish_global_path(self, waypoints):
+        path = Path()
+        path.header.frame_id = "world" 
+        for waypoint in waypoints:
+            pose = PoseStamped()
+            pose.header.frame_id = "gpath"
+            pose.header.stamp = rospy.Time.now()
+            pose.pose.position.x = waypoint[0]
+            pose.pose.position.y = waypoint[1]
+            pose.pose.position.z = 0
+            pose.pose.orientation.w = 1.0
+            path.poses.append(pose)
+        self.global_path_pub.publish(path)

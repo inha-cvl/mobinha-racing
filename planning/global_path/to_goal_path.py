@@ -1,29 +1,28 @@
+#!/usr/bin/env python3
+import os
+import sys
+toppath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(toppath)
+
 import copy
 import rospy
 from visualization_msgs.msg import Marker
-from libs.lanelet import LaneletMap, TileMap
-from libs.micro_lanelet_graph import MicroLaneletGraph
-import libs.gp_utils as gput
-import libs.save_ as save_ 
+import global_path
+import global_path.libs.gp_utils as gput
 
 rospy.init_node('GlobalPath', anonymous=False)
 target = 'to_goal'
 pub_global_path = rospy.Publisher(f'/{target}_path', Marker, queue_size=1)
 
-tile_size = 5
-cut_dist = 15
-precision = 1
+
 diag_len = 25
 lane_width = 3.25
 
-lmap = LaneletMap('/home/kana/catkin_ws/src/mobinha-racing/map_lane/hd_map/maps/KIAPI_Racing.json')
-tmap = TileMap(lmap.lanelets, tile_size)
-mlg = MicroLaneletGraph(lmap, cut_dist)
-graph = mlg.graph
-
-gput.lanelets = mlg.lanelets
-gput.tiles = tmap.tiles
-gput.tile_size = tile_size
+map = global_path.libs.load_map.MAP('KIAPI_Racing')
+gput.lanelets = map.lanelets
+gput.tiles = map.tiles
+gput.tile_size = map.tile_size
+gput.graph = map.graph
 gput.lane_width = lane_width
 
 start_pose = [55.365, 8.970]
@@ -62,7 +61,9 @@ for i,f in enumerate(final_path):
     final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, Rk, vx, ax])
     s += 1
 
-save_.to_csv('./paths/to_goal.csv', final_tr)
+top_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+file_path = f'{top_path}/inputs/traj_ltpl_cl/traj_ltpl_cl_to_goal.csv'
+global_path.libs.save_.to_csv(file_path, final_tr)
 print("saved")
 
 color = (255/255,79/255, 66/255, 0.5)

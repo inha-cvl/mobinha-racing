@@ -292,7 +292,7 @@ class Graph_LTPL(object):
 
         # if out of track or wrong heading, jump to start of loop
         out_of_track = not in_track or not cor_heading
-        return out_of_track, start_node
+        return out_of_track, start_node, self.__graph_base.refline
 
     # ------------------------------------------------------------------------------------------------------------------
 

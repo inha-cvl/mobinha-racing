@@ -22,9 +22,9 @@ class GetMaxVelocity:
     #             self.global_velocitys.append(float(splited[10]))
 
     def set_values(self,global_path_name):
-        csv_file = f'./global_path/paths/{global_path_name}.csv'
+        csv_file = f'./inputs/traj_ltpl_cl/traj_ltpl_cl_{global_path_name}.csv'
         with open(csv_file, 'r', encoding='utf-8') as f:
-            rdr = csv.reader(f)
+            rdr = csv.reader(f, delimiter=';')
             for i, line in enumerate(rdr):
                 if i < 2:
                     continue

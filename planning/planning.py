@@ -10,14 +10,13 @@ import threading
 import signal
 import datetime
 import math
-import graph_ltpl
-import frenet_ltpl
 import time
 import copy
-import numpy as np
+
+
+import graph_ltpl
 
 from ros_handler import ROSHandler
-from longitudinal.adaptive_cruise_control import AdaptiveCruiseControl
 from longitudinal.get_max_velocity import GetMaxVelocity
 from global_path.global_path_planner import GlobalPathPlanner
 
@@ -27,7 +26,6 @@ def signal_handler(sig, frame):
 class Planning():
     def __init__(self):
         self.RH = ROSHandler()
-        self.acc = AdaptiveCruiseControl(self.RH)
         self.gmv = None
         self.gpp = None
         self.setting_values()
@@ -36,27 +34,27 @@ class Planning():
         self.shutdown_event = threading.Event()
 
         self.specifiers = ['to_goal', 'race']
+        self.race_mode = self.specifiers[0]
 
+        start_time = time.time()
         to_goal_path_dict = self.get_path_dict(self.specifiers[0])
         self.to_goal_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=to_goal_path_dict,visual_mode=False,log_to_file=False)
-        race_path_dict = self.get_path_dict(self.specifiers[1])
         self.to_goal_obj.graph_init()
+        race_path_dict = self.get_path_dict(self.specifiers[1])
         self.race_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=race_path_dict,visual_mode=False,log_to_file=False)
         self.race_obj.graph_init()
         self.ltpl_obj = None
+        rospy.loginfo(f'[Planning] {self.specifiers} Global Path set took {round(time.time()-start_time, 4)} sec')
 
-        self.set_start = False
+        self.is_initialized = False
         self.start_move = False
-        self.path_mode = 'tum'
         
         self.local_action_set = []
-        self.prev_lap = 0
-
-        self.flp = frenet_ltpl.frenet_local_path.FrenetLocalPath()
-        self.gpp = GlobalPathPlanner(self.RH.map_name)
+        self.prev_lap = rospy.get_param('/now_lap')
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
-        rospy.loginfo('[Planning] Value set.')
-    
+
+        self.gpp = GlobalPathPlanner(self.RH.map_name)
+        
     def get_path_dict(self,  specifier):
         toppath = os.path.dirname(os.path.realpath(__file__))
         globtraj_input_path =  toppath + "/inputs/traj_ltpl_cl/traj_ltpl_cl_" + specifier + ".csv"
@@ -69,105 +67,74 @@ class Planning():
                     }
         return path_dict
 
-    def check_lap(self):
-        if self.prev_lap != self.RH.lap_count:
-            self.set_start = False
-            return 'PASS'
-        elif self.RH.lap_count > 5:
-            return 'OVER'
-        else:
-            return 'YET'
+    def check_planning_state(self):
+        planning_state = 'NONE'
+        race_mode = self.race_mode
 
+        if self.start_move == False:
+            race_mode = 'to_goal'
+            planning_state = 'INIT'
+        elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 5 and self.race_mode != 'pit_stop': #If pass the goal point, 
+            self.is_initialized = False
+            self.prev_lap = self.RH.lap_count
+            race_mode = 'race'
+            planning_state = 'INIT'
+        elif (self.RH.lap_count >= 5 or self.RH.kiapi_signal == 'PIT_STOP' )and self.race_mode != 'pit_stop':
+            self.is_initialized = False
+            race_mode = 'pit_stop'
+            planning_state = 'INIT'
+        if self.is_initialized == True:
+            planning_state = 'MOVE'
 
-    def set_start_pos(self):
-        start_time = time.time()
-        if self.RH.lap_count == 0:
-            ltpl_obj = copy.deepcopy(self.to_goal_obj)
-            track_specifier = self.specifiers[0]
-        else:
-            ltpl_obj = copy.deepcopy(self.race_obj)
-            track_specifier = self.specifiers[1]
+        return planning_state, race_mode
         
-        _, start_node = ltpl_obj.set_startpos(pos_est=self.RH.local_pos, heading_est=math.radians(self.RH.
+    def set_start_pos(self, race_mode):
+        start_time = time.time()
+        if race_mode == 'to_goal':
+            ltpl_obj = copy.deepcopy(self.to_goal_obj)
+        elif race_mode == 'race':
+            ltpl_obj = copy.deepcopy(self.race_obj)
+        elif race_mode == 'pit_stop':
+            ltpl_obj = copy.deepcopy(self.pit_stop_obj)
+        
+        _, start_node, g_path = ltpl_obj.set_startpos(pos_est=self.RH.local_pos, heading_est=math.radians(self.RH.
         current_heading))
         if start_node is not None:
-            self.set_start = True
+            self.is_initialized = True
             self.start_move = True
             self.traj_set = {'left': None}
             self.ltpl_obj = ltpl_obj
-            self.gmv = GetMaxVelocity(self.RH, track_specifier)
-            rospy.loginfo(f'[Planning] Start position set. {time.time()-start_time}')
+            self.gmv = GetMaxVelocity(self.RH, race_mode)
+            self.RH.publish_global_path(g_path)
+            rospy.loginfo(f'[Planning] {race_mode} Start position set took {round(time.time()-start_time, 4)} sec')
     
-    def init_pit_values(self, pit_path):
-        self.current_index = -1
-        self.current_s = 0
-        self.current_d = 0
-        self.current_d_d = 0
-        self.current_d_dd = 0
-
-        self.pit_path_x = pit_path[0]
-        self.pit_path_y = pit_path[1]
-        self.pit_path_k = pit_path[2]
-        self.pit_path_w_right = pit_path[3]
-        self.pit_path_w_left = pit_path[4]
-        self.pit_path_speed = pit_path[5]
-        self.pit_path_viz = pit_path[6]
-
-        self.pit_path_ref_line = np.vstack((self.pit_path_x, self.pit_path_y)).T
-        _,_,_,self.pit_path_kappa, self.pit_path_csp = self.flp.generate_target_course(self.pit_path_x, self.pit_path_y, self.pit_path_k)
-
+    def planning_pit_stop(self):
+        start_time = time.time()
+        gpp_result = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
+        if gpp_result:
+            pit_stop_path_dict = self.get_path_dict('pit_stop')
+            self.pit_stop_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=pit_stop_path_dict,visual_mode=False,log_to_file=False)
+            self.pit_stop_obj.graph_init()
+            self.is_initialized = False
+            rospy.loginfo(f'[Planning] pit_stop Global Path set took {round(time.time()-start_time, 4)} sec')
 
     def initd(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
-            check_lap = self.check_lap()
-            if self.path_mode != 'tum':
-                pass
-            if check_lap == 'PASS':
-                self.prev_lap = self.RH.lap_count
-            while not self.set_start:            
-                if self.RH.local_pos is not None:
-                    self.set_start_pos()
-                rate.sleep()
-    
-   
-
-    def pitd(self):
-        rate = rospy.Rate(20)
-        pit_path = []
-          
-        while not rospy.is_shutdown() and not self.shutdown_event.is_set():
-            if self.RH.kiapi_signal == 'Pit_Stop' and self.path_mode != 'frenet':
-                start_time = time.time()
-                pit_path = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point)
-                # x, y, k, w_right, w_left, max_speed
-                if pit_path is not None:
-                    self.init_pit_values(pit_path)
-                    
-                    self.path_mode = 'frenet'
-                    rospy.loginfo(f'[Planning] Frenet global-path set. {time.time()-start_time}')
-            elif self.path_mode == 'frenet':
-                self.RH.publish_path(self.pit_path_viz)
-                start_time = time.time()
-                self.current_index = frenet_ltpl.get_s_coord.closest_path_index(self.pit_path_ref_line, self.RH.local_pos, 0)
-                current_max_speed = self.pit_path_speed[self.current_index]
-                local_path = self.flp.frenet_optimal_planning(
-                    self.pit_path_csp, self.current_index, self.RH.current_velocity, self.RH.current_long_accel,
-                    self.current_d, self.current_d_d, self.current_d_dd, self.RH.object_list2, [self.pit_path_w_left[self.current_index],self.pit_path_w_right[self.current_index]], current_max_speed)
-                if local_path is not None:
-                    rospy.loginfo(f'[Planning] Frenet local path created. {time.time()-start_time}')
-                    road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
-                else:
-                    rospy.logwarn(f'[Planning] Frenet local path is None. {time.time()-start_time}')
-                    road_max_vel = 5
-                self.RH.publish_frenet(local_path, self.pit_path_kappa, road_max_vel)
+            planning_state, self.race_mode = self.check_planning_state()
+            if planning_state == 'INIT':
+                if self.race_mode == 'pit_stop':
+                    self.planning_pit_stop()
+                while not self.is_initialized:            
+                    if self.RH.local_pos is not None:
+                        self.set_start_pos(self.race_mode)
+                    rate.sleep()
             rate.sleep()
-
 
     def executed(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
-            while self.start_move and self.path_mode == 'tum':
+            while self.start_move:
                 for sel_action in ["right", "left", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
@@ -183,9 +150,11 @@ class Planning():
                                                 vel_est=self.RH.current_velocity,
                                                 vel_max=110/3.6,
                                                 safety_d=60)[0]
-                if self.RH.kiapi_signal == 'Pit_Stop':
-                    road_max_vel = 7
-                road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
+                if not self.is_initialized:
+                    road_max_vel = 5
+                else:
+                    road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
+                    
                 self.RH.publish(local_action_set, road_max_vel)
                 rate.sleep()
             rate.sleep()
@@ -198,25 +167,20 @@ def main():
 
     thread1 = threading.Thread(target=planning.initd)
     thread2 = threading.Thread(target=planning.executed)
-    thread3 = threading.Thread(target=planning.pitd)
 
     thread1.start()
     thread2.start()
-    thread3.start()
-
 
     try:
         thread1.join()
         thread2.join()
-        thread3.join()
 
     except KeyboardInterrupt:
         planning.shutdown_event.set()
         thread1.join()
         thread2.join()
-        thread3.join()
     
-    rospy.loginfo("ROSManager has shut down gracefully.")
+    rospy.loginfo("[Planning] Has shut down gracefully.")
 
     planning.execute()
 

@@ -311,7 +311,7 @@ def filter_same_points(points):
     return filtered_points
 
 
-def node_to_waypoints(shortest_path):
+def node_to_waypoints(shortest_path, sidnidx, gidnidx):
     final_path = []
     final_ids = []
     final_vs = []
@@ -322,29 +322,21 @@ def node_to_waypoints(shortest_path):
         _id = id
 
         split_id = id.split('_')
+        
         if len(split_id) == 2:
-            s_idx, e_idx = (lanelets[split_id[0]]['cut_idx'][int(split_id[1])])
-            alpha_path.append(lanelets[split_id[0]]['waypoints'][int((s_idx+e_idx)//2)])
-            v = lanelets[split_id[0]]['speedLimit']-1
-            _id = str(split_id[0])
-           
+            _id = split_id[0]
+            s_idx, e_idx = (lanelets[_id]['cut_idx'][int(split_id[1])])
+            alpha_path = lanelets[_id]['waypoints'][s_idx:e_idx]
         else:
-            alpha_path.extend(lanelets[id]['waypoints'])
-            v = lanelets[id]['speedLimit']-1
-            _id = str(id)
-        
-        
-        intp_path = smooth_interpolate(alpha_path, 1)
-        if len(intp_path) > 0:
-            lls_len = len(intp_path)
-            final_path.extend(intp_path)
-        else:
-            lls_len = len(alpha_path)
-            final_path.extend(alpha_path)
+            _id = id
+            alpha_path = lanelets[_id]['waypoints']
 
+        v = lanelets[_id]['speedLimit']-1
+        lls_len = len(alpha_path)
         final_vs.extend([v]*lls_len)
         final_ids.extend([_id]*lls_len)
-            
+        final_path.extend(alpha_path)
+       
     return final_path, final_ids, final_vs
 
 def calc_norm_vec(points):
@@ -421,13 +413,11 @@ def adjust_velocity_profile(velocity_profile):
     while i < len(velocity_profile) - final_decel_len:
         if velocity_profile[i] != velocity_profile[i-1]:
             if velocity_profile[i] < velocity_profile[i-1]:
-                # 감속 구간: 이후 값이 시작하기 전부터 감속 시작
                 transition_start = max(i - decel_distance, init_accel_len)
-                transition = np.linspace(velocity_profile[i-1], velocity_profile[i], decel_distance).tolist()                
+                transition = np.linspace(velocity_profile[i-1], velocity_profile[i], decel_distance).tolist()
                 adjusted_profile = adjusted_profile[:transition_start] + transition + [velocity_profile[i]]
                 i += 1
             else:
-                # 속도 증가 구간
                 transition = np.linspace(velocity_profile[i-1], velocity_profile[i], accel_distance).tolist()
                 adjusted_profile.extend(transition[1:])
                 i += accel_distance - 1
@@ -446,29 +436,31 @@ def adjust_velocity_profile(velocity_profile):
     
     # Final deceleration
     for i in range(len(adjusted_profile) - final_decel_len, len(adjusted_profile)):
-        acceleration_profile[i] = -3* (i - (len(adjusted_profile) - final_decel_len)) / final_decel_len
+        acceleration_profile[i] = -3 * (i - (len(adjusted_profile) - final_decel_len)) / final_decel_len
     
     # Middle part
     i = init_accel_len
     while i < len(adjusted_profile) - final_decel_len:
         if adjusted_profile[i] != adjusted_profile[i-1]:
             if adjusted_profile[i] > adjusted_profile[i-1]:
-                # Accelerating
                 for j in range(accel_distance):
-                    acceleration_profile[i + j] = 2.5 * (j + 1) / accel_distance
+                    if i + j < len(acceleration_profile):
+                        acceleration_profile[i + j] = 2.5 * (j + 1) / accel_distance
                 for j in range(accel_distance):
-                    acceleration_profile[i + accel_distance + j] = 2.5 * (accel_distance - j - 1) / accel_distance
+                    if i + accel_distance + j < len(acceleration_profile):
+                        acceleration_profile[i + accel_distance + j] = 2.5 * (accel_distance - j - 1) / accel_distance
             elif adjusted_profile[i] < adjusted_profile[i-1]:
-                # Decelerating
                 for j in range(decel_distance):
-                    acceleration_profile[i + j] = -3 * (j + 1) / decel_distance
+                    if i + j < len(acceleration_profile):
+                        acceleration_profile[i + j] = -3 * (j + 1) / decel_distance
                 for j in range(decel_distance):
-                    acceleration_profile[i + decel_distance + j] = -3 * (decel_distance - j - 1) / decel_distance
+                    if i + decel_distance + j < len(acceleration_profile):
+                        acceleration_profile[i + decel_distance + j] = -3 * (decel_distance - j - 1) / decel_distance
             i += 2 * decel_distance
         else:
             i += 1
     
-    distance = [0]  # Start with initial distance as 0
+    distance = [0]
 
     for i in range(1, len(adjusted_profile)):
         distance_traveled = adjusted_profile[i-1] * time_interval + 0.5 * acceleration_profile[i-1] * (time_interval ** 2)
@@ -479,7 +471,6 @@ def adjust_velocity_profile(velocity_profile):
     adjusted_profile = [convert_kmh_to_ms(speed) for speed in adjusted_profile]
 
     return adjusted_profile, acceleration_profile, distance
-
 
 
 
