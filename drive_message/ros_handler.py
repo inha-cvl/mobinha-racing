@@ -41,7 +41,7 @@ class ROSHandler():
     
     def set_subscriber_protocol(self):
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
-        rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        #rospy.Subscriber('/simulator/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
@@ -76,6 +76,7 @@ class ROSHandler():
                 self.vehicle_state.heading.data = parsed[0]
 
     def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
+        self.vehicle_state.header = msg.header
         if not check_error(self.vehicle_state.position.x, msg.latitude,30):
             self.vehicle_state.position.x = msg.latitude
         if not check_error(self.vehicle_state.position.y, msg.longitude,30):
