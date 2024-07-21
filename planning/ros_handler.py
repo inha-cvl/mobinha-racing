@@ -4,8 +4,14 @@ import numpy as np
 
 from drive_msgs.msg import *
 from geometry_msgs.msg import Point
+<<<<<<< Updated upstream
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
+=======
+from pyproj import Proj, Transformer
+import pymap3d as pm
+
+>>>>>>> Stashed changes
 
 class ROSHandler():
     def __init__(self):
@@ -16,6 +22,7 @@ class ROSHandler():
         self.set_subscriber_protocol()
 
     def set_values(self):
+        self.base_lla = [0,0,0]
         self.system_mode = 0
         self.kiapi_signal = 0
         self.current_velocity = 0
@@ -44,7 +51,16 @@ class ROSHandler():
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
 
     def system_status_cb(self, msg):
+<<<<<<< Updated upstream
         self.map_name = msg.mapName.data   
+=======
+        self.base_lla = msg.baseLLA
+
+        if self.transformer == None:
+            proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
+            proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
+            self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
+>>>>>>> Stashed changes
         self.system_mode = msg.systemMode.data 
         self.current_signal = msg.systemSignal.data
         self.lap_count = msg.lapCount.data
@@ -55,11 +71,19 @@ class ROSHandler():
         self.current_heading = msg.heading.data
         self.current_position_lat = msg.position.x
         self.current_position_long = msg.position.y
+<<<<<<< Updated upstream
         self.local_pos = (msg.enu.x, msg.enu.y)
     
     def can_output_cb(self, msg):
         self.current_long_accel = float(msg.Long_ACCEL.data)
         self.current_lat_accel = float(msg.LAT_ACCEL.data)
+=======
+        if self.transformer == None:
+            return
+        # x, y, _ = self.transformer.transform(self.current_position_long, self.current_position_lat, 7) 
+        x, y, _ = pm.geodetic2enu(self.current_position_lat, self.current_position_long, 7, self.base_lla[0], self.base_lla[1], self.base_lla[2])
+        self.local_pos = [x,y]
+>>>>>>> Stashed changes
     
     def detection_data_cb(self, msg):
         object_list = []

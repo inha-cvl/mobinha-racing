@@ -82,7 +82,8 @@ class MyApp(QMainWindow, form_class):
     def kiapi_signal_update(self, kiapi_signal):
         if kiapi_signal == '':
             return
-        idx = self.kiapi_signal_strings.index(kiapi_signal)
+        # idx = self.kiapi_signal_strings.index(kiapi_signal)
+        idx = kiapi_signal
         if idx != 0 and self.prev_kiapi_signal != idx:
             for i, kiapi_button in enumerate(self.kiapi_signal_buttons):
                 if i == 0:

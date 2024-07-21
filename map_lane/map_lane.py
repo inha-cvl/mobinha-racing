@@ -2,6 +2,7 @@ import rospy
 import sys
 import signal
 from ros_handler import ROSHandler
+import time
 
 from local_path_test import LocalPathTest
 from hd_map.map import MAP
@@ -15,8 +16,8 @@ class MapLane():
         self.RH = ROSHandler()
         self.map = None
         self.lpt = None
-        self.lpt_use = False
-        self.max_vel = 50
+        self.lpt_use = True
+        self.max_vel = 30
 
     def map_publish(self):
         self.RH.publish_map_viz(self.map.lmap_viz, self.map.mlmap_viz)
@@ -31,6 +32,7 @@ class MapLane():
     def execute(self):
         while self.map == None:
             self.map_initialize()
+        time.sleep(3)
         self.map_publish()
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():

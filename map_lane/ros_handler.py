@@ -72,7 +72,11 @@ class ROSHandler():
 
     def publish_map_viz(self, lmap_viz, mlmap_viz):
         self.lmap_viz_pub.publish(lmap_viz)
+<<<<<<< Updated upstream
         self.mlmap_viz_pub.publish(mlmap_viz)
+=======
+        # self.mlmap_viz_pub.publish(mlmap_viz)
+>>>>>>> Stashed changes
     
     def publish_lane_data(self, curr_lane_num):
         laneLet = LaneLet()
