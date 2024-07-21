@@ -4,7 +4,7 @@ import rospy
 import sys
 import signal
 
-from drive_message.msg import *
+from drive_msgs.msg import *
 from transmitter_handler import TransmitterHandler
 
 

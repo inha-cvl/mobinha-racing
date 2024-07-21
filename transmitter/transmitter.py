@@ -30,9 +30,9 @@ class Transmitter():
                     if message_dict != None:
                         self.RH.update_can_output(message_dict)
                         ## for check
-                        for key, value in message_dict.items():
-                            if key in ['ACC_En_Status', 'ACC_Control_Board_Status', 'ACC_Control_Status', 'EPS_En_Status', 'EPS_Control_Board_Status', 'EPS_Control_Status']:
-                                print(key,":", value)
+                        # for key, value in message_dict.items():
+                        #     if key in ['ACC_En_Status', 'ACC_Control_Board_Status', 'ACC_Control_Status', 'EPS_En_Status', 'EPS_Control_Board_Status', 'EPS_Control_Status']:
+                        #         print(key,":", value)
                 await asyncio.sleep(0.001)  # 500Hz, 2ms 간격
         except Exception as e:
             rospy.logerr(f"Error in read_from_can: {e}")

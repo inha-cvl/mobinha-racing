@@ -5,11 +5,18 @@ from time import sleep
 class Apid:
     def __init__(self):
         # 일반형
-        self.window_size = 10
+        # self.window_size = 10
+        # self.Kp = 20
+        # self.Ki = 5/self.window_size
+        # self.Kd = 9
+        # self.lr = 0.001
+        # self.error_history = []
+
+        self.window_size = 5
         self.Kp = 20
-        self.Ki = 5/self.window_size
+        self.Ki = 3/self.window_size
         self.Kd = 9
-        self.lr = 0.001
+        self.lr = 0.1
         self.error_history = []
 
         # 증분형

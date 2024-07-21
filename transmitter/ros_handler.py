@@ -1,6 +1,6 @@
 import rospy
 
-from drive_message.msg import *
+from drive_msgs.msg import *
 
 
 
@@ -58,3 +58,4 @@ class ROSHandler():
 
     def can_input_cb(self, msg):
         self.can_input = msg
+        # print(msg)

@@ -5,10 +5,10 @@ import sys
 import signal
 from pprint import pprint
 
-from drive_message.msg import CANInput
+from drive_msgs.msg import CANInput
 
 ###
-from drive_message.msg import CANOutput
+from drive_msgs.msg import CANOutput
 
 from transmitter_handler import TransmitterHandler
 

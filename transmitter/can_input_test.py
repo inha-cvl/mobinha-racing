@@ -6,7 +6,8 @@ import signal
 from pprint import pprint
 
 from std_msgs.msg import Float32
-from drive_message.msg import CANInput, CANOutput
+# from drive_msgs.msg import CANInput, CANOutput
+from drive_msgs.msg import CANInput, CANOutput
 from transmitter_handler import TransmitterHandler
 from apid_origin import Apid
 import datetime
@@ -28,7 +29,15 @@ class CANInputTest:
         self.set_messages()
         self.set_controller()
         self.set_plotter()
+
+        self.target_v = 40
+
+        rospy.Subscriber("/target_v_tmp", Float32, self.targetVtmp_cb)
     
+    def targetVtmp_cb(self, msg):
+        self.target_v = msg.data/3.6
+        print(self.target_v, "m/s")
+
     def set_plotter(self):
         self.current_v_pub = rospy.Publisher("/current_v", Float32, queue_size=1)
         self.current_v_pub2 = rospy.Publisher("/current_v2", Float32, queue_size=1)
@@ -65,6 +74,8 @@ class CANInputTest:
 
     def publish(self):
         self.can_input_pub.publish(self.can_input)
+        # print("from publisher")
+        # print(self.can_input)
 
     async def ros_publisher(self):
         try:
@@ -99,6 +110,9 @@ class CANInputTest:
         # else:
         #     step = -1
         # self.target_v = (offset + amplitude*step) / 3.6
+
+        # self.target_v = 40 / 3.6
+
         
         self.target_v_pub.publish(Float32(self.target_v))
 
@@ -116,8 +130,8 @@ class CANInputTest:
 
 
     def get_user_value(self):
-        pprint(self.can_input_dict)
-        print("10 target_v")
+        # pprint(self.can_input_dict)
+        # print("10 target_v")
         print('Index: EPS_En EPS_Override_Ignore EPS_Speed ACC_En AEB_En Turn_Signal AEB_decel_value EPS_Cmd ACC_Cmd')
         print('       [ 0  ] [        1        ] [   2   ] [  3 ] [ 4  ] [   5     ] [     6       ] [  7  ] [  8  ]')
         print('Over to Enter 99')
