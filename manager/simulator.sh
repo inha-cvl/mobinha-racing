@@ -16,5 +16,4 @@ python3 car_simulator.py &
 cd ../control/
 python3 control.py &
 cd ../planning/
-# python3 planning_tum.py
-python3 planning_frenet.py to_goal
+python3 planning.py

@@ -5,4 +5,4 @@ std_msgs/Int8 systemSignal
 std_msgs/Int8 systemState
 std_msgs/Int8 systemHealth
 std_msgs/Int8 lapCount
-std_msgs/String kiapiSignal
+std_msgs/Int8 kiapiSignal

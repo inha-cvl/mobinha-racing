@@ -63,7 +63,7 @@ class MyApp(QMainWindow, form_class):
         self.wheel_widget.set_yaw(self.RH.ego_value['steer'], self.RH.target_value['steer'])
         self.gear_widget.set_gear(self.RH.ego_value['gear'])
 
-        self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['signal'],              
+        self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['kiapi_signal'],              
                                  self.RH.lane_number, self.RH.system_status['lap_count'])
 
         self.can_table_update(self.RH.can_inform)
@@ -71,7 +71,7 @@ class MyApp(QMainWindow, form_class):
         
     def system_label_update(self, mode, signal, lane_number, lap_count):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
-        self.systemLabel2.setText(self.signal_strings[int(signal)])
+        self.systemLabel2.setText(self.kiapi_signal_strings[int(signal)])
         self.laneNumberLabel.setText(f"Lane: {lane_number}")
         self.lapCountLabel.setText(f"Lap: {lap_count}")
     
@@ -80,11 +80,10 @@ class MyApp(QMainWindow, form_class):
         self.canTable.setItem(1, 1, QTableWidgetItem(can_inform['acc_status']))
 
     def kiapi_signal_update(self, kiapi_signal):
-        if kiapi_signal == '':
+        if kiapi_signal == 0:
             return
-        # idx = self.kiapi_signal_strings.index(kiapi_signal)
         idx = kiapi_signal
-        if idx != 0 and self.prev_kiapi_signal != idx:
+        if self.prev_kiapi_signal != idx:
             for i, kiapi_button in enumerate(self.kiapi_signal_buttons):
                 if i == 0:
                     continue

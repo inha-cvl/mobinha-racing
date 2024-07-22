@@ -43,7 +43,6 @@ class ROSHandler():
         self.lap_flag = False
         self.goal_point = rospy.get_param("/goal_coordinate")
         self.lane_number = 0
-        self.kiapi_signals = ['NONE', 'GO', 'STOP', 'SLOW_ON', 'SLOW_OFF', 'PIT_STOP']
         proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
         proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
         self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
@@ -84,7 +83,7 @@ class ROSHandler():
         self.ego_actuator.steer.data = float(msg.StrAng.data)
         #TODO: KIAPI Signal Parsing
         '''
-        self.system_status.kiapiSignal.data = get_kiapi_signal(self.kiapi_signals, msg.SIG_GO.data, msg.SIG_STOP.data, msg.SIG_PIT_STOP.data, msg.SIG_SLOW_ON.data, msg.SIG_SLOW_OFF.data)
+        self.system_status.kiapiSignal.data = get_kiapi_signal(msg.SIG_GO.data, msg.SIG_STOP.data,  msg.SIG_SLOW_ON.data, msg.SIG_SLOW_OFF.data,msg.SIG_PIT_STOP.data,)
         '''
     
     def system_to_can(self, mode):
@@ -105,7 +104,7 @@ class ROSHandler():
         self.system_to_can(mode)
         self.system_status.systemMode.data = mode
         self.system_status.systemSignal.data = int(msg.user_signal.data)
-        self.system_status.kiapiSignal.data = self.kiapi_signals[int(msg.kiapi_signal.data)]
+        self.system_status.kiapiSignal.data = int(msg.kiapi_signal.data)
     
     def add_enu(self, lat, lng):
         x, y, _ = self.transformer.transform(lng, lat, 7)

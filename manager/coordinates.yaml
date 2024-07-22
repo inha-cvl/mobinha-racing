@@ -3,3 +3,4 @@ start_coordinate2: [10.043, -1.657]
 start_coordinate3: [10.947, 1.986]
 pit_stop_zone_coordinate: [224.381, -105.333]
 goal_coordinate: [494.785, -407.950]
+now_lap: 0

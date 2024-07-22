@@ -16,7 +16,7 @@ class MapLane():
         self.RH = ROSHandler()
         self.map = None
         self.lpt = None
-        self.lpt_use = True
+        self.lpt_use = False
         self.max_vel = 30
 
     def map_publish(self):
@@ -32,7 +32,6 @@ class MapLane():
     def execute(self):
         while self.map == None:
             self.map_initialize()
-        time.sleep(3)
         self.map_publish()
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():

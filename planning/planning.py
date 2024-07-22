@@ -46,8 +46,8 @@ class Planning():
         self.ltpl_obj = None
         rospy.loginfo(f'[Planning] {self.specifiers} Global Path set took {round(time.time()-start_time, 4)} sec')
 
-        self.is_initialized = False
-        self.start_move = False
+        self.start_pose_initialized = False
+        self.first_initialized = False
         
         self.local_action_set = []
         self.prev_lap = rospy.get_param('/now_lap')
@@ -71,19 +71,19 @@ class Planning():
         planning_state = 'NONE'
         race_mode = self.race_mode
 
-        if self.start_move == False:
+        if self.first_initialized == False:
             race_mode = 'to_goal'
             planning_state = 'INIT'
         elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 5 and self.race_mode != 'pit_stop': #If pass the goal point, 
-            self.is_initialized = False
+            self.start_pose_initialized = False
             self.prev_lap = self.RH.lap_count
             race_mode = 'race'
             planning_state = 'INIT'
-        elif (self.RH.lap_count >= 5 or self.RH.kiapi_signal == 'PIT_STOP' )and self.race_mode != 'pit_stop':
-            self.is_initialized = False
+        elif (self.RH.lap_count >= 5 or self.RH.kiapi_signal == 5 )and self.race_mode != 'pit_stop':
+            self.start_pose_initialized = False
             race_mode = 'pit_stop'
             planning_state = 'INIT'
-        if self.is_initialized == True:
+        if self.start_pose_initialized == True:
             planning_state = 'MOVE'
 
         return planning_state, race_mode
@@ -100,8 +100,8 @@ class Planning():
         _, start_node, g_path = ltpl_obj.set_startpos(pos_est=self.RH.local_pos, heading_est=math.radians(self.RH.
         current_heading))
         if start_node is not None:
-            self.is_initialized = True
-            self.start_move = True
+            self.start_pose_initialized = True
+            self.first_initialized = True
             self.traj_set = {'left': None}
             self.ltpl_obj = ltpl_obj
             self.gmv = GetMaxVelocity(self.RH, race_mode)
@@ -115,7 +115,7 @@ class Planning():
             pit_stop_path_dict = self.get_path_dict('pit_stop')
             self.pit_stop_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=pit_stop_path_dict,visual_mode=False,log_to_file=False)
             self.pit_stop_obj.graph_init()
-            self.is_initialized = False
+            self.start_pose_initialized = False
             rospy.loginfo(f'[Planning] pit_stop Global Path set took {round(time.time()-start_time, 4)} sec')
 
     def initd(self):
@@ -125,7 +125,7 @@ class Planning():
             if planning_state == 'INIT':
                 if self.race_mode == 'pit_stop':
                     self.planning_pit_stop()
-                while not self.is_initialized:            
+                while not self.start_pose_initialized:            
                     if self.RH.local_pos is not None:
                         self.set_start_pos(self.race_mode)
                     rate.sleep()
@@ -134,7 +134,7 @@ class Planning():
     def executed(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
-            while self.start_move:
+            while self.first_initialized:
                 for sel_action in ["right", "left", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
@@ -150,7 +150,9 @@ class Planning():
                                                 vel_est=self.RH.current_velocity,
                                                 vel_max=110/3.6,
                                                 safety_d=60)[0]
-                if not self.is_initialized:
+                if not self.RH.set_go:
+                    road_max_vel = 0
+                elif not self.start_pose_initialized:
                     road_max_vel = 5
                 else:
                     road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
