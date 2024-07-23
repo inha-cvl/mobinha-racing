@@ -19,7 +19,7 @@ class Visualizer:
         self.static_br = tf2_ros.StaticTransformBroadcaster()
         static_transforms = [
             ((1.3025, 0.0, 0.0), (0, 0, 0, 1), 'ego_car', 'gps'),   # center
-            ((1.1, 0.0, 1.5), (0, 0, 0, 1), 'os_sensor', 'gps'),    # lidar
+            ((1.0, 0.0, 0.9), (0, 0, 0, 1), 'os_sensor', 'gps'),    # lidar
             ((1.8, 0.0, 1.0), (0, 0, 0, 1), 'front', 'gps'),        # front camera
             #((1.7, 0.7, 1.0), (0, 0, 0, 1), 'left_front', 'gps'),   # left 
             #((1.4, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'gps'),    # left
@@ -74,7 +74,7 @@ class Visualizer:
         viz_objects = ObjectsViz(objs)
         self.pub_objects_viz.publish(viz_objects)
     
-    # calibration
+    # calibr
     def publish_static_tfs(self, transforms):
         static_transformStamped_vec = []
         for translation, rotation, child_frame, parent_frame in transforms:

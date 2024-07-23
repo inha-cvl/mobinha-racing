@@ -38,6 +38,7 @@ class ROSHandler():
     def set_values(self, base_lla):
         self.oh = ObstacleHandler()
         self.local_pose = []
+        self.local_path = []
         self.prev_lla = None
         self.lap_cnt = rospy.get_param("/now_lap")
         self.lap_flag = False
@@ -60,6 +61,7 @@ class ROSHandler():
         rospy.Subscriber('/UserInput', UserInput, self.user_input_cb)
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
+        rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
@@ -98,6 +100,12 @@ class ROSHandler():
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.currentLane != 0:
             self.lane_number = msg.currentLane.currentLane
+            
+    def navigation_data_cb(self, msg):
+        path = []
+        for pts in msg.plannedRoute:
+            path.append([pts.x, pts.y])
+        self.local_path = path
 
     def user_input_cb(self, msg): #mode, signal, state, health
         mode = int(msg.user_mode.data)
@@ -194,13 +202,13 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
-                fred_d = self.oh.object2frenet([nx, ny])
-                if not self.oh.filtering_by_lane_num(self.lane_number, fred_d):
+                s,d = self.oh.object2frenet(self.local_path, [nx, ny])
+                if not self.oh.filtering_by_lane_num(self.lane_number,d):
                     continue                    
                 object_info.position.x = nx
                 object_info.position.y = ny
                 object_info.velocity.data = obj.value
-                object_info.heading.data = self.oh.get_absolute_heading(self.vehicle_state.heading.data, obj.pose.orientation)
+                object_info.heading.data = self.oh.get_absolute_heading(obj.pose.orientation)
                 self.detection_data.objects.append(object_info)
             
     
