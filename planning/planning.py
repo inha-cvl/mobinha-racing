@@ -150,14 +150,21 @@ class Planning():
                                                 vel_est=self.RH.current_velocity,
                                                 vel_max=110/3.6,
                                                 safety_d=60)[0]
+                
+                # Set Target Velocity
                 if not self.RH.set_go:
                     road_max_vel = 0
                 elif not self.start_pose_initialized:
                     road_max_vel = 5
                 else:
-                    road_max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
+                    max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
+                    if self.RH.lap_count == 0 : # 1 lap under 30 km/h 
+                        road_max_vel = min(27/3.6, max_vel)
+                    else:
+                        road_max_vel = max_vel
                     
                 self.RH.publish(local_action_set, road_max_vel)
+
                 rate.sleep()
             rate.sleep()
             
