@@ -13,7 +13,7 @@ from visualization_msgs.msg import MarkerArray
 from libs.message_handler import *
 from libs.obstalce_handler import ObstacleHandler
 
-USE_LIDAR = True
+USE_LIDAR = False
 
 class ROSHandler():
     def __init__(self, map, base_lla):
@@ -186,8 +186,8 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
-                if not self.oh.is_within_radius(conv, self.local_path):
-                    continue
+                # if not self.oh.is_within_radius(conv, self.local_path):
+                #     continue
                 object_info.position.x = nx
                 object_info.position.y = ny
                 object_info.velocity.data = self.vehicle_state.velocity.data
@@ -204,15 +204,15 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
-                if not self.oh.is_within_radius(conv, self.local_path):
-                    continue
+                # if not self.oh.is_within_radius(conv, self.local_path):
+                #     continue
                 s,d = self.oh.object2frenet(self.local_path, [nx, ny])
                 if not self.oh.filtering_by_lane_num(self.lane_number,d):
                     continue                    
                 object_info.position.x = nx
                 object_info.position.y = ny
-                object_info.velocity.data = obj.value
-                object_info.heading.data = self.oh.get_absolute_heading(obj.pose.orientation)
+                object_info.velocity.data = self.vehicle_state.velocity.data / 2
+                object_info.heading.data = self.vehicle_state.heading.data
                 self.detection_data.objects.append(object_info)
             
     

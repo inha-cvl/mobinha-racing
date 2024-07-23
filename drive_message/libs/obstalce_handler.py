@@ -39,26 +39,30 @@ class ObstacleHandler:
         return obj_x, obj_y
     
     def filtering_by_lane_num(self, lane_num, fred_d):
-        if lane_num == 1:
-            if -1.45< fred_d < 4.15:
-                return True
-            else:
-                return False
-        elif lane_num == 2:
-            if -4.15 < fred_d < 4.15:
-                return True
-            else:
-                return False
-        elif lane_num == 3:
-            if -4.15 < fred_d < 1.45:
-                return True
-            else:
-                return False
-        elif lane_num == 4:
-            if -7.15 < fred_d < 1.45:
-                return True
-            else:
-                return False
+        if -1 < fred_d < 1:
+            return True
+        else:
+            return False
+        # if lane_num == 1:
+        #     if -1.45< fred_d < 4.15:
+        #         return True
+        #     else:
+        #         return False
+        # elif lane_num == 2:
+        #     if -4.15 < fred_d < 4.15:
+        #         return True
+        #     else:
+        #         return False
+        # elif lane_num == 3:
+        #     if -1 < fred_d < 1:
+        #         return True
+        #     else:
+        #         return False
+        # elif lane_num == 4:
+        #     if -7.15 < fred_d < 1.45:
+        #         return True
+        #     else:
+        #         return False
             
     def distance(self, x1, y1, x2, y2):
         return np.sqrt((x2-x1)**2+(y2-y1)**2)
