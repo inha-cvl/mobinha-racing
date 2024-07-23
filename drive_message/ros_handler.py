@@ -186,6 +186,8 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
+                if not self.oh.is_within_radius(conv, self.local_path):
+                    continue
                 object_info.position.x = nx
                 object_info.position.y = ny
                 object_info.velocity.data = self.vehicle_state.velocity.data
@@ -202,6 +204,8 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
+                if not self.oh.is_within_radius(conv, self.local_path):
+                    continue
                 s,d = self.oh.object2frenet(self.local_path, [nx, ny])
                 if not self.oh.filtering_by_lane_num(self.lane_number,d):
                     continue                    

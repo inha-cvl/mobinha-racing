@@ -94,3 +94,12 @@ class ObstacleHandler:
         z_angle_rad = np.arctan2(siny_cosp, cosy_cosp)
         z_angle_deg = np.degrees(z_angle_rad)
         return self.current_heading - z_angle_deg
+
+    def is_within_radius(obs_point, local_path, radius=4):
+        ob_x, ob_y = obs_point
+        for path_point in local_path:
+            path_x, path_y = path_point
+            distance = math.sqrt((ob_x - path_x) ** 2 + (ob_y - path_y) ** 2)
+            if distance <= radius:
+                return True
+        return False
