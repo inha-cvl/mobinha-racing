@@ -146,3 +146,9 @@ def get_kiapi_signal(go, stop, slow_on, slow_off, pit_stop):
         if condition == 1:
             return i
     return 0
+
+def calc_heading_error(source, target):
+    if abs(source-target) > 20:
+        return False
+    else:
+        return True

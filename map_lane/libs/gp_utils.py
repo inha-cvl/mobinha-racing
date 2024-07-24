@@ -39,7 +39,7 @@ def lanelet_matching(t_pt):
                 for id_, data in selected_tile.items():
                     for idx, pt in enumerate(data['waypoints']):
                         dist = euc_distance(t_pt, pt)
-                        if dist > 7:
+                        if dist > 2:
                             continue
                         if dist < min_dist:
                             min_dist = dist

@@ -37,6 +37,7 @@ class ROSHandler():
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
         self.global_path_pub = rospy.Publisher('/global_path', Path, queue_size=1)
+        self.target_object_pub = rospy.Publisher('/planning/target_object', DetectionData, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
@@ -84,6 +85,8 @@ class ROSHandler():
                 self.navigation_data.plannedRoute.append(point)
                 self.navigation_data.plannedKappa.append(set[4])
             self.navigation_data_pub.publish(self.navigation_data)
+
+            
     
     def publish2(self, local_path, local_kappa, local_max_vel):
         if local_path is not None and len(local_path) > 0:
@@ -96,6 +99,21 @@ class ROSHandler():
                 self.navigation_data.plannedRoute.append(point)
                 self.navigation_data.plannedKappa.append(local_kappa[i])
             self.navigation_data_pub.publish(self.navigation_data)
+    
+    def publish_target_object(self, object_list):
+        detection_data = DetectionData()
+        for obj in object_list:
+            object_info = ObjectInfo()
+            object_info.type.data = 0
+            object_info.position.x = obj['X']
+            object_info.position.y = obj['Y']
+            object_info.heading.data = math.degrees(obj['theta'])
+            object_info.velocity.data = 1
+            detection_data.objects.append(object_info)
+        
+        self.target_object_pub.publish(detection_data)
+
+
     
     def publish_global_path(self, waypoints):
         path = Path()

@@ -5,7 +5,8 @@ from pyproj import Proj, Transformer
 from drive_msgs.msg import *
 from geometry_msgs.msg import QuaternionStamped, PoseArray, Pose2D
 from nmea_msgs.msg import Sentence
-from std_msgs.msg import Header
+from ublox_msgs.msg import NavPVT
+from std_msgs.msg import Header, Float32
 from sensor_msgs.msg import NavSatFix
 from jsk_recognition_msgs.msg import BoundingBoxArray
 from visualization_msgs.msg import MarkerArray
@@ -39,6 +40,9 @@ class ROSHandler():
         self.oh = ObstacleHandler()
         self.local_pose = []
         self.local_path = []
+        self.local_heading = 0
+        self.localization_heading = None
+        self.heading_set = 0
         self.prev_lla = None
         self.lap_cnt = rospy.get_param("/now_lap")
         self.lap_flag = False
@@ -63,8 +67,10 @@ class ROSHandler():
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
-        rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
-        rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
+        rospy.Subscriber('/ublox/fix', NavSatFix, self.nav_sat_fix_cb)
+        rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
+        #rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
+        rospy.Subscriber('/localization/heading/', Float32, self.localization_heading_cb)
 
 
         if not USE_LIDAR:
@@ -75,6 +81,8 @@ class ROSHandler():
         # Simulator
         rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
         #rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
+
+        # Refine
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
 
     def can_output_cb(self, msg):
@@ -102,12 +110,26 @@ class ROSHandler():
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.currentLane != 0:
             self.lane_number = msg.currentLane.currentLane
-            
+        self.system_status.headingSet.data = 0
+
+
     def navigation_data_cb(self, msg):
         path = []
         for pts in msg.plannedRoute:
             path.append([pts.x, pts.y])
         self.local_path = path
+    
+    def nav_pvt_cb(self, msg):
+        heading = float(msg.heading*1e-5)
+
+        if self.localization_heading is not None:
+            if not calc_heading_error(heading, self.localization_heading):
+                print("UPDATE heading")
+                heading =  self.localization_heading
+                self.system_status.headingSet.data = 1
+
+        self.local_heading = heading
+        
 
     def user_input_cb(self, msg): #mode, signal, state, health
         mode = int(msg.user_mode.data)
@@ -115,6 +137,10 @@ class ROSHandler():
         self.system_status.systemMode.data = mode
         self.system_status.systemSignal.data = int(msg.user_signal.data)
         self.system_status.kiapiSignal.data = int(msg.kiapi_signal.data)
+    
+    def localization_heading_cb(self, msg):
+        self.localization_heading = msg.data
+        print(self.localization_heading)
     
     def add_enu(self, lat, lng):
         x, y, _ = self.transformer.transform(lng, lat, 7)
@@ -140,7 +166,17 @@ class ROSHandler():
                     self.prev_lla = (parsed[0], parsed[1])
                     return
                 else: 
-                    self.vehicle_state.heading.data = parsed[2]
+                    
+                    if self.localization_heading is not None:
+                        if not calc_heading_error(parsed[2], self.localization_heading):
+                            self.vehicle_state.heading.data = self.localization_heading
+                            self.system_status.headingSet.data = 1
+                        else:
+                            self.vehicle_state.heading.data = parsed[2]
+                    else:
+                        self.vehicle_state.heading.data = parsed[2]
+                        
+                    
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]        
     
@@ -156,6 +192,7 @@ class ROSHandler():
         self.vehicle_state.header = msg.header
         self.vehicle_state.position.x = msg.latitude
         self.vehicle_state.position.y = msg.longitude
+        self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
         self.add_enu(msg.latitude, msg.longitude)
     
     def heading_cb(self, msg):

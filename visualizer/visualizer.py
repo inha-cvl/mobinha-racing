@@ -36,10 +36,12 @@ class Visualizer:
         self.pub_path_viz = rospy.Publisher('/visualizer/local_path', Marker, queue_size=1)
         self.pub_kappa_viz = rospy.Publisher('/visualizer/kappa_viz', Marker, queue_size=1)
         self.pub_objects_viz = rospy.Publisher('/visualizer/objects', MarkerArray, queue_size=1)
+        self.pub_target_objects_viz = rospy.Publisher('/visualizer/target_objects', MarkerArray, queue_size=1)
         
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
+        rospy.Subscriber('/planning/target_object', DetectionData, self.target_object_cb)
 
         rospy.spin()
 
@@ -73,6 +75,13 @@ class Visualizer:
             objs.append([obj.position.x, obj.position.y, obj.heading.data])
         viz_objects = ObjectsViz(objs)
         self.pub_objects_viz.publish(viz_objects)
+    
+    def target_object_cb(self, msg):
+        objs = []
+        for obj in msg.objects:
+            objs.append([obj.position.x, obj.position.y, obj.heading.data])
+        viz_objects = TargetObjectsViz(objs)
+        self.pub_target_objects_viz.publish(viz_objects)
     
     # calibr
     def publish_static_tfs(self, transforms):

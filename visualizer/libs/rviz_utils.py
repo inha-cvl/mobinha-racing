@@ -156,6 +156,16 @@ def ObjectsViz(objects):
         marker_array.markers.append(marker)
     return marker_array
 
+
+def TargetObjectsViz(objects):
+    marker_array = MarkerArray()
+    marker = Marker()
+    color = [0, 214, 0, 1]
+    for n, obj in enumerate(objects):
+        marker = ObjectViz(n+1000, (round(obj[0],1), round(obj[1],1)), obj[2], color)
+        marker_array.markers.append(marker)
+    return marker_array
+
 def ObjectViz(_id, position, heading, color):
     marker = Marker()
     marker.header.frame_id = 'world'

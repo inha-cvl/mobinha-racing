@@ -182,38 +182,40 @@ class Planning():
                 check_object.append(obj)
 
 
-        for point in trim_global_path:
-            x, y = point[0], point[1]
-            w_right, w_left = point[2], point[3]
-            x_normvec, y_normvec = point[4], point[5]
-            updated_point = point.copy()
+        self.RH.publish_target_object(check_object)
+
+        # for point in trim_global_path:
+        #     x, y = point[0], point[1]
+        #     w_right, w_left = point[2], point[3]
+        #     x_normvec, y_normvec = point[4], point[5]
+        #     updated_point = point.copy()
             
-            for obj in check_object:
-                obj_x, obj_y = obj['X'], obj['Y']
+        #     for obj in check_object:
+        #         obj_x, obj_y = obj['X'], obj['Y']
 
-                if self.distance(x, y, obj_x, obj_y) <= obj_radius:
+        #         if self.distance(x, y, obj_x, obj_y) <= obj_radius:
                    
-                    if w_left < 4:
-                        points = np.arange(0, w_left, 1.6)
-                    else:
-                        points = np.arange(3.2, w_left, 1.8)
+        #             if w_left < 4:
+        #                 points = np.arange(0, w_left, 1.6)
+        #             else:
+        #                 points = np.arange(3.2, w_left, 1.8)
 
-                    # 생성된 점들
-                    generated_points = [(x + (-1*x_normvec) * i, y + (-1*y_normvec) * i) for i in points]
+        #             # 생성된 점들
+        #             generated_points = [(x + (-1*x_normvec) * i, y + (-1*y_normvec) * i) for i in points]
 
-                    # 가장 가까운 점은 첫 번째 점
-                    closest_point = generated_points[0]
-                    updated_point[0] = closest_point[0]
-                    updated_point[1] = closest_point[1]
+        #             # 가장 가까운 점은 첫 번째 점
+        #             closest_point = generated_points[0]
+        #             updated_point[0] = closest_point[0]
+        #             updated_point[1] = closest_point[1]
 
-            updated_path.append(updated_point)
+        #     updated_path.append(updated_point)
 
 
-        # Replace only the points in the path that need to be updated
-        for i, point in enumerate(trim_global_path):
-            for obj in object_list:
-                if self.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
-                    final_global_path[i] = updated_path[i]
+        # # Replace only the points in the path that need to be updated
+        # for i, point in enumerate(trim_global_path):
+        #     for obj in object_list:
+        #         if self.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
+        #             final_global_path[i] = updated_path[i]
 
         return final_global_path
 
@@ -291,7 +293,6 @@ class Planning():
                     else:
                         local_max_vel = max_vel
                         
-
                 self.RH.publish2(interped_path, interped_kappa,local_max_vel)
 
                 rate.sleep()
