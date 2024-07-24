@@ -12,9 +12,9 @@ class ROSHandler():
         self.set_protocol()
     
     def set_values(self):
-        self.bridge = CvBridge()
-        self.frame = None
-        self.fgbg = cv2.createBackgroundSubtractorMOG2()
+        self.local_pose = []
+        self.local_path = []
+        
 
     def set_protocol(self):
         rospy.Subscriber('/camera/image_raw', Image, self.front_center_camera_cb)

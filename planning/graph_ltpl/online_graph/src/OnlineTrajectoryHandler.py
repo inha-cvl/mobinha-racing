@@ -428,7 +428,6 @@ class OnlineTrajectoryHandler(object):
                                                              w_last_edges=self.__w_last_edges
                                                              ))
 
-
         # --------------------------------------------------------------------------------------------------------------
         # - Reassemble planned paths with constant trajectory part (not subjected to graph search) ---------------------
         # --------------------------------------------------------------------------------------------------------------

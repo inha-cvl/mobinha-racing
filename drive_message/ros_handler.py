@@ -66,6 +66,7 @@ class ROSHandler():
         rospy.Subscriber('/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
 
+
         if not USE_LIDAR:
             rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
         else:
@@ -73,7 +74,8 @@ class ROSHandler():
         
         # Simulator
         rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
-        rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
+        #rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
+        rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -170,8 +172,21 @@ class ROSHandler():
         for obj in msg.poses:
             object_info = ObjectInfo()
             object_info.type.data = int(obj.position.z)
-            object_info.position.x = float(obj.position.x)
-            object_info.position.y = float(obj.position.y)
+            psi =  self.oh.is_within_radius([obj.position.x,obj.position.y], self.local_path)
+            if psi is not None:
+                object_info.position.x = obj.position.x
+                object_info.position.y = obj.position.y
+                object_info.velocity.data = float(obj.orientation.x)
+                object_info.heading.data = 0#math.degrees(psi)
+                self.detection_data.objects.append(object_info)
+    
+    def refine_obstacle_cb(self, msg):
+        self.detection_data = DetectionData()
+        for obj in msg.poses:
+            object_info = ObjectInfo()
+            object_info.type.data = int(obj.position.z)
+            object_info.position.x = obj.position.x
+            object_info.position.y = obj.position.y
             object_info.velocity.data = float(obj.orientation.x)
             object_info.heading.data = float(obj.orientation.y)
             self.detection_data.objects.append(object_info)
@@ -191,7 +206,7 @@ class ROSHandler():
                 object_info.position.x = nx
                 object_info.position.y = ny
                 object_info.velocity.data = self.vehicle_state.velocity.data
-                object_info.heading.data = self.vehicle_state.heading.data
+                object_info.heading.data = math.degrees(self.vehicle_state.heading.data)
                 self.detection_data.objects.append(object_info)
         
     def lidar_track_box_cb(self, msg):

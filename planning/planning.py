@@ -102,7 +102,7 @@ class Planning():
         if start_node is not None:
             self.start_pose_initialized = True
             self.first_initialized = True
-            self.traj_set = {'left': None}
+            self.traj_set = {'follow': None}
             self.ltpl_obj = ltpl_obj
             self.gmv = GetMaxVelocity(self.RH, race_mode)
             self.RH.publish_global_path(g_path)
@@ -135,7 +135,7 @@ class Planning():
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             while self.first_initialized:
-                for sel_action in ["right", "left", "straight", "follow"]: 
+                for sel_action in [ "right", "left", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
                 
@@ -148,7 +148,7 @@ class Planning():
                 self.traj_set = self.ltpl_obj.calc_vel_profile(
                                                 pos_est=self.RH.local_pos,
                                                 vel_est=self.RH.current_velocity,
-                                                vel_max=110/3.6,
+                                                vel_max=100/3.6,
                                                 safety_d=60)[0]
                 
                 # Set Target Velocity
@@ -162,7 +162,6 @@ class Planning():
                         road_max_vel = min(27/3.6, max_vel)
                     else:
                         road_max_vel = max_vel
-                    
                 self.RH.publish(local_action_set, road_max_vel)
 
                 rate.sleep()

@@ -161,13 +161,13 @@ def ObjectViz(_id, position, heading, color):
     marker.header.frame_id = 'world'
     marker.ns = 'object'
     marker.id = _id
-    marker.type = Marker.SPHERE
+    marker.type = Marker.ARROW
     #marker.mesh_resource = 'file://{}/car.dae'.format(dir_path)
     marker.action = Marker.ADD
     marker.lifetime = rospy.Duration(0)
-    marker.scale.x = 1.5
-    marker.scale.y = 1.5
-    marker.scale.z = 1.5
+    marker.scale.x = 4
+    marker.scale.y = 1.2
+    marker.scale.z = 1.2
     marker.color.r = color[0]/255
     marker.color.g = color[1]/255
     marker.color.b = color[2]/255
@@ -175,7 +175,7 @@ def ObjectViz(_id, position, heading, color):
     marker.pose.position.x = position[0]
     marker.pose.position.y = position[1]
     marker.pose.position.z = 0.5
-    quaternion = tf.transformations.quaternion_from_euler(0, 0, math.radians(heading+90))
+    quaternion = tf.transformations.quaternion_from_euler(0, 0, math.radians(heading))
     marker.pose.orientation.x = quaternion[0]
     marker.pose.orientation.y = quaternion[1]
     marker.pose.orientation.z = quaternion[2]

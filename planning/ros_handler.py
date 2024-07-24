@@ -28,7 +28,6 @@ class ROSHandler():
         self.local_pos = [0,0]
         self.prev_start_pos = [0,0]
         self.object_list = []
-        self.object_list2 =  np.array([])
         self.transformer = None
         self.current_lat_accel = 0
         self.current_long_accel = 0
@@ -73,7 +72,6 @@ class ROSHandler():
             object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 4.0, 'v': object.velocity.data})
             position_list.append([object.position.x, object.position.y])
         self.object_list = object_list
-        self.object_list2 = np.array(position_list)
 
     def publish(self, local_action_set, road_max_vel):
         if local_action_set is not None and len(local_action_set) > 0:
@@ -87,19 +85,17 @@ class ROSHandler():
                 self.navigation_data.plannedKappa.append(set[4])
             self.navigation_data_pub.publish(self.navigation_data)
     
-    def publish_frenet(self, path, kappa, velocity):
-        self.navigation_data = NavigationData()
-        if path != None:
-            for i, x in enumerate(path.x):
+    def publish2(self, local_path, local_kappa, local_max_vel):
+        if local_path is not None and len(local_path) > 0:
+            self.navigation_data = NavigationData()
+            self.navigation_data.plannedVelocity.data =local_max_vel
+            for i, set in enumerate(local_path):
                 point = Point()
-                point.x = x
-                point.y = path.y[i]
+                point.x = set[0]
+                point.y = set[1]
                 self.navigation_data.plannedRoute.append(point)
-        if kappa != None:
-            for rk in kappa:
-                self.navigation_data.plannedKappa.append(rk)
-        self.navigation_data.plannedVelocity.data = velocity
-        self.navigation_data_pub.publish(self.navigation_data)
+                self.navigation_data.plannedKappa.append(local_kappa[i])
+            self.navigation_data_pub.publish(self.navigation_data)
     
     def publish_global_path(self, waypoints):
         path = Path()

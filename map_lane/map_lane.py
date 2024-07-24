@@ -6,7 +6,7 @@ import time
 
 from local_path_test import LocalPathTest
 from hd_map.map import MAP
-from get_lane_number import GetLaneNumber
+from libs.lanelet_handler import LaneletHandler
 
 def signal_handler(sig, frame):
     sys.exit(0)
@@ -25,7 +25,7 @@ class MapLane():
     def map_initialize(self):
         if self.RH.map_name != None:
             self.map = MAP(self.RH.map_name)
-            self.gln = GetLaneNumber(self.RH, self.map)
+            self.llh = LaneletHandler(self.RH, self.map)
             if self.lpt_use:
                 self.lpt = LocalPathTest(self.RH, self.map)
 
@@ -33,22 +33,26 @@ class MapLane():
         while self.map == None:
             self.map_initialize()
         self.map_publish()
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             if self.lpt is None:
                 pass
             if self.lpt_use:
-                lp_result = self.lpt.execute(self.RH.local_pos)
+                lp_result = self.lpt.execute(self.RH.local_pose)
                 if lp_result == None:
                     local_path, local_kappa = None, None 
                 else:
                     [ local_path, local_kappa ] = lp_result
                 local_velocity = self.lpt.get_velocity(self.max_vel)
-                # if not work, 
-                # local_velocity = self.max_vel / 3.6
                 self.RH.publish(local_path, local_kappa, local_velocity)
-            # lane_number
-            lane_data = self.gln.execute(self.RH.local_pos)
+            
+            refine_obstacles = self.llh.refine_obstacles_heading([self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles])
+
+            self.RH.publish_refine_obstacles(refine_obstacles)    
+            
+            lane_data = self.llh.get_lane_number(self.RH.local_pose)
+
+
             if lane_data is None:
                 curr_lane_num = None
             else:
