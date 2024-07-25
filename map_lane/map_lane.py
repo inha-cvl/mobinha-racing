@@ -50,14 +50,17 @@ class MapLane():
 
             self.RH.publish_refine_obstacles(refine_obstacles)    
             
-            lane_data = self.llh.get_lane_number(self.RH.local_pose)
+            lane_data, lane_id = self.llh.get_lane_number(self.RH.local_pose)
 
 
-            if lane_data is None:
+            if lane_data is None and lane_id is None:
                 curr_lane_num = None
+                curr_lane_id = None
             else:
                 curr_lane_num = lane_data
+                curr_lane_id = lane_id
             self.RH.publish_lane_data(curr_lane_num)
+            self.RH.publish_lanelet(curr_lane_id)
             rate.sleep()
                 
 

@@ -16,16 +16,18 @@ class LaneletHandler:
         idnidx = gput.lanelet_matching(local_pos)
         if idnidx is not None:
             curr_lane_num = gput.lanelets[idnidx[0]]['laneNo']
-            return curr_lane_num
+            curr_lane_id = idnidx[0]
+            return curr_lane_num, curr_lane_id
         else:
-            return -1
+            return -1, -1
 
     def get_lane_number(self, local_pos):
         if local_pos is None:
             return None
         else:
-            self.curr_lane_num = self.current_lane_number(local_pos)
-            return self.curr_lane_num
+            self.curr_lane_num, self.curr_lane_id= self.current_lane_number(local_pos)
+            print(self.curr_lane_id)
+            return self.curr_lane_num, self.curr_lane_id
     
 
     def refine_heading_by_lane(self, obs_pos):

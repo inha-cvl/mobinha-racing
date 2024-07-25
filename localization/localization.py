@@ -7,17 +7,18 @@ import numpy as np
 from ros_handler import ROSHandler
 from ahrs.filters import Madgwick
 
-
-
 def signal_handler(sig, frame):
     sys.exit(0)
 
 class Localization():
     def __init__(self):
-        self.RH = ROSHandler()
+        self.RH = ROSHandler(map)
         self.madgwick = Madgwick()
         self.condition = False
 
+        self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',
+                           '24', '25', '26', '27', '36', '37', '38', '39', '43', '44', '54', '59',
+                           '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
 
     def euler_to_quaternion(self, roll, pitch, heading):
         cr = np.cos(roll / 2)
@@ -72,7 +73,10 @@ class Localization():
             heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
             # straight : -0.023
             # curve : -0.015
-            constant_offset = -0.015*cnt
+            if self.RH.curr_lane_id in self.curve_list:
+                constant_offset = -0.015*cnt
+            else:
+                constant_offset = -0.023*cnt
             
             heading += initial_offset
             offseted_heading = heading + constant_offset

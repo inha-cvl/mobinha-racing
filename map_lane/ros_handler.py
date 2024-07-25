@@ -5,6 +5,7 @@ from drive_msgs.msg import *
 from geometry_msgs.msg import Point, Pose, PoseArray
 from visualization_msgs.msg import Marker, MarkerArray
 from jsk_recognition_msgs.msg import BoundingBoxArray
+from std_msgs.msg import String 
 
 from libs.planning_utils import *
 from pyproj import Proj, Transformer
@@ -41,6 +42,7 @@ class ROSHandler():
         self.path_viz_pub = rospy.Publisher('/planning/local_path', Marker, queue_size=1)
         self.kappa_viz_pub = rospy.Publisher('/planning/kappa_viz', Marker, queue_size=1)
         self.lane_data_pub = rospy.Publisher('/LaneData', LaneData, queue_size=1)
+        self.lanelet_pub = rospy.Publisher('/LaneLet', LaneLet, queue_size=1)
         self.refine_obstacles_pub = rospy.Publisher('/map_lane/refine_obstacles', PoseArray, queue_size=1)
 
     def set_subscriber_protocol(self):
@@ -125,6 +127,13 @@ class ROSHandler():
         laneData.currentLane = laneLet
 
         self.lane_data_pub.publish(laneData)
+    
+    def publish_lanelet(self, curr_lane_id):
+        laneLet=LaneLet()
+        laneLet.id = String()
+        laneLet.id.data = curr_lane_id
+
+        self.lanelet_pub.publish(laneLet)
     
     def publish_refine_obstacles(self, obstacles):
         pose_array = PoseArray()
