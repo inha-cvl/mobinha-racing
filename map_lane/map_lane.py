@@ -38,9 +38,10 @@ class MapLane():
             
     def update_obstacles(self, new_obstacles):
         current_time = time.time()
-        self.stacked_refine_obstacles.extend(new_obstacles)
-        self.obstacle_timestamps.append(current_time)
-        
+        if len(new_obstacles) > 0:
+            self.stacked_refine_obstacles.extend(new_obstacles)
+            self.obstacle_timestamps.append(current_time)
+            
         self.stacked_refine_obstacles = [
             obs for obs, timestamp in zip(self.stacked_refine_obstacles, self.obstacle_timestamps) 
             if current_time - timestamp < self.remian_duration
@@ -69,10 +70,7 @@ class MapLane():
                 self.RH.publish(local_path, local_kappa, local_velocity)
             
             refine_obstacles = self.llh.refine_obstacles_heading([self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles])
-            #print("refine", refine_obstacles)
-
             self.update_obstacles(refine_obstacles)
-
             self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
             
             lane_data, lane_id = self.llh.get_lane_number(self.RH.local_pose)

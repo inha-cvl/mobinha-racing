@@ -106,7 +106,8 @@ class Planning():
     def path_update(self, trim_global_path):
         final_global_path = trim_global_path.copy()  # Make a copy of the global path to modify
         object_list = self.RH.object_list  # List of objects
-        obj_radius = 15 + ( self.RH.current_velocity / 5 )  # Radius for obstacle avoidance
+        obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
@@ -114,7 +115,6 @@ class Planning():
             s, d = ph.object2frenet(trim_global_path, [obj['X'], obj['Y']])
             if -1 < d < 1:
                 check_object.append(obj)
-
 
         self.RH.publish_target_object(check_object)
         self.object_detected = False
@@ -127,6 +127,11 @@ class Planning():
                 
                 for obj in check_object:
                     obj_x, obj_y = obj['X'], obj['Y']
+                    # Check the relative position of the object
+                    if obj_y > y:
+                        obj_radius = obj_radius_front
+                    else:
+                        obj_radius = obj_radius_rear
                     
                     if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
                         self.object_detected = True
@@ -136,7 +141,7 @@ class Planning():
                             points = np.arange(3.2, w_left, 1.8)
 
                         # 생성된 점들
-                        generated_points = [(x + (-1*x_normvec) * i, y + (-1*y_normvec) * i) for i in points]
+                        generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
 
                         # 가장 가까운 점은 첫 번째 점
                         closest_point = generated_points[0]
@@ -145,14 +150,20 @@ class Planning():
 
                 updated_path.append(updated_point)
 
-
             # Replace only the points in the path that need to be updated
             for i, point in enumerate(trim_global_path):
                 for obj in object_list:
+                    obj_x, obj_y = obj['X'], obj['Y']
+                    if obj_y > point[1]:
+                        obj_radius = obj_radius_front
+                    else:
+                        obj_radius = obj_radius_rear
+                    
                     if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
                         final_global_path[i] = updated_path[i]
 
         return final_global_path
+
 
     
     

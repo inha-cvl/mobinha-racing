@@ -38,13 +38,13 @@ class ObjectSimulator:
         self._brake = msg.brake.data
 
     def publish_object(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(20)
         start_time = time.time()
         vel = 0
         dt = 0.05
         while not rospy.is_shutdown():
             if self.object_ready:
-                if time.time()-start_time > 20:
+                if time.time()-start_time > 3:
                     self.object_ready = False
                     vel = 0
                 x,y,yaw,v = self.object.next_state(dt, self.object.yaw, self._accel, self._brake)

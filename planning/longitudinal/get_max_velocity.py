@@ -20,6 +20,27 @@ class GetMaxVelocity:
                 self.global_poses.append([float(line[0]),float(line[1])])
                 self.global_velocitys.append(float(line[10]))
 
+        self.speed_accel_map = np.array([
+            [0.0, 1.5],
+            [4.0/3.6, 1.5],
+            [8.0/3.6, 1.5],
+            [12.0/3.6, 1.5],
+            [16.0/3.6, 1.5],
+            [20.0/3.6, 1.5],
+            [24.0/3.6, 1.5],
+            [28.0/3.6, 1.5],
+            [32.0/3.6, 1.5],
+            [36.0/3.6, 1.5],
+            [40.0/3.6, 1.425],
+            [44.0/3.6, 1.325],
+            [48.0/3.6, 1.2],
+            [52.0/3.6, 1.1],
+            [56.0/3.6, 1.025],
+            [60.0/3.6, 0.975],
+            [66.0/3.6, 0.825],
+            [72.0/3.6, 0.625]
+        ])
+
     def find_nearest_idx(self, local_pos):
         end_i = self.cut_dist if len(self.global_poses) > self.cut_dist else -1
         cut_global_poses = np.array(self.global_poses[0:end_i])
@@ -29,20 +50,36 @@ class GetMaxVelocity:
             dists.append(ed)
         dists = np.array(dists)
         return dists.argmin()
+    
+    def get_acceleration(self, current_velocity):
+        # Interpolate to find the acceleration based on the current velocity
+        if current_velocity <= self.speed_accel_map[0, 0]:
+            return self.speed_accel_map[0, 1]
+        elif current_velocity >= self.speed_accel_map[-1, 0]:
+            return self.speed_accel_map[-1, 1]
+        else:
+            return np.interp(current_velocity, self.speed_accel_map[:, 0], self.speed_accel_map[:, 1])
 
     def cut_values(self, idx):
         self.global_poses = copy.deepcopy(self.global_poses[idx:])
         self.global_velocitys = copy.deepcopy(self.global_velocitys[idx:])
     
-    def smooth_velocity_plan(self, velocities, current_velocity, target_velocity, max_acceleration=2, window_size=5):
+    def smooth_velocity_plan(self, velocities, current_velocity, target_velocity, window_size=5):
         smoothed_velocities = np.copy(velocities)
         smoothed_velocities[0] = current_velocity
 
         for i in range(1, len(velocities)):
             delta_v = target_velocity - smoothed_velocities[i-1]
             sign = np.sign(delta_v)
-            delta_v = min(abs(delta_v), max_acceleration) * sign
+            
+            # Get adjusted acceleration based on current velocity
+            adjusted_acceleration = self.get_acceleration(smoothed_velocities[i-1])
+            delta_v = min(abs(delta_v), adjusted_acceleration) * sign
             smoothed_velocities[i] = smoothed_velocities[i-1] + delta_v
+
+            # Check if we exceed the target velocity
+            if (sign > 0 and smoothed_velocities[i] > target_velocity) or (sign < 0 and smoothed_velocities[i] < target_velocity):
+                smoothed_velocities[i] = target_velocity
 
         # Apply moving average filter to smooth the velocities
         for i in range(1, len(smoothed_velocities)):

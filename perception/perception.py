@@ -60,10 +60,10 @@ class Perception():
         distance_3d = np.sqrt(distance_2d**2 + self.camera_height**2)
         return distance_3d
 
-    def calculate_object_position(self, distance_2d, center, image_center):
+    def calculate_object_position(self, distance, center, image_center):
         dx = center[0] - image_center[0]
-        y = (dx * distance_2d) / self.focal_length  # y 값 계산, 왼쪽이 음수, 오른쪽이 양수
-        x = distance_2d  # x 값은 distance_2d
+        y = (dx * distance)  / self.focal_length  # y 값 계산, 왼쪽이 음수, 오른쪽이 양수
+        x = distance  # x 값은 distance_2d
         return x, -y
 
     def edge_enhance(self, frame):
@@ -232,10 +232,10 @@ class Perception():
                 if 80 < c_area < 10000:
                     distance_2d, center = self.calculate_distance(contour, self.white_box_width)
                     distance_3d = self.calculate_3d_distance(distance_2d)
-                    object_x, object_y = self.calculate_object_position(distance_3d, center, image_center)
+                    object_x, object_y = self.calculate_object_position(distance_2d, center, image_center)
                     positions.append((object_x, object_y))
                     
-                    cv2.putText(result_frame, f"White [{object_x:.2f}m]", center, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                    cv2.putText(result_frame, f"White x:{object_x} y:{object_y}", center, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                     cv2.drawContours(result_frame, [contour], -1, (255, 255, 255), 2)
 
             for contour in green_contours:
@@ -243,10 +243,10 @@ class Perception():
                 if 80 < c_area < 10000:
                     distance_2d, center = self.calculate_distance(contour, self.green_box_width)
                     distance_3d = self.calculate_3d_distance(distance_2d)
-                    object_x, object_y = self.calculate_object_position(distance_3d, center, image_center)
+                    object_x, object_y = self.calculate_object_position(distance_2d, center, image_center)
                     positions.append((object_x, object_y))
                     
-                    cv2.putText(result_frame, f"Green [{object_x:.2f}m]", center, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                    cv2.putText(result_frame, f"Green x:{object_x} y:{object_y}", center, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                     cv2.drawContours(result_frame, [contour], -1, (0,255,0), 2)
 
             self.RH.publish(result_frame, positions)
