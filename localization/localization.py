@@ -75,8 +75,10 @@ class Localization():
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
                 constant_offset = -0.015*cnt
+                print('CURVE IMU')
             else:
                 constant_offset = -0.023*cnt
+                print('STRAIGHT IMU')
             
             heading += initial_offset
             offseted_heading = heading + constant_offset
