@@ -150,7 +150,7 @@ def get_kiapi_signal(go, stop, slow_on, slow_off, pit_stop):
 def calc_heading_error(source, target):
     val = abs(source - target)
     result = min(val, 360-val)
-    print("Calc Heading Error:", result)
+    print(f"Calc Heading Error: {result:.4f}\nCompensated heading: {target:.2f}")
     if result < 20:
         return True
     else:

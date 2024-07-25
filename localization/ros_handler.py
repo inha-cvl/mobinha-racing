@@ -39,7 +39,7 @@ class ROSHandler():
        
     def system_status_cb(self, msg):
         if msg.headingSet.data == 1:
-            self.heading_fixed = True
+            self.heading_fixed = True 
         else:
             self.heading_fixed = False
 

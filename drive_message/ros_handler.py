@@ -116,12 +116,12 @@ class ROSHandler():
     def nav_pvt_cb(self, msg):
         heading = float(msg.heading*1e-5)
 
-        # if self.localization_heading is not None:
-        #     if not calc_heading_error(heading, self.localization_heading):
-        #         heading = self.localization_heading
-        #         self.system_status.headingSet.data = 1
-        #     else:
-        #         self.system_status.headingSet.data = 0
+        if self.localization_heading is not None:
+            if not calc_heading_error(heading, self.localization_heading):
+                heading = self.localization_heading
+                self.system_status.headingSet.data = 1 # wrong value
+            else:
+                self.system_status.headingSet.data = 0 # right value
         
         heading = -1*(heading-90)%360
         latitude = msg.lat*1e-7

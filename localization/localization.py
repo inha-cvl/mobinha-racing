@@ -15,7 +15,7 @@ class Localization():
         self.RH = ROSHandler(map)
         self.madgwick = Madgwick()
         self.condition = False
-
+        self.initial_offset = 0
         self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',
                            '24', '25', '26', '27', '36', '37', '38', '39', '43', '44', '54', '59',
                            '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
@@ -43,7 +43,6 @@ class Localization():
         last_ns = None
         initial_offset = 0
         initial_flag = True
-        cnt = 0
 
 
         while not rospy.is_shutdown():
@@ -66,22 +65,25 @@ class Localization():
             last_ns = self.RH.imumeas.header.stamp.nsecs
             # print("dt:", dt)
 
-            if self.RH.heading_fixed: #
+            if self.RH.heading_fixed: # wrong heading
                 q = self.madgwick.updateIMU(q=q, gyr=gyro, acc=accel, dt=dt)
-            else:
+                heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
+            else: # right heading
                 q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
-            
-            heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
+                self.cnt = 0
+                heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
+                self.initial_offset = self.RH.navatt.heading - heading
+                # print('initialized')
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
-                constant_offset = -0.015*cnt
+                constant_offset = -0.015*self.cnt
                 #print('CURVE IMU')
             else:
-                constant_offset = -0.023*cnt
+                constant_offset = -0.023*self.cnt
                 #print('STRAIGHT IMU')
             
-            heading += initial_offset
+            heading += self.initial_offset
             offseted_heading = heading + constant_offset
 
             val = 0
@@ -91,13 +93,11 @@ class Localization():
                 val = -360
             
             clipped_heading = offseted_heading + val
-            cnt += 1
+            self.cnt += 1
 
-            if initial_flag:
-                initial_offset = self.RH.navatt.heading - heading
-                initial_flag = False
 
             self.RH.publish(clipped_heading)
+            # print(f"                                compensated heading : {clipped_heading:.2f}")
             rate.sleep()
 
 def main():
