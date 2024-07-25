@@ -26,7 +26,6 @@ class LaneletHandler:
             return None
         else:
             self.curr_lane_num, self.curr_lane_id= self.current_lane_number(local_pos)
-            print(self.curr_lane_id)
             return self.curr_lane_num, self.curr_lane_id
     
 
