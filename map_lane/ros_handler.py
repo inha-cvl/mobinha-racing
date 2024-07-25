@@ -138,7 +138,6 @@ class ROSHandler():
 
         laneData = LaneData()
         laneData.currentLane = laneLet
-
         self.lane_data_pub.publish(laneData)
     
     def publish_refine_obstacles(self, obstacles):

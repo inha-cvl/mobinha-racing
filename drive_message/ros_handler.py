@@ -106,7 +106,6 @@ class ROSHandler():
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.laneNumber.data != 0:
             self.lane_number = msg.currentLane.laneNumber.data
-        self.system_status.headingSet.data = 0
 
     def navigation_data_cb(self, msg):
         path = []
@@ -117,15 +116,18 @@ class ROSHandler():
     def nav_pvt_cb(self, msg):
         heading = float(msg.heading*1e-5)
 
-        if self.localization_heading is not None:
-            if not calc_heading_error(heading, self.localization_heading):
-                heading = self.localization_heading
-                self.system_status.headingSet.data = 1
+        # if self.localization_heading is not None:
+        #     if not calc_heading_error(heading, self.localization_heading):
+        #         heading = self.localization_heading
+        #         self.system_status.headingSet.data = 1
+        #     else:
+        #         self.system_status.headingSet.data = 0
         
         heading = -1*(heading-90)%360
         latitude = msg.lat*1e-7
         longitude = msg.lon*1e-7
-        self.vehicle_state.header = msg.header
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
         self.vehicle_state.position.x = latitude
         self.vehicle_state.position.y = longitude
         self.vehicle_state.heading.data = heading

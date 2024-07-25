@@ -14,6 +14,8 @@ class ROSHandler():
     def set_values(self):
         self.local_pose = []
         self.local_path = []
+        self.bridge = CvBridge()
+        self.frame = None
 
 
     def set_protocol(self):

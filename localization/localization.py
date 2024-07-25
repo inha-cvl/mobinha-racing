@@ -66,19 +66,20 @@ class Localization():
             last_ns = self.RH.imumeas.header.stamp.nsecs
             # print("dt:", dt)
 
-            if self.RH.heading_fixed:
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
-            else:
+            if self.RH.heading_fixed: #
                 q = self.madgwick.updateIMU(q=q, gyr=gyro, acc=accel, dt=dt)
+            else:
+                q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
+            
             heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
                 constant_offset = -0.015*cnt
-                print('CURVE IMU')
+                #print('CURVE IMU')
             else:
                 constant_offset = -0.023*cnt
-                print('STRAIGHT IMU')
+                #print('STRAIGHT IMU')
             
             heading += initial_offset
             offseted_heading = heading + constant_offset

@@ -74,7 +74,7 @@ class Perception():
                     distance_2d, center = self.calculate_distance(contour, self.box_width)
                     if w * 0.45 < center[0] < w * 0.55:
                         distance_3d = self.calculate_3d_distance(distance_2d)
-                        object_x, object_y = self.calculate_object_position(distance_2d, center, image_center)
+                        object_x, object_y = self.calculate_object_position(distance_3d, center, image_center)
                         positions.append((object_x, object_y))
                         
                         cv2.putText(frame_copy, f"Dist: {object_x:.2f}m, Y: {object_y:.2f}m", center, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
