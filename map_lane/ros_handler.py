@@ -50,6 +50,7 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
 
         rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
+        rospy.Subscriber('/perception/box_detection', MarkerArray, self.cam_box_objects_cb)
         rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
         
@@ -89,6 +90,17 @@ class ROSHandler():
                 nx,ny = conv
                 obstacles.append([0, nx, ny, 3])
         self.cam_obstacles = obstacles
+    
+    def cam_box_objects_cb(self,msg):
+        obstacles = []
+        for obj in msg.markers:
+            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
+            if conv is None:
+                continue
+            else:
+                nx,ny = conv
+                obstacles.append([0, nx, ny, 3])
+        self.cam_obstacles = obstacles
 
     def lidar_track_box_cb(self, msg):
         obstacles = []
@@ -119,21 +131,15 @@ class ROSHandler():
         self.lmap_viz_pub.publish(lmap_viz)
         self.mlmap_viz_pub.publish(mlmap_viz)
     
-    def publish_lane_data(self, curr_lane_num):
+    def publish_lane_data(self, curr_lane_num, curr_lane_id):
         laneLet = LaneLet()
-        laneLet.currentLane = curr_lane_num
+        laneLet.id.data = str(curr_lane_id)
+        laneLet.laneNumber.data = int(curr_lane_num)
 
         laneData = LaneData()
         laneData.currentLane = laneLet
 
         self.lane_data_pub.publish(laneData)
-    
-    def publish_lanelet(self, curr_lane_id):
-        laneLet=LaneLet()
-        laneLet.id = String()
-        laneLet.id.data = curr_lane_id
-
-        self.lanelet_pub.publish(laneLet)
     
     def publish_refine_obstacles(self, obstacles):
         pose_array = PoseArray()

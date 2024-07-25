@@ -3,8 +3,7 @@ import numpy as np
 from pyproj import Proj, Transformer
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import QuaternionStamped, PoseArray, Pose2D
-from nmea_msgs.msg import Sentence
+from geometry_msgs.msg import PoseArray, Pose2D
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32
 from sensor_msgs.msg import NavSatFix
@@ -66,12 +65,10 @@ class ROSHandler():
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
-        rospy.Subscriber('/ublox/fix', NavSatFix, self.nav_sat_fix_cb)
+        #rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
+        #rospy.Subscriber('/ublox/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
-        #rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
-        rospy.Subscriber('/localization/heading/', Float32, self.localization_heading_cb)
-
+        rospy.Subscriber('/localization/heading', Float32, self.localization_heading_cb)
 
         if not USE_LIDAR:
             rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
@@ -80,7 +77,6 @@ class ROSHandler():
         
         # Simulator
         rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
-        #rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
 
         # Refine
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
@@ -108,10 +104,9 @@ class ROSHandler():
             self.can_input.ACC_En.data = 0
             
     def lane_data_cb(self, msg:LaneData):
-        if msg.currentLane.currentLane != 0:
-            self.lane_number = msg.currentLane.currentLane
+        if msg.currentLane.laneNumber.data != 0:
+            self.lane_number = msg.currentLane.laneNumber.data
         self.system_status.headingSet.data = 0
-
 
     def navigation_data_cb(self, msg):
         path = []
@@ -124,12 +119,33 @@ class ROSHandler():
 
         if self.localization_heading is not None:
             if not calc_heading_error(heading, self.localization_heading):
-                print("UPDATE heading")
-                heading =  self.localization_heading
+                heading = self.localization_heading
                 self.system_status.headingSet.data = 1
-
-        self.local_heading = heading
         
+        heading = -1*(heading-90)%360
+        latitude = msg.lat*1e-7
+        longitude = msg.lon*1e-7
+        self.vehicle_state.header = msg.header
+        self.vehicle_state.position.x = latitude
+        self.vehicle_state.position.y = longitude
+        self.vehicle_state.heading.data = heading
+        self.add_enu(latitude, longitude)
+    
+    def sim_pose_cb(self, msg):
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
+        self.vehicle_state.position.x = msg.x
+        self.vehicle_state.position.y = msg.y
+        self.add_enu(msg.x, msg.y)
+        self.vehicle_state.heading.data = msg.theta
+
+    def add_enu(self, lat, lng):
+        x, y, _ = self.transformer.transform(lng, lat, 7)
+        self.vehicle_state.enu.x = x
+        self.vehicle_state.enu.y = y
+        self.local_pose = (x,y)
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
+        self.system_status.lapCount.data = self.lap_cnt
 
     def user_input_cb(self, msg): #mode, signal, state, health
         mode = int(msg.user_mode.data)
@@ -140,16 +156,83 @@ class ROSHandler():
     
     def localization_heading_cb(self, msg):
         self.localization_heading = msg.data
-        print(self.localization_heading)
-    
-    def add_enu(self, lat, lng):
-        x, y, _ = self.transformer.transform(lng, lat, 7)
-        self.vehicle_state.enu.x = x
-        self.vehicle_state.enu.y = y
 
-        self.local_pose = (x,y)
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
-        self.system_status.lapCount.data = self.lap_cnt
+    def target_actuator_cb(self, msg):
+        steer = np.clip(msg.steer.data*12.9, -500, 500)
+        self.can_input.EPS_Cmd.data = steer
+        self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
+    
+    def refine_obstacle_cb(self, msg):
+        self.detection_data = DetectionData()
+        for obj in msg.poses:
+            object_info = ObjectInfo()
+            object_info.type.data = int(obj.position.z)
+            object_info.position.x = obj.position.x
+            object_info.position.y = obj.position.y
+            object_info.velocity.data = float(obj.orientation.x)
+            object_info.heading.data = float(obj.orientation.y)
+            self.detection_data.objects.append(object_info)
+
+    def cam_objects_cb(self,msg):
+        self.detection_data = DetectionData()
+        for obj in msg.markers:
+            object_info = ObjectInfo()
+            object_info.type.data = 0
+            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
+            if conv is None:
+                return
+            else:
+                nx,ny = conv
+                object_info.position.x = nx
+                object_info.position.y = ny
+                object_info.velocity.data = self.vehicle_state.velocity.data
+                object_info.heading.data = math.degrees(self.vehicle_state.heading.data)
+                self.detection_data.objects.append(object_info)
+        
+    def lidar_track_box_cb(self, msg):
+        self.detection_data = DetectionData()
+        for obj in msg.boxes:
+            object_info = ObjectInfo()
+            object_info.type.data = 0
+            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
+            if conv is None:
+                return
+            else:
+                nx,ny = conv
+                s,d = self.oh.object2frenet(self.local_path, [nx, ny])
+                if not self.oh.filtering_by_lane_num(self.lane_number,d):
+                    continue                    
+                object_info.position.x = nx
+                object_info.position.y = ny
+                object_info.velocity.data = self.vehicle_state.velocity.data / 2
+                object_info.heading.data = self.vehicle_state.heading.data
+                self.detection_data.objects.append(object_info)
+            
+    
+    def publish(self):
+        self.can_input_pub.publish(self.can_input)
+        self.sensor_data_pub.publish(self.sensor_data)
+        self.system_status_pub.publish(self.system_status)
+        self.vehicle_state_pub.publish(self.vehicle_state)
+        self.detection_data_pub.publish(self.detection_data)
+        self.ego_actuator_pub.publish(self.ego_actuator)
+        self.oh.update_value(self.local_pose, self.vehicle_state.heading.data)
+
+
+
+'''
+
+
+    def heading_cb(self, msg):
+        yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
+        self.vehicle_state.heading.data = yaw  
+
+    def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
+        self.vehicle_state.header = msg.header
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+        self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
+        self.add_enu(msg.latitude, msg.longitude)
 
     def nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
@@ -179,100 +262,5 @@ class ROSHandler():
                     
             elif len(parsed) == 1:
                 self.vehicle_state.heading.data = parsed[0]        
-    
-    def sim_pose_cb(self, msg):
-        self.vehicle_state.header = Header()
-        self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.position.x = msg.x
-        self.vehicle_state.position.y = msg.y
-        self.add_enu(msg.x, msg.y)
-        self.vehicle_state.heading.data = msg.theta
 
-    def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
-        self.vehicle_state.header = msg.header
-        self.vehicle_state.position.x = msg.latitude
-        self.vehicle_state.position.y = msg.longitude
-        self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
-        self.add_enu(msg.latitude, msg.longitude)
-    
-    def heading_cb(self, msg):
-        yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
-        self.vehicle_state.heading.data = yaw  
-
-    def target_actuator_cb(self, msg):
-        steer = np.clip(msg.steer.data*12.9, -500, 500)
-        self.can_input.EPS_Cmd.data = steer
-        self.can_input.ACC_Cmd.data = msg.accel.data if msg.accel.data > 0 else -msg.brake.data
-    
-    def sim_objects_cb(self, msg):
-        self.detection_data = DetectionData()
-        for obj in msg.poses:
-            object_info = ObjectInfo()
-            object_info.type.data = int(obj.position.z)
-            psi =  self.oh.is_within_radius([obj.position.x,obj.position.y], self.local_path)
-            if psi is not None:
-                object_info.position.x = obj.position.x
-                object_info.position.y = obj.position.y
-                object_info.velocity.data = float(obj.orientation.x)
-                object_info.heading.data = 0#math.degrees(psi)
-                self.detection_data.objects.append(object_info)
-    
-    def refine_obstacle_cb(self, msg):
-        self.detection_data = DetectionData()
-        for obj in msg.poses:
-            object_info = ObjectInfo()
-            object_info.type.data = int(obj.position.z)
-            object_info.position.x = obj.position.x
-            object_info.position.y = obj.position.y
-            object_info.velocity.data = float(obj.orientation.x)
-            object_info.heading.data = float(obj.orientation.y)
-            self.detection_data.objects.append(object_info)
-    
-    def cam_objects_cb(self,msg):
-        self.detection_data = DetectionData()
-        for obj in msg.markers:
-            object_info = ObjectInfo()
-            object_info.type.data = 0
-            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
-            if conv is None:
-                return
-            else:
-                nx,ny = conv
-                # if not self.oh.is_within_radius(conv, self.local_path):
-                #     continue
-                object_info.position.x = nx
-                object_info.position.y = ny
-                object_info.velocity.data = self.vehicle_state.velocity.data
-                object_info.heading.data = math.degrees(self.vehicle_state.heading.data)
-                self.detection_data.objects.append(object_info)
-        
-    def lidar_track_box_cb(self, msg):
-        self.detection_data = DetectionData()
-        for obj in msg.boxes:
-            object_info = ObjectInfo()
-            object_info.type.data = 0
-            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
-            if conv is None:
-                return
-            else:
-                nx,ny = conv
-                # if not self.oh.is_within_radius(conv, self.local_path):
-                #     continue
-                s,d = self.oh.object2frenet(self.local_path, [nx, ny])
-                if not self.oh.filtering_by_lane_num(self.lane_number,d):
-                    continue                    
-                object_info.position.x = nx
-                object_info.position.y = ny
-                object_info.velocity.data = self.vehicle_state.velocity.data / 2
-                object_info.heading.data = self.vehicle_state.heading.data
-                self.detection_data.objects.append(object_info)
-            
-    
-    def publish(self):
-        self.can_input_pub.publish(self.can_input)
-        self.sensor_data_pub.publish(self.sensor_data)
-        self.system_status_pub.publish(self.system_status)
-        self.vehicle_state_pub.publish(self.vehicle_state)
-        self.detection_data_pub.publish(self.detection_data)
-        self.ego_actuator_pub.publish(self.ego_actuator)
-        self.oh.update_value(self.local_pose, self.vehicle_state.heading.data)
+'''
