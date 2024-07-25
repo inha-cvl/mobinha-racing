@@ -148,7 +148,9 @@ def get_kiapi_signal(go, stop, slow_on, slow_off, pit_stop):
     return 0
 
 def calc_heading_error(source, target):
-    if abs(source-target) > 20:
-        return False
-    else:
+    val = abs(source - target)
+    result = min(val, 360-val)
+    if result < 20:
         return True
+    else:
+        return False

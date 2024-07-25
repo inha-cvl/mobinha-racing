@@ -10,17 +10,6 @@ class GetMaxVelocity:
         self.cut_dist = 30
         self.set_values(global_path_name)
 
-    # def set_values(self,global_path_name):
-    #     csv_file = f'./global_path/paths/{global_path_name}.csv'
-    #     with open(csv_file, 'r', encoding='utf-8') as f:
-    #         rdr = csv.reader(f)
-    #         for i, line in enumerate(rdr):
-    #             if i < 2:
-    #                 continue
-    #             splited = line[0].split(',')
-    #             self.global_poses.append([float(splited[0]),float(splited[1])])
-    #             self.global_velocitys.append(float(splited[10]))
-
     def set_values(self,global_path_name):
         csv_file = f'./inputs/traj_ltpl_cl/traj_ltpl_cl_{global_path_name}.csv'
         with open(csv_file, 'r', encoding='utf-8') as f:
@@ -44,6 +33,23 @@ class GetMaxVelocity:
     def cut_values(self, idx):
         self.global_poses = copy.deepcopy(self.global_poses[idx:])
         self.global_velocitys = copy.deepcopy(self.global_velocitys[idx:])
+    
+    def smooth_velocity_plan(self, velocities, current_velocity, target_velocity, max_acceleration=2, window_size=5):
+        smoothed_velocities = np.copy(velocities)
+        smoothed_velocities[0] = current_velocity
+
+        for i in range(1, len(velocities)):
+            delta_v = target_velocity - smoothed_velocities[i-1]
+            sign = np.sign(delta_v)
+            delta_v = min(abs(delta_v), max_acceleration) * sign
+            smoothed_velocities[i] = smoothed_velocities[i-1] + delta_v
+
+        # Apply moving average filter to smooth the velocities
+        for i in range(1, len(smoothed_velocities)):
+            smoothed_velocities[i] = np.mean(smoothed_velocities[max(0, i-window_size):i+1])
+
+        return smoothed_velocities
+
     
     def get_max_velocity(self, local_pos):
         min_idx = self.find_nearest_idx(local_pos)

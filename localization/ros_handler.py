@@ -34,7 +34,7 @@ class ROSHandler():
         rospy.Subscriber("/ublox/navpvt", NavPVT, self.navpvt.callback)
         rospy.Subscriber("/ublox/imu_meas", Imu, self.imumeas.callback)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
-        rospy.Subscriber('/LaneLet', LaneLet, self.lanelet_cb)
+        rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
         self.fix_heading_pub = rospy.Publisher('/localization/heading', Float32, queue_size=1)
        
     def system_status_cb(self, msg):
@@ -43,8 +43,8 @@ class ROSHandler():
         else:
             self.heading_fixed = False
 
-    def lanelet_cb(self, msg):
-        self.curr_lane_id = msg.id.data
+    def lanedata_cb(self, msg):
+        self.curr_lane_id = str(msg.currentLane.id.data)
 
     def publish(self, heading):
         self.fix_heading_pub.publish(Float32(heading))

@@ -14,12 +14,12 @@ class ROSHandler():
     def set_values(self):
         self.local_pose = []
         self.local_path = []
-        
+
 
     def set_protocol(self):
         rospy.Subscriber('/camera/image_raw', Image, self.front_center_camera_cb)
         self.processed_image_pub = rospy.Publisher('/camera/processed_image', Image, queue_size=10)
-        self.box_detection_pub = rospy.Publisher('/detection_markers', MarkerArray, queue_size=1)
+        self.box_detection_pub = rospy.Publisher('/perception/box_detection', MarkerArray, queue_size=1)
 
     def front_center_camera_cb(self, msg):    
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')

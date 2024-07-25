@@ -3,4 +3,4 @@ std_msgs/String leftNeighbor
 std_msgs/String rightNeighbor
 std_msgs/String predecessor
 std_msgs/String successor
-int8 currentLane
+std_msgs/Int8 laneNumber
