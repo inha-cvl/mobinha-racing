@@ -29,6 +29,7 @@ class Planning():
 
     def setting_values(self):
         self.avoid_on = True
+        self.object_detected = False
         self.shutdown_event = threading.Event()
 
         self.specifiers = ['to_goal', 'race']
@@ -111,12 +112,12 @@ class Planning():
         check_object = []
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [obj['X'], obj['Y']])
-            if -1.7 < d < 1.7:
+            if -1 < d < 1:
                 check_object.append(obj)
 
 
         self.RH.publish_target_object(check_object)
-
+        self.object_detected = False
         if self.avoid_on:
             for point in trim_global_path:
                 x, y = point[0], point[1]
@@ -126,9 +127,9 @@ class Planning():
                 
                 for obj in check_object:
                     obj_x, obj_y = obj['X'], obj['Y']
-
-                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
                     
+                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
+                        self.object_detected = True
                         if w_left < 4:
                             points = np.arange(0, w_left, 1.6)
                         else:
@@ -198,7 +199,9 @@ class Planning():
                     local_max_vel = 10/3.6
                 else:
                     max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
-                    if self.RH.lap_count == 0 : # 1 lap under 30 km/h 
+                    if self.object_detected:
+                        local_max_vel = min(10/3.6, max_vel)
+                    elif self.RH.lap_count == 0 : # 1 lap under 30 km/h 
                         local_max_vel = min(27/3.6, max_vel)
                     else:
                         local_max_vel = max_vel

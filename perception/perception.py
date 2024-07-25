@@ -64,7 +64,7 @@ class Perception():
         dx = center[0] - image_center[0]
         y = (dx * distance_2d) / self.focal_length  # y 값 계산, 왼쪽이 음수, 오른쪽이 양수
         x = distance_2d  # x 값은 distance_2d
-        return x, y
+        return x, -y
 
     def edge_enhance(self, frame):
         kernel = np.array([[0, -1, 0],

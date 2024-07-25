@@ -49,7 +49,6 @@ class NAVPVT:
         self.hacked_msg.heading = -179.0
         self.pub.publish()
         self.cnt+=1
-        print("published hacked msg", self.cnt)
 
     def main(self):
         while not rospy.is_shutdown():
