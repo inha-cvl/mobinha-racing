@@ -69,6 +69,7 @@ class Visualizer:
             path.append([pts.x, pts.y])
         viz_path = path_viz(path)
         self.pub_path_viz.publish(viz_path)
+        print("test")
     
     def detection_data_cb(self, msg):
         objs = []
