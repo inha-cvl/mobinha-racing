@@ -15,7 +15,7 @@ target = 'to_goal'
 pub_global_path = rospy.Publisher(f'/{target}_path', Marker, queue_size=1)
 
 
-diag_len = 25
+diag_len = 20
 lane_width = 3.25
 
 map = global_path.libs.load_map.MAP('KIAPI_Racing')

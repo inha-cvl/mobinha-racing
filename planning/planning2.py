@@ -34,6 +34,7 @@ class Planning():
 
         self.specifiers = ['to_goal', 'race']
         self.race_mode = self.specifiers[0]
+        self.target_velocity = 0
 
         # Load CSV Files
         self.to_goal_path = self.get_ref_path(self.specifiers[0])
@@ -89,14 +90,15 @@ class Planning():
         elif race_mode == 'pit_stop':
             global_path = copy.deepcopy(self.pit_stop_path)
         # Set start pose
+        self.now_idx = 0
         idx = ph.find_closest_index(global_path, self.RH.local_pos)
 
         if idx is not None:
+            self.gmv = GetMaxVelocity(self.RH, race_mode)   
             self.start_pose_initialized = True
             self.first_initialized = True
             self.global_path = global_path
             self.now_idx = idx
-            self.gmv = GetMaxVelocity(self.RH, race_mode)        
             g_path = [(float(point[0]), float(point[1])) for point in global_path]
             self.RH.publish_global_path(g_path)
             rospy.loginfo(f'[Planning] {race_mode} Start position set took {round(time.time()-start_time, 4)} sec')
@@ -209,25 +211,27 @@ class Planning():
                 elif not self.start_pose_initialized:
                     local_max_vel = 10/3.6
                 else:
-                    max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
+                    #max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
+                    max_vel = interped_vel[1]
                     # if self.object_detected:
-                    #     local_max_vel = min(10/3.6, max_vel)
-                    # elif self.RH.lap_count == 0 : # 1 lap under 30 km/h 
                     #     local_max_vel = min(27/3.6, max_vel)
-                    # else:
-                    #     local_max_vel = max_vel
-                    local_max_vel = max_vel
+                    # el
+                    if self.RH.lap_count == 0 : # 1 lap under 30 km/h 
+                        local_max_vel = min(27/3.6, max_vel)
+                    else:
+                        local_max_vel = max_vel
+                    #local_max_vel = max_vel
 
-                planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.RH.current_velocity, local_max_vel, R_list)
+                planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.target_velocity, local_max_vel, R_list)
                 #planned_vel = self.gmv.smooth_velocity_by_R(local_max_vel, R_list)
 
-                if ( self.RH.lap_count >= 5 or self.race_mode == 'pit_stop') and len(interped_path) < 15:
-                    planned_vel = -3
+                if ( self.RH.lap_count >= 5 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
+                    planned_vel = [-3] * len(planned_vel)
                 else:
                     planned_vel = planned_vel
 
-                target_velocity = planned_vel[1]
-                self.RH.publish2(interped_path,R_list,planned_vel, target_velocity)
+                self.target_velocity = planned_vel[1]
+                self.RH.publish2(interped_path,R_list,planned_vel, self.target_velocity)
 
                 rate.sleep()            
 

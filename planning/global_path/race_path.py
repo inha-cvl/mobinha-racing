@@ -24,24 +24,24 @@ gput.tile_size = map.tile_size
 gput.graph = map.graph
 gput.lane_width = lane_width
 
-start_pose = [544.501, -459.336] #a littel behind goal position
+start_pose = [504.961, -415.803]#[544.501, -459.336] #a littel behind goal position
 final_path = []
 final_ids = []
 final_vs = []
 
 
 start_ll = gput.lanelet_matching(start_pose)
-r1, idnidx1, ids1, vs1 = gput.get_straight_path(start_ll, 3500, '77', 'Left')
+r1, idnidx1, ids1, vs1 = gput.get_straight_path(start_ll, 4000, '77', 'Left')
 # idnidx2 = gput.get_merged_point(idnidx1, diag_len, 1)
 # r2, idnidx3, ids2, vs2 = gput.get_straight_path(idnidx2, 5000, '76', 'Right')
 # idnidx4 = gput.get_merged_point(idnidx3, diag_len, 2)
 # r3, idnidx3, ids3, vs3 = gput.get_straight_path(idnidx4, 7000, '76', 'Right') 
 
 
-final_path = r1[:-20]#+r2#+r3
-final_ids = ids1[:-20]#+ids2#+ids3
-final_vs = vs1[:-20]#+vs2#+vs3
-start_pose = r1[-21]
+final_path = r1#[:-200]#+r2#+r3
+final_ids = ids1#[:-200]#+ids2#+ids3
+final_vs = vs1#[:-200]#+vs2#+vs3
+start_pose = r1#[-201]
 
 final_tr = []
 copy_final_path = copy.deepcopy(final_path)

@@ -71,9 +71,9 @@ class GetMaxVelocity:
 
         return smoothed_velocities
     
-    def smooth_velocity_plan(self, velocities, current_velocity, target_velocity, R_list, window_size=5):
+    def smooth_velocity_plan(self, velocities, prev_target_velocity, target_velocity, R_list, window_size=2):
         smoothed_velocities = np.copy(velocities)
-        smoothed_velocities[0] = current_velocity
+        smoothed_velocities[0] = prev_target_velocity
 
         for i in range(1, len(velocities)):
             delta_v = target_velocity - smoothed_velocities[i-1]
@@ -95,9 +95,9 @@ class GetMaxVelocity:
                 adjusted_velocity = target_velocity - (K / R_list[i]) if target_velocity > 3 else target_velocity
                 smoothed_velocities[i] = min(smoothed_velocities[i], adjusted_velocity)
 
-        # # Apply moving average filter to smooth the velocities
-        # for i in range(1, len(smoothed_velocities)):
-        #     smoothed_velocities[i] = np.mean(smoothed_velocities[max(0, i-window_size):i+1])
+        # Apply moving average filter to smooth the velocities
+        for i in range(1, len(smoothed_velocities)):
+            smoothed_velocities[i] = np.mean(smoothed_velocities[max(0, i-window_size):i+1])
 
         return smoothed_velocities
 

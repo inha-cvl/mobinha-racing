@@ -7,16 +7,24 @@ from scipy.interpolate import splprep, splev, interp1d
 def distance(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
-def find_closest_index(global_path, local_pos):
+def find_closest_index(global_path, local_pos, threshold=20):
     min_dist = float('inf')
     closest_index = None
+    decreasing = True
+
     for i, point in enumerate(global_path):
         path_x = float(point[0])
         path_y = float(point[1])
-        dist = distance(path_x,path_y,local_pos[0],local_pos[1])
+        dist = distance(path_x, path_y, local_pos[0], local_pos[1])
+
         if dist < min_dist:
             min_dist = dist
             closest_index = i
+            decreasing = True
+        elif decreasing and dist > min_dist + threshold:
+            decreasing = False
+            break
+
     return closest_index
 
 
