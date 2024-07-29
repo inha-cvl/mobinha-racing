@@ -19,7 +19,7 @@ class ROSHandler():
 
 
     def set_protocol(self):
-        rospy.Subscriber('/camera/image_raw', Image, self.front_center_camera_cb)
+        rospy.Subscriber('/stereo/left/image_raw', Image, self.front_center_camera_cb)
         self.processed_image_pub = rospy.Publisher('/camera/processed_image', Image, queue_size=10)
         self.box_detection_pub = rospy.Publisher('/perception/box_detection', MarkerArray, queue_size=1)
 

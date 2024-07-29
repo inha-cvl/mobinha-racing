@@ -51,7 +51,7 @@ class ROSHandler():
         self.target_value['brake'] = msg.brake.data
     
     def navigation_data_cb(self, msg):
-        self.target_value['velocity'] = int(msg.plannedVelocity.data*MPS_TO_KPH)
+        self.target_value['velocity'] = int(msg.targetVelocity.data*MPS_TO_KPH)
     
     def system_status_cb(self, msg):
         self.system_status['mode'] = int(msg.systemMode.data)

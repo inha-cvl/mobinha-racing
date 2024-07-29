@@ -30,6 +30,7 @@ class Visualizer:
 
         self.ego_pos = [0.0, 0.0]
         self.ego_time = rospy.Time(0)
+        self.planned_kappa = 0 
 
         self.pub_viz_car = rospy.Publisher('/visualizer/car', Marker, queue_size=1)
         self.pub_viz_car_info = rospy.Publisher('/visualizer/car_info', Marker, queue_size=1)
@@ -48,7 +49,7 @@ class Visualizer:
     def vehicle_state_cb(self, msg):
         yaw = msg.heading.data
         v = msg.velocity.data
-        info = f"{(v*3.6):.2f}km/h {yaw:.2f}deg"
+        info = f"{(v*3.6):.2f}km/h {yaw:.2f}deg R={self.planned_kappa:.3f}"
         self.ego_car_info.text = info
         quaternion = tf.transformations.quaternion_from_euler(math.radians(0), math.radians(0), math.radians(yaw))  # RPY
         self.ego_pos = [msg.enu.x,msg.enu.y]
@@ -67,6 +68,7 @@ class Visualizer:
         for pts in msg.plannedRoute:
             path.append([pts.x, pts.y])
         viz_path = path_viz(path)
+        self.planned_kappa = msg.plannedKappa[0]
         self.pub_path_viz.publish(viz_path)
     
     def detection_data_cb(self, msg):

@@ -14,4 +14,6 @@ def get_base_lla(map):
         base_lla = [35.65492524, 128.39351431, 7]
     elif map == 'KIAPI_City':
         base_lla = [35.64699249, 128.40116601, 7]
+    elif map == 'KCity':
+        base_lla = [37.2292221592864,126.76912499027308,7]
     return base_lla

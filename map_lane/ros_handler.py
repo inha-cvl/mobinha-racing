@@ -126,7 +126,7 @@ class ROSHandler():
         if kappa != None:
             for rk in kappa:
                 self.navigation_data.plannedKappa.append(rk)
-        self.navigation_data.plannedVelocity.data = velocity
+        self.navigation_data.targetVelocity.data = velocity
         self.navigation_data_pub.publish(self.navigation_data)
 
     def publish_map_viz(self, lmap_viz, mlmap_viz):
