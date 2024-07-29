@@ -148,8 +148,8 @@ class Planning():
                 self.traj_set = self.ltpl_obj.calc_vel_profile(
                                                 pos_est=self.RH.local_pos,
                                                 vel_est=self.RH.current_velocity,
-                                                vel_max=100/3.6,
-                                                safety_d=60)[0]
+                                                vel_max=60/3.6,
+                                                safety_d=40)[0]
                 
                 # Set Target Velocity
                 if not self.RH.set_go:

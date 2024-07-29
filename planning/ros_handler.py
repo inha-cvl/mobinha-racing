@@ -63,8 +63,9 @@ class ROSHandler():
         self.local_pos = (msg.enu.x, msg.enu.y)
     
     def can_output_cb(self, msg):
-        self.current_long_accel = float(msg.Long_ACCEL.data)
-        self.current_lat_accel = float(msg.LAT_ACCEL.data)
+        pass
+        # self.current_long_accel = float(msg.Long_ACCEL.data)
+        # self.current_lat_accel = float(msg.LAT_ACCEL.data)
     
     def detection_data_cb(self, msg):
         object_list = []
@@ -77,7 +78,7 @@ class ROSHandler():
     def publish(self, local_action_set, road_max_vel):
         if local_action_set is not None and len(local_action_set) > 0:
             self.navigation_data = NavigationData()
-            self.navigation_data.plannedVelocity.data = min(local_action_set[1][5], road_max_vel)
+            self.navigation_data.targetVelocity.data = min(local_action_set[1][5], road_max_vel)
             for set in local_action_set:
                 point = Point()
                 point.x = set[1]
@@ -88,17 +89,19 @@ class ROSHandler():
 
             
     
-    def publish2(self, local_path, local_kappa, local_max_vel):
+    def publish2(self, local_path, R_list, velocity_list, target_velocity):
         if local_path is not None and len(local_path) > 0:
             self.navigation_data = NavigationData()
-            self.navigation_data.plannedVelocity.data =local_max_vel
+            self.navigation_data.targetVelocity.data = target_velocity
             for i, set in enumerate(local_path):
                 point = Point()
                 point.x = set[0]
                 point.y = set[1]
                 self.navigation_data.plannedRoute.append(point)
-                self.navigation_data.plannedKappa.append(local_kappa[i])
+                self.navigation_data.plannedKappa.append(R_list[i])
+                self.navigation_data.plannedVelocity.append(velocity_list[i])
             self.navigation_data_pub.publish(self.navigation_data)
+    
     
     def publish_target_object(self, object_list):
         detection_data = DetectionData()

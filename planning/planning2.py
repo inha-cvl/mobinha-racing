@@ -15,7 +15,7 @@ from longitudinal.get_max_velocity import GetMaxVelocity
 from global_path.global_path_planner import GlobalPathPlanner
 import planning_handler as ph
 
-LOCAL_PATH_LENGTH = 200
+LOCAL_PATH_LENGTH = 100
 
 def signal_handler(sig, frame):
     sys.exit(0)
@@ -191,7 +191,7 @@ class Planning():
     def executed(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
-            while self.first_initialized:
+            while self.first_initialized and not self.shutdown_event.is_set():
 
                 #local path trim
                 trimmed_path, self.global_path = ph.trim_and_update_global_path(self.global_path,self.RH.local_pos,LOCAL_PATH_LENGTH)
@@ -200,7 +200,7 @@ class Planning():
                 updated_path = self.path_update(trimmed_path)
 
                 #path spline
-                interped_path, interped_kappa, interped_vel = ph.interpolate_path(updated_path)
+                interped_path,R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
 
 
                 # Set Target Velocity
@@ -210,25 +210,26 @@ class Planning():
                     local_max_vel = 10/3.6
                 else:
                     max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
-                    if self.object_detected:
-                        local_max_vel = min(10/3.6, max_vel)
-                    elif self.RH.lap_count == 0 : # 1 lap under 30 km/h 
-                        local_max_vel = min(27/3.6, max_vel)
-                    else:
-                        local_max_vel = max_vel
+                    # if self.object_detected:
+                    #     local_max_vel = min(10/3.6, max_vel)
+                    # elif self.RH.lap_count == 0 : # 1 lap under 30 km/h 
+                    #     local_max_vel = min(27/3.6, max_vel)
+                    # else:
+                    #     local_max_vel = max_vel
+                    local_max_vel = max_vel
 
-                planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.RH.current_velocity, local_max_vel)
+                planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.RH.current_velocity, local_max_vel, R_list)
+                #planned_vel = self.gmv.smooth_velocity_by_R(local_max_vel, R_list)
 
                 if ( self.RH.lap_count >= 5 or self.race_mode == 'pit_stop') and len(interped_path) < 15:
                     planned_vel = -3
                 else:
-                    planned_vel = planned_vel[1]
+                    planned_vel = planned_vel
 
-                self.RH.publish2(interped_path, interped_kappa,planned_vel)
+                target_velocity = planned_vel[1]
+                self.RH.publish2(interped_path,R_list,planned_vel, target_velocity)
 
-                rate.sleep()
-            rate.sleep()
-            
+                rate.sleep()            
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)

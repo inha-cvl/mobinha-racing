@@ -64,14 +64,21 @@ class GetMaxVelocity:
         self.global_poses = copy.deepcopy(self.global_poses[idx:])
         self.global_velocitys = copy.deepcopy(self.global_velocitys[idx:])
     
-    def smooth_velocity_plan(self, velocities, current_velocity, target_velocity, window_size=5):
+    def smooth_velocity_by_R(self, target_velocity, R_list):
+        K = target_velocity * 15
+        
+        smoothed_velocities =  target_velocity - ( K / R_list[0] ) if target_velocity > 3 else target_velocity 
+
+        return smoothed_velocities
+    
+    def smooth_velocity_plan(self, velocities, current_velocity, target_velocity, R_list, window_size=5):
         smoothed_velocities = np.copy(velocities)
         smoothed_velocities[0] = current_velocity
 
         for i in range(1, len(velocities)):
             delta_v = target_velocity - smoothed_velocities[i-1]
             sign = np.sign(delta_v)
-            
+
             # Get adjusted acceleration based on current velocity
             adjusted_acceleration = self.get_acceleration(smoothed_velocities[i-1])
             delta_v = min(abs(delta_v), adjusted_acceleration) * sign
@@ -81,11 +88,19 @@ class GetMaxVelocity:
             if (sign > 0 and smoothed_velocities[i] > target_velocity) or (sign < 0 and smoothed_velocities[i] < target_velocity):
                 smoothed_velocities[i] = target_velocity
 
-        # Apply moving average filter to smooth the velocities
-        for i in range(1, len(smoothed_velocities)):
-            smoothed_velocities[i] = np.mean(smoothed_velocities[max(0, i-window_size):i+1])
+        # Adjust velocities based on curvature R
+        K = target_velocity * 15
+        for i in range(len(smoothed_velocities)):
+            if R_list[i] != 0:  # Prevent division by zero
+                adjusted_velocity = target_velocity - (K / R_list[i]) if target_velocity > 3 else target_velocity
+                smoothed_velocities[i] = min(smoothed_velocities[i], adjusted_velocity)
+
+        # # Apply moving average filter to smooth the velocities
+        # for i in range(1, len(smoothed_velocities)):
+        #     smoothed_velocities[i] = np.mean(smoothed_velocities[max(0, i-window_size):i+1])
 
         return smoothed_velocities
+
 
     
     def get_max_velocity(self, local_pos):

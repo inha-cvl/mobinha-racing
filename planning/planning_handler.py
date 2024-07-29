@@ -65,35 +65,78 @@ def object2frenet(trim_path, obs_pose):
     
     return s, d
 
-def interpolate_path(final_global_path, min_length=100, sample_rate=5, smoothing_factor=7.0, interp_points=10):
-    local_kappa = [point[9] for point in final_global_path]
-    local_vel = [point[10] for point in final_global_path]
+def calc_kappa(epoints, npoints):
+    if abs(npoints[1][1]-epoints[1]) == 0 or abs(npoints[1][0]-epoints[0]) == 0:
+        Rk = 0
+    elif abs(npoints[0][1]-epoints[1]) == 0 or abs(npoints[0][0]-epoints[0]) == 0:
+        Rk = 0
+    else:
+        if abs(npoints[1][1]-epoints[1]) < abs(npoints[1][0]-epoints[0]):
+            dydx2 = (npoints[1][1]-epoints[1])/(npoints[1][0]-epoints[0])
+            dydx1 = (npoints[0][1]-epoints[1])/(npoints[0][0]-epoints[0])
+            dydx = (dydx2+dydx1)/2
+            d2ydx2 = 2*(dydx2-dydx1)/(npoints[1][0]-npoints[0][0])
+            Rk = d2ydx2/((1+(dydx)**2)**(3/2))
+        else:
+            dxdy2 = (npoints[1][0]-epoints[0])/(npoints[1][1]-epoints[1])
+            dxdy1 =(npoints[0][0]-epoints[0])/(npoints[0][1]-epoints[1])
+            dxdy = (dxdy2+dxdy1)/2
+            d2xdy2 = 2*(dxdy2-dxdy1)/(npoints[1][1]-npoints[0][1])
+            Rk = d2xdy2/((1+(dxdy)**2)**(3/2))
+    return Rk
+
+def calculate_R_first_index(points):
+    R = 0
+    num_points = len(points)
+    if num_points >= 10:
+        epoints = points[0]
+        npoints = [points[4], points[9]]
+        kappa = calc_kappa(epoints, npoints)
+        R = 1/kappa if kappa != 0 else 9999
+    return abs(R)
+
+def calculate_R_list(points, base_offset=3, step_size=5):
+    Rs = []
+    numpoints = len(points)
+    last_R = None
+    last_offset = step_size * 2
+
+    for i in range(numpoints):
+        if i + base_offset < numpoints - last_offset:
+            epoints = points[i + base_offset]
+            npoints = [points[i + base_offset + step_size], points[i + base_offset + 2 * step_size]]
+            kappa = calc_kappa(epoints, npoints)
+            R = 1 / kappa if kappa != 0 else 99999
+            last_R = R
+            Rs.append(R)
+        else:
+            Rs.append(last_R)
+    return Rs
+
+def interpolate_path(final_global_path, min_length=100, sample_rate=2, smoothing_factor=7.0, interp_points=10):
     local_path = np.array([(point[0], point[1]) for point in final_global_path])
+    local_vel = [point[10] for point in final_global_path]
 
     if len(local_path) > min_length:
         sampled_indices = np.arange(0, len(local_path), sample_rate)
         sampled_local_path = local_path[sampled_indices]
-        sampled_local_kappa = np.array(local_kappa)[sampled_indices]
         sampled_local_vel = np.array(local_vel)[sampled_indices]
         # sampled_local_path = local_path
-        # sampled_local_kappa = local_kappa
         # sampled_local_vel = local_vel
-
-        t = np.linspace(0, 1, len(sampled_local_path))
 
         tck, u = splprep([sampled_local_path[:, 0], sampled_local_path[:, 1]], s=smoothing_factor)
         t_new = np.linspace(0, 1, len(sampled_local_path) * interp_points)
         path_interp = np.array(splev(t_new, tck)).T
-
-        kappa_interp_func = interp1d(np.linspace(0, 1, len(sampled_local_kappa)), sampled_local_kappa, kind='linear')
-        kappa_interp = kappa_interp_func(t_new).tolist()
+        path_interp_list = path_interp.tolist()
         vel_interp_func = interp1d(np.linspace(0, 1, len(sampled_local_vel)), sampled_local_vel, kind='linear')
         vel_interp = vel_interp_func(t_new).tolist()
 
-        path_interp_list = path_interp.tolist()
+        #first_R = calculate_R_first_index(path_interp)
+        R_list = calculate_R_list(path_interp_list)
     else:
         path_interp_list = local_path.tolist()
-        kappa_interp = local_kappa
+        #first_R = calculate_R_first_index(path_interp_list)
+        R_list = calculate_R_list(path_interp_list)
         vel_interp = local_vel
 
-    return path_interp_list, kappa_interp, vel_interp
+    return path_interp_list, R_list, vel_interp
