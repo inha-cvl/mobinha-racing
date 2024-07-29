@@ -14,7 +14,7 @@ class TransmitterHandler:
         self.encode_handler = {
             0x156: self.EAIT_Control_01,
             0x157: self.EAIT_Control_02,
-            # 0x126: self.EAIT_REPAIR_TEMP
+            0x126: self.EAIT_REPAIR_TEMP
         }
 
         self.encode_dbc = {
@@ -27,8 +27,8 @@ class TransmitterHandler:
             0x710: self.EAIT_INFO_EPS,
             0x711: self.EAIT_INFO_ACC,
             0x712: self.EAIT_INFO_SPD,
-            0x713: self.EAIT_INFO_IMU
-            # 0x124: self.EAIT_SIG_TEMP
+            0x713: self.EAIT_INFO_IMU,
+            0x124: self.EAIT_SIG_TEMP
         }
     
     def decode_message(self, message):
@@ -111,15 +111,15 @@ class TransmitterHandler:
             'Long_ACCEL': 0  # 0.01 * (value + 10.23) [-10.23, 10.23] "m/s^2"
         }
 
-        # self.EAIT_SIG_TEMP = { # temporary naming due to lack of dbc
-        #     'SIG_GO': 0x00, # 0x00: Disabled, 0x01: Enabled
-        #     'SIG_STOP': 0x00, # 0x00: Disabled, 0x01: Enabled
-        #     'SIG_PIT_STOP': 0x00, # 0x00: Disabled, 0x01: Enabled
-        #     'SIG_SLOW_ON': 0x00, # 0x00: Disabled, 0x01: Enabled
-        #     'SIG_SLOW_OFF': 0x00, # 0x00: Disabled, 0x01: Enabled
-        #     'reserved': 0x00 # reserved for future function expansion
-        # }
+        self.EAIT_SIG_TEMP = { # temporary naming due to lack of dbc
+            'SIG_GO': 0x00, # 0x00: Disabled, 0x01: Enabled
+            'SIG_STOP': 0x00, # 0x00: Disabled, 0x01: Enabled
+            'SIG_PIT_STOP': 0x00, # 0x00: Disabled, 0x01: Enabled
+            'SIG_SLOW_ON': 0x00, # 0x00: Disabled, 0x01: Enabled
+            'SIG_SLOW_OFF': 0x00, # 0x00: Disabled, 0x01: Enabled
+            'reserved': 0x00 # reserved for future function expansion
+        }
 
-        # self.EAIT_REPAIR_TEMP = { # temporary naming due to lack of dbc
-        #     'SIG_REPAIR': 0xFF # 0xFF: Repair Enable, 0xFF > Value: Repair Disable
-        # }
+        self.EAIT_REPAIR_TEMP = { # temporary naming due to lack of dbc
+            'SIG_REPAIR': 0xFF # 0xFF: Repair Enable, 0xFF > Value: Repair Disable
+        }
