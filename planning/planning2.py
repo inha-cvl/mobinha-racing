@@ -37,7 +37,7 @@ class Planning():
         with open("./obstacles.json", 'r') as f:
             loaded_data = json.load(f)
         for data in loaded_data:
-            self.static_object_list = (self.static_object_list, data)
+            self.static_object_list.append(data)
 
         self.shutdown_event = threading.Event()
 
@@ -129,7 +129,7 @@ class Planning():
         updated_path = []
         check_object = []
         for obj in object_list:
-            s, d = ph.object2frenet(trim_global_path, [obj['X'], obj['Y']])
+            s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
             if -1 < d < 1:
                 check_object.append(obj)
 
@@ -142,7 +142,7 @@ class Planning():
                 x_normvec, y_normvec = point[4], point[5]
                 updated_point = point.copy()
                 for obj in check_object:
-                    obj_x, obj_y = obj['X'], obj['Y']
+                    obj_x, obj_y = float(obj['X']), float(obj['Y'])
                     # Check the relative position of the object
                     if obj_y > y:
                         obj_radius = obj_radius_front
