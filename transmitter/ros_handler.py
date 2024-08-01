@@ -1,5 +1,6 @@
 import rospy
 
+from std_msgs.msg import Header
 from drive_msgs.msg import *
 
 
@@ -54,6 +55,8 @@ class ROSHandler():
             self.alive_cnt = 0
 
     def send_can_output(self):
+        self.can_output.header = Header()
+        self.can_output.header.stamp = rospy.Time.now()
         self.can_output_pub.publish(self.can_output)
 
     def can_input_cb(self, msg):

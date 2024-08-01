@@ -1,3 +1,4 @@
+std_msgs/Header header
 std_msgs/String EPS_En_Status  # 0: Disabled, 1: Enabled
 std_msgs/String EPS_Control_Board_Status  # Value [0, 2]
 std_msgs/String EPS_Control_Status  # Value [0, 15]

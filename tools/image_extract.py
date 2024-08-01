@@ -10,7 +10,7 @@ import io
 
 import os
 
-output_folder = "/home/kana/Documents/Dataset/KIAPI/data/"
+output_folder = "/home/inha/Documents/bag/20240801/data/"
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
