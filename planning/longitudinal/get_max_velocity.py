@@ -89,7 +89,7 @@ class GetMaxVelocity:
                 smoothed_velocities[i] = target_velocity
 
         # Adjust velocities based on curvature R
-        K = target_velocity * 15
+        K = target_velocity * 7
         for i in range(len(smoothed_velocities)):
             if R_list[i] != 0:  # Prevent division by zero
                 adjusted_velocity = target_velocity - (K / R_list[i]) if target_velocity > 3 else target_velocity

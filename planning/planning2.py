@@ -7,6 +7,7 @@ import threading
 import signal
 import time
 import copy
+import json
 import numpy as np
 
 
@@ -30,6 +31,14 @@ class Planning():
     def setting_values(self):
         self.avoid_on = True
         self.object_detected = False
+        self.shutdown_event = threading.Event()
+        self.obstacle_mode = 'dynamic'
+        self.static_object_list = []
+        with open("./obstacles.json", 'r') as f:
+            loaded_data = json.load(f)
+        for data in loaded_data:
+            self.static_object_list = (self.static_object_list, data)
+
         self.shutdown_event = threading.Event()
 
         self.specifiers = ['to_goal', 'race']
@@ -107,7 +116,11 @@ class Planning():
         
     def path_update(self, trim_global_path):
         final_global_path = trim_global_path.copy()  # Make a copy of the global path to modify
-        object_list = self.RH.object_list  # List of objects
+        
+        if self.obstacle_mode == 'static':
+            object_list = self.static_object_list
+        else:
+            object_list = self.RH.object_list  # List of objects
         obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
         obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         

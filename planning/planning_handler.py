@@ -103,10 +103,10 @@ def calculate_R_first_index(points):
         R = 1/kappa if kappa != 0 else 9999
     return abs(R)
 
-def calculate_R_list(points, base_offset=1, step_size=4):
+def calculate_R_list(points, base_offset=2, step_size=5):
     Rs = []
     numpoints = len(points)
-    last_R = None
+    last_R = 99999
     last_offset = step_size * 2
 
     for i in range(numpoints):
@@ -114,7 +114,7 @@ def calculate_R_list(points, base_offset=1, step_size=4):
             epoints = points[i + base_offset]
             npoints = [points[i + base_offset + step_size], points[i + base_offset + 2 * step_size]]
             kappa = calc_kappa(epoints, npoints)
-            R = 1 / kappa if kappa != 0 else 99999
+            R = abs(1 / kappa) if kappa != 0 else 99999
             last_R = R
             Rs.append(R)
         else:
