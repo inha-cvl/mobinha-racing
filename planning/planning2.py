@@ -15,7 +15,7 @@ from longitudinal.get_max_velocity import GetMaxVelocity
 from global_path.global_path_planner import GlobalPathPlanner
 import planning_handler as ph
 
-LOCAL_PATH_LENGTH = 100
+LOCAL_PATH_LENGTH = 150
 
 def signal_handler(sig, frame):
     sys.exit(0)

@@ -7,6 +7,7 @@ from visualization_msgs.msg import Marker
 
 from libs.rviz_utils import *
 
+
 class Visualizer:
     def __init__(self):
         rospy.init_node('visualizer', anonymous=False)
@@ -17,9 +18,10 @@ class Visualizer:
 
         # calibration
         self.static_br = tf2_ros.StaticTransformBroadcaster()
+        gps_lidar_quaternion = tf.transformations.quaternion_from_euler(math.radians(0), math.radians(0), math.radians(0))
         static_transforms = [
             ((1.3025, 0.0, 0.0), (0, 0, 0, 1), 'ego_car', 'gps'),   # center
-            ((1.0, 0.0, 0.9), (0, 0, 0, 1), 'os_sensor', 'gps'),    # lidar
+            ((1.0, 0.0, 0.9), gps_lidar_quaternion, 'hesai_lidar', 'gps'),    # lidar
             ((1.8, 0.0, 1.0), (0, 0, 0, 1), 'front', 'gps'),        # front camera
             #((1.7, 0.7, 1.0), (0, 0, 0, 1), 'left_front', 'gps'),   # left 
             #((1.4, 0.7, 1.0), (0, 0, 0, 1), 'left_rear', 'gps'),    # left
