@@ -90,9 +90,7 @@ class ROSHandler():
         self.ego_actuator.brake.data = float(msg.BRK_CYLINDER.data)
         self.ego_actuator.steer.data = float(msg.StrAng.data)
         #TODO: KIAPI Signal Parsing
-        '''
         self.system_status.kiapiSignal.data = get_kiapi_signal(msg.SIG_GO.data, msg.SIG_STOP.data,  msg.SIG_SLOW_ON.data, msg.SIG_SLOW_OFF.data,msg.SIG_PIT_STOP.data,)
-        '''
     
     def system_to_can(self, mode):
         if self.vehicle_state.mode.data == 0:

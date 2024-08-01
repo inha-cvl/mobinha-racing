@@ -24,7 +24,7 @@ class MapLane():
         self.max_vel = 30
         self.stacked_refine_obstacles = []
         self.obstacle_timestamps = []
-        self.remian_duration = 5
+        self.remian_duration = 10
 
     def map_publish(self):
         self.RH.publish_map_viz(self.map.lmap_viz, self.map.mlmap_viz)

@@ -121,7 +121,7 @@ def calculate_R_list(points, base_offset=2, step_size=5):
             Rs.append(last_R)
     return Rs
 
-def interpolate_path(final_global_path, min_length=100, sample_rate=2, smoothing_factor=7.0, interp_points=10):
+def interpolate_path(final_global_path, min_length=100, sample_rate=3, smoothing_factor=9.0, interp_points=10):
     local_path = np.array([(point[0], point[1]) for point in final_global_path])
     local_vel = [point[10] for point in final_global_path]
 

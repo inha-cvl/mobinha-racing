@@ -26,6 +26,8 @@ class ObstacleHandler:
             return False
 
     def object2enu(self,  obs_pose):
+        if self.local_pose is None:
+            return None
         if len(self.local_pose) < 1:
             return None
         rad = np.radians(self.current_heading)

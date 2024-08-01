@@ -51,6 +51,7 @@ class Planning():
 
         self.start_pose_initialized = False
         self.first_initialized = False
+        self.first_lap = 0
         
         self.local_action_set = []
         self.prev_lap = rospy.get_param('/now_lap')
@@ -76,6 +77,7 @@ class Planning():
         if self.first_initialized == False:
             race_mode = 'to_goal'
             planning_state = 'INIT'
+            self.first_lap = self.RH.lap_count
         elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 5 and self.race_mode != 'pit_stop': #If pass the goal point, 
             self.start_pose_initialized = False
             self.prev_lap = self.RH.lap_count
@@ -121,8 +123,8 @@ class Planning():
             object_list = self.static_object_list
         else:
             object_list = self.RH.object_list  # List of objects
-        obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
+        obj_radius_front = 35 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_rear = 25 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
@@ -139,7 +141,6 @@ class Planning():
                 w_right, w_left = point[2], point[3]
                 x_normvec, y_normvec = point[4], point[5]
                 updated_point = point.copy()
-                
                 for obj in check_object:
                     obj_x, obj_y = obj['X'], obj['Y']
                     # Check the relative position of the object
@@ -162,7 +163,7 @@ class Planning():
                         closest_point = generated_points[0]
                         updated_point[0] = closest_point[0]
                         updated_point[1] = closest_point[1]
-
+                
                 updated_path.append(updated_point)
 
             # Replace only the points in the path that need to be updated
@@ -229,8 +230,8 @@ class Planning():
                     # if self.object_detected:
                     #     local_max_vel = min(27/3.6, max_vel)
                     # el
-                    if self.RH.lap_count == 0 : # 1 lap under 30 km/h 
-                        local_max_vel = min(27/3.6, max_vel)
+                    if self.RH.lap_count-self.first_lap == 0 : # 1 lap under 30 km/h 
+                        local_max_vel = min(36/3.6, max_vel)
                     else:
                         local_max_vel = max_vel
                     #local_max_vel = max_vel

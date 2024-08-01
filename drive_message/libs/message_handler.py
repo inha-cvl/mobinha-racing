@@ -141,9 +141,9 @@ def check_lap_count(cnt, local_pos, reference_point, radius, lap_flag):
     return cnt, lap_flag
 
 def get_kiapi_signal(go, stop, slow_on, slow_off, pit_stop):
-    conditions = [go, stop, slow_on, slow_off, pit_stop]
+    conditions = ['Off', go, stop, slow_on, slow_off, pit_stop]
     for i, condition in enumerate(conditions):
-        if condition == 1:
+        if condition == 'On':
             return i
     return 0
 

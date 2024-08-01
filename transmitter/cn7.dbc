@@ -113,14 +113,13 @@ BO_ 1811 EAIT_INFO_IMU: 8 EAIT
  SG_ BRK_CYLINDER : 48|16@1+ (0.1,0) [0|409.4] "" Vector__XXX
  SG_ Long_ACCEL : 16|16@1+ (0.01,-10.23) [-10.23|10.23] "m/s^2" Vector__XXX
 
-BO_ 124 KIAPI_SIGNAL: 8 EAIT
+BO_ 292 KIAPI_1: 8 KIAPI
  SG_ SIG_GO : 7|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ SIG_STOP : 6|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ SIG_PIT_STOP : 5|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ SIG_SLOW_ON : 4|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ SIG_SLOW_OFF : 3|1@1+ (1,0) [0|1] "" Vector__XXX
-
-BO_ 292 KIAPI_1: 8 KIAPI
+ SG_ reserved1 : 2|1@1+  (1,0)  [0|1] "" Vector__XXX
 
 BO_ 293 KIAPI_2: 8 KIAPI
 
@@ -177,4 +176,9 @@ VAL_ 1809 Turn_Left_En 0 "Off" 1 "On" ;
 VAL_ 1809 Turn_Right_En 0 "Off" 1 "On" ;
 VAL_ 1809 ACC_Veh_ERR 0 "Normal" 1 "Abnormal" ;
 VAL_ 1809 G_SEL_DISP 0 "P" 7 "R" 6 "N" 5 "D" ;
-
+VAL_ 292 SIG_GO 0 "Off" 1 "On" ;
+VAL_ 292 SIG_STOP 0 "Off" 1 "On" ;
+VAL_ 292 SIG_PIT_STOP 0 "Off" 1 "On" ;
+VAL_ 292 SIG_SLOW_ON 0 "Off" 1 "On" ;
+VAL_ 292 SIG_SLOW_OFF 0 "Off" 1 "On" ;
+VAL_ 292 reserved1 0 "Off" 1 "On" ;
