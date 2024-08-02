@@ -249,7 +249,6 @@ class DR_BICYCLE:
         now = self.RH.nav_header.stamp
         last = self.RH.nav_header_last.stamp
         self.dt = now.to_sec() - last.to_sec()
-        print(f"dt is {self.dt:.5f}")
 
     def calculate_nav_v(self):
         self.RH.nav_velocity_last = math.sqrt((self.RH.nav_pos[0] - self.RH.nav_pos_last[0]) ** 2 + (self.RH.nav_pos[1] - self.RH.nav_pos_last[1]) ** 2) / self.dt    

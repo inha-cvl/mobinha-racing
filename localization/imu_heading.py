@@ -3,6 +3,7 @@ import rospy
 import sys
 import signal
 import numpy as np
+from std_msgs.msg import Float32
 
 from ros_handler import ROSHandler
 from ahrs.filters import Madgwick
@@ -20,6 +21,13 @@ class ImuHeading():
                            '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
 
         self.imu_heading = None
+
+        self.imu_heading_pub = rospy.Publisher("/imu_heading", Float32, queue_size=1)
+
+        self.last_s = None
+        self.last_ns = None
+
+        self.initial = True
 
     def euler_to_quaternion(self, roll, pitch, heading):
         cr = np.cos(roll / 2)
@@ -49,27 +57,25 @@ class ImuHeading():
         return result
 
     def run(self):
-        rate = rospy.Rate(30)
-        
-        last_s = None
-        last_ns = None
 
-        while not rospy.is_shutdown():
-            if self.check_msg_valid():
+        if self.check_msg_valid():
+            if self.initial:
                 q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
-                last_s = self.RH.imumeas.header.stamp.secs
-                last_ns = self.RH.imumeas.header.stamp.nsecs
+                self.last_s = self.RH.imumeas.header.stamp.secs
+                self.last_ns = self.RH.imumeas.header.stamp.nsecs
+                self.initial = False
+            
 
             # heading from imu_meas
             accel = np.array([self.RH.imumeas.linear_acceleration.x, self.RH.imumeas.linear_acceleration.y, self.RH.imumeas.linear_acceleration.z])
             gyro = np.array([self.RH.imumeas.angular_velocity.x, self.RH.imumeas.angular_velocity.y, self.RH.imumeas.angular_velocity.z])
             
             # calculate dt
-            ds = self.RH.imumeas.header.stamp.secs - last_s
-            dns = self.RH.imumeas.header.stamp.nsecs - last_ns
+            ds = self.RH.imumeas.header.stamp.secs - self.last_s
+            dns = self.RH.imumeas.header.stamp.nsecs - self.last_ns
             dt = ds + dns*1e-9
-            last_s = self.RH.imumeas.header.stamp.secs
-            last_ns = self.RH.imumeas.header.stamp.nsecs
+            self.last_s = self.RH.imumeas.header.stamp.secs
+            self.last_ns = self.RH.imumeas.header.stamp.nsecs
             # print("dt:", dt)
 
             if self.RH.heading_fixed: # wrong heading
@@ -102,10 +108,9 @@ class ImuHeading():
             
             self.cnt += 1
 
-            self.RH.publish(clipped_heading)
             self.imu_heading = clipped_heading
             # print(f"                                compensated heading : {clipped_heading:.2f}")
-            rate.sleep()
+            self.imu_heading_pub.publish(self.imu_heading)
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)

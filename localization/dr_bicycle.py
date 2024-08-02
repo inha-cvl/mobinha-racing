@@ -2,6 +2,8 @@ import rospy, math
 from drive_msgs.msg import CANOutput
 from ublox_msgs.msg import NavPVT
 from sensor_msgs.msg import NavSatFix
+from std_msgs.msg import Float32
+
 from pyproj import Proj, Transformer
 
 from datetime import datetime
@@ -34,6 +36,9 @@ class DR_BICYCLE:
         self.dr_pos = None
         self.dr_heading = None   
 
+        self.dr_pos_pub = rospy.Publisher("/dr/pos", Float32, queue_size=1)
+        self.dr_heading_pub = rospy.Publisher("/dr/heading", Float32, queue_size=1)
+
     def check_msg_valid(self):
         nav_checklist = [self.RH.nav_header, self.RH.nav_heading, self.RH.nav_pos] # excluded self.nav_velocity 
         nav_last_checklist = [self.RH.nav_header_last, self.RH.nav_heading_last, self.RH.nav_pos_last] # excluded self.nav_velocity_last
@@ -44,17 +49,15 @@ class DR_BICYCLE:
         nav_last_check = None not in nav_last_checklist
         can_check = None not in can_checklist
         can_last_check = None not in can_last_checklist
-
+    
         checklist = [nav_check, nav_last_check, can_check, can_last_check]
         result = False not in checklist
-
         return result
     
     def calculate_dt(self):
         now = self.RH.nav_header.stamp
         last = self.RH.nav_header_last.stamp
         self.dt = now.to_sec() - last.to_sec() # [sec]
-        print(f"dt is {self.dt:.5f}")
 
     def calculate_nav_v(self):
         self.RH.nav_velocity_last = math.sqrt((self.RH.nav_pos[0]-self.RH.nav_pos_last[0])**2 + (self.RH.nav_pos[1]-self.RH.nav_pos_last[1])**2)/self.dt    
@@ -73,7 +76,7 @@ class DR_BICYCLE:
         start_pos = self.RH.nav_pos_last
         dr_x = start_pos[0] + self.dt * self.RH.corr_can_velocity_last * math.cos(theta_rad)
         dr_y = start_pos[1] + self.dt * self.RH.corr_can_velocity_last * math.sin(theta_rad)
-        self.dr_pos = (dr_x, dr_y)
+        self.dr_pos = [dr_x, dr_y]
         self.dr_heading = self.RH.nav_heading_last + self.dt * math.degrees((self.RH.corr_can_velocity_last / self.wheelbase) * math.tan(delta_rad))
 
     def is_available(self):
@@ -81,11 +84,15 @@ class DR_BICYCLE:
         return result
     
     def run(self): 
+        # rate = rospy.Rate(20)
+        # while not rospy.is_shutdown():
         if self.check_msg_valid():
             self.calculate_dt()
             self.calculate_nextpos() 
             self.calculate_nav_v()
-
+            # self.dr_pos_pub.publish(self.dr_pos)
+            # self.dr_heading_pub.publish(self.dr_heading)
+            # rate.sleep()
 
 if __name__ == "__main__":
     rospy.init_node('dr_model')
