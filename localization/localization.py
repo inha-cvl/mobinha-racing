@@ -1,109 +1,107 @@
 import rospy
-
 import sys
 import signal
 import numpy as np
+from filterpy.kalman import KalmanFilter
+
+from drive_msgs.msg import CANOutput
+from ublox_msgs.msg import NavPVT, NavATT
+from sensor_msgs.msg import NavSatFix
 
 from ros_handler import ROSHandler
-from ahrs.filters import Madgwick
+from dr_bicycle import DR_BICYCLE
+from imu_heading import ImuHeading
 
 def signal_handler(sig, frame):
     sys.exit(0)
 
-class Localization():
+class KFLocalization:
     def __init__(self):
+        self.initailize = True
         self.RH = ROSHandler(map)
-        self.madgwick = Madgwick()
-        self.condition = False
-        self.initial_offset = 0
-        self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',
-                           '24', '25', '26', '27', '36', '37', '38', '39', '43', '44', '54', '59',
-                           '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
+        self.DR = DR_BICYCLE()
+        self.IH = ImuHeading()
 
-    def euler_to_quaternion(self, roll, pitch, heading):
-        cr = np.cos(roll / 2)
-        sr = np.sin(roll / 2)
-        cp = np.cos(pitch / 2)
-        sp = np.sin(pitch / 2)
-        cy = np.cos(heading / 2)
-        sy = np.sin(heading / 2)
+        self.nav_pos = self.RH.nav_pos
+        self.nav_heading = self.RH.navatt.heading
+        self.dr_pos = self.DR.dr_pos
+        self.dr_heading = self.DR.dr_heading
+        self.imu_heading = self.IH.imu_heading
+        
+        self.lidar_pos = None  #TODO
+        self.lidar_heading = None  #TODO
+        
+        self.kf_heading = self.init_heading_kalman_filter()
+        self.kf_position = self.init_position_kalman_filter()
 
-        q0 = cr * cp * cy + sr * sp * sy
-        q1 = sr * cp * cy - cr * sp * sy
-        q2 = cr * sp * cy + sr * cp * sy
-        q3 = cr * cp * sy - sr * sp * cy
+        self.filtered_heading = None
+        self.filtered_position = None
 
-        return np.array([q0, q1, q2, q3])
+    def init_heading_kalman_filter(self):
+        kf = KalmanFilter(dim_x=2, dim_z=1)
+        kf.x = np.zeros(2)
+        kf.P = np.eye(2) * 1000.
+        kf.R = np.eye(1) * 5.
+        kf.Q = np.eye(2)
+        kf.F = np.eye(2)
+        kf.H = np.array([[1, 0]])
+        return kf
 
-    def execute(self):
+    def init_position_kalman_filter(self):
+        kf = KalmanFilter(dim_x=4, dim_z=2)
+        kf.x = np.zeros(4)
+        kf.P = np.eye(4) * 1000.
+        kf.R = np.eye(2) * 5.
+        kf.Q = np.eye(4)
+        kf.F = np.eye(4)
+        kf.F[0, 2] = kf.F[1, 3] = 1
+        kf.H = np.array([[1, 0, 0, 0],
+                         [0, 1, 0, 0]])
+        return kf
+
+    def update_sensors(self):
+        self.nav_pos = self.RH.nav_pos
+        self.nav_heading = self.RH.navatt.heading if self.RH.navatt else None
+        self.dr_pos = self.DR.dr_pos
+        self.dr_heading = self.DR.dr_heading
+        self.imu_heading = self.IH.imu_heading
+        
+        # TODO: Update self.lidar_pos and self.lidar_heading with Lidar data
+    
+    def calculate_diffs(self):
+        self.heading_diff = self.nav_heading - self.kf_heading
+        self.position_diff = np.linalg.norm(np.array(self.nav_pos) - np.array(self.kf_position))
+        print(f"Heading diff: {self.heading_diff}")
+        print(f"Position diff: {self.position_diff}")
+
+    def run(self):
         rate = rospy.Rate(30)
-        
-        
-        last_s = None
-        last_ns = None
-        initial_offset = 0
-        initial_flag = True
-
 
         while not rospy.is_shutdown():
-            while not self.condition:
-                if self.RH.navpvt.condition and self.RH.navatt.condition and self.RH.imumeas.condition:
-                    q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
-                    last_s = self.RH.imumeas.header.stamp.secs
-                    last_ns = self.RH.imumeas.header.stamp.nsecs
-                    self.condition = True
-                
-            # heading from imu_meas
-            accel = np.array([self.RH.imumeas.linear_acceleration.x, self.RH.imumeas.linear_acceleration.y, self.RH.imumeas.linear_acceleration.z])
-            gyro = np.array([self.RH.imumeas.angular_velocity.x, self.RH.imumeas.angular_velocity.y, self.RH.imumeas.angular_velocity.z])
+            self.update_sensors()
+
+            if self.nav_heading is not None:
+                self.kf_heading.predict()
+                self.kf_heading.update(self.nav_heading)
+                self.filtered_heading = self.kf_heading.x[0]
+                # rospy.loginfo(f"Filtered Heading: {filtered_heading}")
+
+            if self.nav_pos is not None:
+                self.kf_position.predict()
+                self.kf_position.update(np.array([self.nav_pos[0], self.nav_pos[1]]))
+                self.filtered_heading = self.kf_position.x[:2]
+                # rospy.loginfo(f"Filtered Position: {filtered_position}")
             
-            # calculate dt
-            ds = self.RH.imumeas.header.stamp.secs - last_s
-            dns = self.RH.imumeas.header.stamp.nsecs - last_ns
-            dt = ds + dns*1e-9
-            last_s = self.RH.imumeas.header.stamp.secs
-            last_ns = self.RH.imumeas.header.stamp.nsecs
-            # print("dt:", dt)
-
-            if self.RH.heading_fixed: # wrong heading
-                q = self.madgwick.updateIMU(q=q, gyr=gyro, acc=accel, dt=dt)
-                heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
-            else: # right heading
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
-                self.cnt = 0
-                heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
-                self.initial_offset = self.RH.navatt.heading - heading
-                # print('initialized')
-            # straight : -0.023
-            # curve : -0.015
-            if self.RH.curr_lane_id in self.curve_list:
-                constant_offset = -0.015*self.cnt
-                #print('CURVE IMU')
-            else:
-                constant_offset = -0.023*self.cnt
-                #print('STRAIGHT IMU')
+            if None not in [self.filtered_heading, self.filtered_position]:
+                self.RH.publish(self.filtered_heading, self.filtered_position)
+                self.calculate_diffs()
             
-            heading += self.initial_offset
-            offseted_heading = heading + constant_offset
-
-            val = 0
-            if offseted_heading < 0:
-                val = 360
-            if offseted_heading > 360:
-                val = -360
-            
-            clipped_heading = offseted_heading + val
-            self.cnt += 1
-
-
-            self.RH.publish(clipped_heading)
-            # print(f"                                compensated heading : {clipped_heading:.2f}")
             rate.sleep()
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
-    localization = Localization()
-    localization.execute()
+    kf_localization = KFLocalization()
+    kf_localization.run()
 
 if __name__ == "__main__":
     main()

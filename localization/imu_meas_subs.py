@@ -2,7 +2,6 @@
 class IMUMEAS:
 
     def __init__(self):
-        self.condition = False
         self.header = None
         self.orientation = None
         self.orientation_covariance = None
@@ -12,7 +11,6 @@ class IMUMEAS:
         self.linear_acceleration_covaiance = None
 
     def callback(self, msg):
-        self.condition = True
         self.header = msg.header
         self.orientation = msg.orientation
         self.orientation_covariance = msg.orientation_covariance

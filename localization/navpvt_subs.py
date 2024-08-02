@@ -3,7 +3,6 @@
 class NAVPVT:
 
     def __init__(self):
-        self.condition = False
         self.iTOW = None
         self.year = None
         self.month = None
@@ -39,7 +38,6 @@ class NAVPVT:
 
 
     def callback(self, msg):
-        self.condition = True
         self.iTOW = msg.iTOW
         self.year = msg.year
         self.month = msg.month

@@ -2,7 +2,6 @@
 class NAVATT:
 
     def __init__(self):
-        self.condition = False
         self.iTOW = None
         self.version = None
         self.reserved0 = None
@@ -14,7 +13,6 @@ class NAVATT:
         self.accHeading = None
 
     def callback(self, msg):
-        self.condition =True
         self.iTOW = msg.iTOW
         self.version = msg.version
         self.reserved0 = msg.reserved0
