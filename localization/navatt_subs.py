@@ -18,7 +18,7 @@ class NAVATT:
         self.reserved0 = msg.reserved0
         self.roll = msg.roll*1e-5
         self.pitch = msg.pitch*1e-5
-        self.heading = msg.heading*1e-5
+        self.heading = -(msg.heading*1e-5-90)%360
         self.accRoll = msg.accRoll
         self.accPitch = msg.accPitch
         self.accHeading = msg.accHeading

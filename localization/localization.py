@@ -35,7 +35,7 @@ class KFLocalization:
         self.kf_position = self.init_position_kalman_filter()
 
         self.filtered_heading = None
-        self.filtered_position = None
+        self.filtered_position = [None, None]
 
     def init_heading_kalman_filter(self):
         kf = KalmanFilter(dim_x=2, dim_z=1)
@@ -69,10 +69,10 @@ class KFLocalization:
         # TODO: Update self.lidar_pos and self.lidar_heading with Lidar data
     
     def calculate_diffs(self):
-        self.heading_diff = self.nav_heading - self.kf_heading
-        self.position_diff = np.linalg.norm(np.array(self.nav_pos) - np.array(self.kf_position))
-        print(f"Heading diff: {self.heading_diff}")
-        print(f"Position diff: {self.position_diff}")
+        self.heading_diff = self.nav_heading - self.filtered_heading
+        self.position_diff = np.linalg.norm(np.array(self.nav_pos) - np.array(self.filtered_position))
+        # print(f"Heading diff: {self.heading_diff}")
+        # print(f"Position diff: {self.position_diff}")
 
     def run(self):
         rate = rospy.Rate(30)
@@ -84,18 +84,28 @@ class KFLocalization:
                 self.kf_heading.predict()
                 self.kf_heading.update(self.nav_heading)
                 self.filtered_heading = self.kf_heading.x[0]
+                # print(self.filtered_heading)
                 # rospy.loginfo(f"Filtered Heading: {filtered_heading}")
 
             if self.nav_pos is not None:
                 self.kf_position.predict()
                 self.kf_position.update(np.array([self.nav_pos[0], self.nav_pos[1]]))
-                self.filtered_heading = self.kf_position.x[:2]
+                self.filtered_position = self.kf_position.x[:2]
+                # print(self.filtered_position)
                 # rospy.loginfo(f"Filtered Position: {filtered_position}")
             
-            if None not in [self.filtered_heading, self.filtered_position]:
+            if None not in [self.filtered_heading, self.filtered_position[0]]:
+            # if self.filtered_heading is not None and self.filtered_position is not None:
+                # print(self.filtered_heading, self.filtered_position)
                 self.RH.publish(self.filtered_heading, self.filtered_position)
                 self.calculate_diffs()
             
+            print(self.RH.nav_heading)
+            print(self.nav_heading)
+            print(self.imu_heading)
+            print(self.dr_heading)
+            print(self.filtered_heading)
+            print("----------------------")
             rate.sleep()
 
 def main():

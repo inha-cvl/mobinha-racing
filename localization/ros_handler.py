@@ -5,7 +5,7 @@ from drive_msgs.msg import *
 from std_msgs.msg import Float32
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose2D
 from navatt_subs import NAVATT
 from navpvt_subs import NAVPVT
 from imu_meas_subs import IMUMEAS
@@ -49,6 +49,13 @@ class ROSHandler():
         self.can_steer_last = None
         self.corr_can_velocity_last = None
 
+        self.wheelbase = 2.72
+        self.steer_scale_factor = 36.2/500
+
+        self.s_params = [-1.69519446e-01, 3.14832448e-02, -2.42469118e-04, 1.68413777e-06]
+        self.c_params = [-3.04750083e-01, 4.43420297e-02, -6.07069742e-04, 4.46079605e-06]
+        self.params = [-8.38357609e-03, 2.37367164e-02, -1.59672708e-04, 1.53623118e-06]
+
         base_lla = [35.65492524, 128.39351431, 7] # KIAPI_Racing base
         proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
         proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
@@ -65,8 +72,8 @@ class ROSHandler():
         
         # self.heading_pub = rospy.Publisher('/localization/heading', Float32, queue_size=1)
         # self.position_pub = rospy.Publisher('/localization/position', Pose, queue_size=1)
-        self.kf_heading_pub = rospy.Publisher('/kf/heading', Float32, queue_size=1)
-        self.kf_position_pub = rospy.Publisher('/kf/position', Pose, queue_size=1)
+        # self.kf_heading_pub = rospy.Publisher('/kf/heading', Float32, queue_size=1)
+        self.kf_pose_pub = rospy.Publisher('/kf/pose', Pose2D, queue_size=1)
 
     def navpvt_cb(self, msg): # gain position, heading
         self.navpvt_update()
@@ -115,11 +122,8 @@ class ROSHandler():
         self.curr_lane_id = str(msg.currentLane.id.data)
 
     def publish(self, heading, position):
-        hdg_msg  = Float32()
-        hdg_msg.data = heading
-        self.kf_heading_pub.publish(hdg_msg)
-
-        pos_msg = Pose()
-        pos_msg.position.x = position[0]
-        pos_msg.position.y = position[1]
-        self.kf_position_pub.publish(Pose(position))
+        pos_msg = Pose2D()
+        pos_msg.x = position[0]
+        pos_msg.y = position[1]
+        pos_msg.theta = heading
+        self.kf_pose_pub.publish(pos_msg)

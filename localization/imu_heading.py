@@ -98,7 +98,8 @@ class ImuHeading():
             if offseted_heading > 360:
                 val = -360
             
-            clipped_heading = offseted_heading + val
+            clipped_heading = -(offseted_heading + val - 90)%360
+            
             self.cnt += 1
 
             self.RH.publish(clipped_heading)
