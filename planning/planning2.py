@@ -32,7 +32,7 @@ class Planning():
         self.avoid_on = True
         self.object_detected = False
         self.shutdown_event = threading.Event()
-        self.obstacle_mode = 'static'#'dynamic'
+        self.obstacle_mode = 'dynamic'#'dynamic'
         self.static_object_list = []
         with open("./obstacles.json", 'r') as f:
             loaded_data = json.load(f)
@@ -131,7 +131,7 @@ class Planning():
         check_object_distances = []
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if -1 < d < 1:
+            if -0.6 < d < 0.6:
                 check_object.append(obj)
                 obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                 check_object_distances.append(obj_dist)

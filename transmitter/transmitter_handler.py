@@ -112,12 +112,12 @@ class TransmitterHandler:
         }
 
         self.KIAPI_1 = { # temporary naming due to lack of dbc
-            'SIG_GO': 0x00, # 0x00: Disabled, 0x01: Enabled
-            'SIG_STOP': 0x00, # 0x00: Disabled, 0x01: Enabled
-            'SIG_PIT_STOP': 0x00, # 0x00: Disabled, 0x01: Enabled
-            'SIG_SLOW_ON': 0x00, # 0x00: Disabled, 0x01: Enabled
-            'SIG_SLOW_OFF': 0x00, # 0x00: Disabled, 0x01: Enabled
-            'reserved': 0x00 # reserved for future function expansion
+            'SIG_GO': 'Off', # 0x00: Disabled, 0x01: Enabled
+            'SIG_STOP': 'Off', # 0x00: Disabled, 0x01: Enabled
+            'SIG_PIT_STOP': 'Off', # 0x00: Disabled, 0x01: Enabled
+            'SIG_SLOW_ON': 'Off', # 0x00: Disabled, 0x01: Enabled
+            'SIG_SLOW_OFF': 'Off', # 0x00: Disabled, 0x01: Enabled
+            'reserved': 'Off' # reserved for future function expansion
         }
 
         self.KIAPI_3 = { # temporary naming due to lack of dbc

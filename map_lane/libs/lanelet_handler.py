@@ -58,7 +58,7 @@ class LaneletHandler:
             for obs in obs_list:
                 refine_heading = self.refine_heading_by_lane([obs[1], obs[2]]) # insert x,y
                 if refine_heading is not None:
-                    distance = self.distance(local_pose, [obs[1], obs[2]])
+                    distance = self.distance(local_pose[0], local_pose[1], obs[1], obs[2])
                     refine_obs = [obs[0], obs[1], obs[2], obs[3], refine_heading, distance]
                     refine_obstacles.append(refine_obs)
                 else:
