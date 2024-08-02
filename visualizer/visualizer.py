@@ -76,14 +76,14 @@ class Visualizer:
     def detection_data_cb(self, msg):
         objs = []
         for obj in msg.objects:
-            objs.append([obj.position.x, obj.position.y, obj.heading.data])
+            objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.distance.data])
         viz_objects = ObjectsViz(objs)
         self.pub_objects_viz.publish(viz_objects)
     
     def target_object_cb(self, msg):
         objs = []
         for obj in msg.objects:
-            objs.append([obj.position.x, obj.position.y, obj.heading.data])
+            objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.distance.data])
         viz_objects = TargetObjectsViz(objs)
         self.pub_target_objects_viz.publish(viz_objects)
     

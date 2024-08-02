@@ -69,7 +69,7 @@ class MapLane():
                 local_velocity = self.lpt.get_velocity(self.max_vel)
                 self.RH.publish(local_path, local_kappa, local_velocity)
             
-            refine_obstacles = self.llh.refine_obstacles_heading([self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles])
+            refine_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles])
             self.update_obstacles(refine_obstacles)
             self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
             

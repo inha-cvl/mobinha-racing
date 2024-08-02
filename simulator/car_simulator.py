@@ -39,7 +39,7 @@ class CarSimulator:
         self.roll, self.pitch, yaw = tf.transformations.euler_from_quaternion(
             quaternion)
         self.ego.set(x, y, yaw)
-
+    
     def target_actuator_cb(self, msg):
         self._steer = msg.steer.data
         self._accel = msg.accel.data
@@ -52,6 +52,7 @@ class CarSimulator:
             self.base_lla = msg.baseLLA
         self.mode = msg.systemMode.data
         self.signal = msg.systemSignal.data
+        self.kiapi_signal = msg.kiapiSignal.data
     
     def set_ego(self, map):
         wheelbase = 2.97
@@ -115,6 +116,10 @@ class CarSimulator:
             can_output.Long_ACCEL.data = str(self._accel)
             can_output.BRK_CYLINDER.data = str(self._brake)
             can_output.StrAng.data = str(self._steer)
+            if self.kiapi_signal == 1:
+                can_output.SIG_GO.data = 'On'
+            elif self.kiapi_signal == 5:
+                can_output.PIT_STOP.data = 'On'
 
             self.pub_can_output.publish(can_output)
 

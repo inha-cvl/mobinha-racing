@@ -65,15 +65,13 @@ class ROSHandler():
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        #rospy.Subscriber('/nmea_sentence', Sentence, self.nmea_sentence_cb)
-        #rospy.Subscriber('/ublox/fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
         rospy.Subscriber('/localization/heading', Float32, self.localization_heading_cb)
 
-        if not USE_LIDAR:
-            rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
-        else:
-            rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        # if not USE_LIDAR:
+        #     rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
+        # else:
+        #     rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         
         # Simulator
         rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
@@ -171,43 +169,9 @@ class ROSHandler():
             object_info.position.y = obj.position.y
             object_info.velocity.data = float(obj.orientation.x)
             object_info.heading.data = float(obj.orientation.y)
+            object_info.distance.data = float(obj.orientation.z)
             self.detection_data.objects.append(object_info)
 
-    def cam_objects_cb(self,msg):
-        self.detection_data = DetectionData()
-        for obj in msg.markers:
-            object_info = ObjectInfo()
-            object_info.type.data = 0
-            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
-            if conv is None:
-                return
-            else:
-                nx,ny = conv
-                object_info.position.x = nx
-                object_info.position.y = ny
-                object_info.velocity.data = self.vehicle_state.velocity.data
-                object_info.heading.data = math.degrees(self.vehicle_state.heading.data)
-                self.detection_data.objects.append(object_info)
-        
-    def lidar_track_box_cb(self, msg):
-        self.detection_data = DetectionData()
-        for obj in msg.boxes:
-            object_info = ObjectInfo()
-            object_info.type.data = 0
-            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
-            if conv is None:
-                return
-            else:
-                nx,ny = conv
-                s,d = self.oh.object2frenet(self.local_path, [nx, ny])
-                if not self.oh.filtering_by_lane_num(self.lane_number,d):
-                    continue                    
-                object_info.position.x = nx
-                object_info.position.y = ny
-                object_info.velocity.data = self.vehicle_state.velocity.data / 2
-                object_info.heading.data = self.vehicle_state.heading.data
-                self.detection_data.objects.append(object_info)
-            
     
     def publish(self):
         self.can_input_pub.publish(self.can_input)

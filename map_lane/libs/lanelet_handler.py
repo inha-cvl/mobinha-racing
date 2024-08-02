@@ -11,6 +11,9 @@ class LaneletHandler:
         gput.lanelets = self.MAP.lanelets
         gput.tiles = self.MAP.tiles
         gput.tile_size = self.MAP.tile_size
+
+    def distance(self, x1, y1, x2, y2):
+        return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
     
     def current_lane_number(self, local_pos):
         idnidx = gput.lanelet_matching(local_pos)
@@ -49,13 +52,14 @@ class LaneletHandler:
             return None
             
 
-    def refine_obstacles_heading(self, obstacle_lists):
+    def refine_obstacles_heading(self,local_pose,  obstacle_lists):
         refine_obstacles = []
         for obs_list in obstacle_lists:
             for obs in obs_list:
                 refine_heading = self.refine_heading_by_lane([obs[1], obs[2]]) # insert x,y
                 if refine_heading is not None:
-                    refine_obs = [obs[0], obs[1], obs[2], obs[3], refine_heading]
+                    distance = self.distance(local_pose, [obs[1], obs[2]])
+                    refine_obs = [obs[0], obs[1], obs[2], obs[3], refine_heading, distance]
                     refine_obstacles.append(refine_obs)
                 else:
                     continue

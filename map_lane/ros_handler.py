@@ -151,5 +151,6 @@ class ROSHandler():
             pose.position.z = obs[0]
             pose.orientation.x = obs[3]
             pose.orientation.y = obs[4]
+            pose.orientation.z = obs[5]
             pose_array.poses.append(pose)
         self.refine_obstacles_pub.publish(pose_array)

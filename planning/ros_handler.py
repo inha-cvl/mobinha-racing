@@ -103,15 +103,16 @@ class ROSHandler():
             self.navigation_data_pub.publish(self.navigation_data)
     
     
-    def publish_target_object(self, object_list):
+    def publish_target_object(self, object_list, distance_list):
         detection_data = DetectionData()
-        for obj in object_list:
+        for i, obj in enumerate(object_list):
             object_info = ObjectInfo()
             object_info.type.data = 0
             object_info.position.x = obj['X']
             object_info.position.y = obj['Y']
             object_info.heading.data = math.degrees(obj['theta'])
             object_info.velocity.data = 1
+            object_info.distance.data = distance_list[i]
             detection_data.objects.append(object_info)
         
         self.target_object_pub.publish(detection_data)
