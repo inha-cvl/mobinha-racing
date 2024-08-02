@@ -100,12 +100,12 @@ class KFLocalization:
                 self.RH.publish(self.filtered_heading, self.filtered_position)
                 self.calculate_diffs()
             
-            print(self.RH.nav_heading)
-            print(self.nav_heading)
-            print(self.imu_heading)
-            print(self.dr_heading)
-            print(self.filtered_heading)
-            print("----------------------")
+            # print(self.RH.nav_heading)
+            # print(self.nav_heading)
+            # print(self.imu_heading)
+            # print(self.dr_heading)
+            # print(self.filtered_heading)
+            # print("----------------------")
             rate.sleep()
 
 def main():

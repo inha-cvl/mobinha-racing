@@ -159,7 +159,7 @@ class Planning():
                 else:
                     max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
                     if self.RH.lap_count == 0 : # 1 lap under 30 km/h 
-                        road_max_vel = min(27/3.6, max_vel)
+                        road_max_vel = min(37/3.6, max_vel)
                     else:
                         road_max_vel = max_vel
                 self.RH.publish(local_action_set, road_max_vel)

@@ -67,7 +67,7 @@ class ROSHandler():
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
         # rospy.Subscriber('/localization/heading', Float32, self.localization_heading_cb)
-        rospy.Subscriber('/kf/pose', Pose2D, self.kf_pose_cb)
+        # rospy.Subscriber('/kf/pose', Pose2D, self.kf_pose_cb)
 
         # if not USE_LIDAR:
         #     rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
@@ -121,11 +121,25 @@ class ROSHandler():
         self.system_status.lapCount.data = self.lap_cnt
 
     
-    def nav_pvt_cb(self, msg):        
+    def nav_pvt_cb(self, msg):
+        heading = float(msg.heading*1e-5)
+
+        if self.localization_heading is not None:
+            if not calc_heading_error(heading, self.localization_heading):
+                heading = self.localization_heading
+                self.system_status.headingSet.data = 1 # wrong value
+            else:
+                self.system_status.headingSet.data = 0 # right value
+        
+        heading = -1*(heading-90)%360
         latitude = msg.lat*1e-7
         longitude = msg.lon*1e-7
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
         self.vehicle_state.position.x = latitude
         self.vehicle_state.position.y = longitude
+        self.vehicle_state.heading.data = heading
+        self.add_enu(latitude, longitude)
     
     def sim_pose_cb(self, msg):
         self.vehicle_state.header = Header()

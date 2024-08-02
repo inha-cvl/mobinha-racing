@@ -131,7 +131,7 @@ class Planning():
         check_object_distances = []
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if -0.6 < d < 0.6:
+            if -1 < d < 1:
                 check_object.append(obj)
                 obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                 check_object_distances.append(obj_dist)
@@ -140,34 +140,38 @@ class Planning():
 
         self.object_detected = False
         if self.avoid_on:
+            cnt = 0
             for point in trim_global_path:
+                cnt += 1
+                
                 x, y = point[0], point[1]
                 w_right, w_left = point[2], point[3]
                 x_normvec, y_normvec = point[4], point[5]
                 updated_point = point.copy()
-                for obj in check_object:
-                    obj_x, obj_y = float(obj['X']), float(obj['Y'])
-                    # Check the relative position of the object
-                    if obj_y > y:
-                        obj_radius = obj_radius_front
-                    else:
-                        obj_radius = obj_radius_rear
-                    
-                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
-                        self.object_detected = True
-                        if w_left < 4:
-                            points = np.arange(0, w_left, 1.6)
+                if cnt > 6 :
+                    for obj in check_object:
+                        obj_x, obj_y = float(obj['X']), float(obj['Y'])
+                        # Check the relative position of the object
+                        if obj_y > y:
+                            obj_radius = obj_radius_front
                         else:
-                            points = np.arange(3.2, w_left, 1.8)
+                            obj_radius = obj_radius_rear
+                        
+                        if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
+                            self.object_detected = True
+                            if w_left < 4:
+                                points = np.arange(0, w_left, 1.6)
+                            else:
+                                points = np.arange(3.2, w_left, 1.8)
 
-                        # 생성된 점들
-                        generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
+                            # 생성된 점들
+                            generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
 
-                        # 가장 가까운 점은 첫 번째 점
-                        closest_point = generated_points[0]
-                        updated_point[0] = closest_point[0]
-                        updated_point[1] = closest_point[1]
-                
+                            # 가장 가까운 점은 첫 번째 점
+                            closest_point = generated_points[0]
+                            updated_point[0] = closest_point[0]
+                            updated_point[1] = closest_point[1]
+                    
                 updated_path.append(updated_point)
 
             # Replace only the points in the path that need to be updated
@@ -235,7 +239,7 @@ class Planning():
                     #     local_max_vel = min(27/3.6, max_vel)
                     # el
                     if self.RH.lap_count-self.first_lap == 0 : # 1 lap under 30 km/h 
-                        local_max_vel = min(36/3.6, max_vel)
+                        local_max_vel = min(37/3.6, max_vel)
                     else:
                         local_max_vel = max_vel
                     #local_max_vel = max_vel
