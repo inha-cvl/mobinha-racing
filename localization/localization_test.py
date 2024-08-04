@@ -17,7 +17,6 @@ from sensor_msgs.msg import Imu, NavSatFix
 from datetime import datetime
 
 def signal_handler(sig, frame):
-    plt.pause(100)
     sys.exit(0)
 
 class ROSHandler():
@@ -38,12 +37,10 @@ class ROSHandler():
         self.nav_heading = None
         self.nav_roll = None
         self.nav_pitch = None
-        # self.nav_velocity = None
 
         self.nav_header_last = None
         self.nav_pos_last = [None, None]
         self.nav_heading_last = None
-        # self.nav_velocity_last = None
 
         self.imu_header = None
         self.imu_angular_velocity = None
@@ -138,7 +135,7 @@ class ROSHandler():
 
 class ImuHeading():
     def __init__(self):
-        self.RH = ROSHandler(map)
+        self.RH = ROSHandler()
         self.madgwick = Madgwick()
         self.initial_offset = 0
         self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',
@@ -267,19 +264,9 @@ class DR_BICYCLE:
     def calculate_dt(self):
         now = self.RH.nav_header.stamp
         last = self.RH.nav_header_last.stamp
-        self.dt = now.to_sec() - last.to_sec() # [sec]
-
-    def calculate_nav_v(self):
-        self.RH.nav_velocity_last = math.sqrt((self.RH.nav_pos[0]-self.RH.nav_pos_last[0])**2 + (self.RH.nav_pos[1]-self.RH.nav_pos_last[1])**2)/self.dt    
+        self.dt = now.to_sec() - last.to_sec() # [sec] 
 
     def calculate_nextpos(self):
-        """
-        Parameters:
-        last pos, heading, steering angle(delta), wheelbase, dt
-
-        Returns:
-        calculated current pos, heading
-        """
         theta_rad = math.radians(self.RH.nav_heading_last)
         delta_rad = math.radians(self.RH.can_steer_last)
 
@@ -299,7 +286,6 @@ class DR_BICYCLE:
         if self.check_msg_valid():
             self.calculate_dt()
             self.calculate_nextpos() 
-            self.calculate_nav_v()
             # rate.sleep()
 
 class KFLocalization:
@@ -345,6 +331,8 @@ class KFLocalization:
         self.filtered_positions = []
         self.position_diffs = []
         self.heading_diffs = []
+
+        self.filtered_pub = rospy.Publisher('/test_position', Pose2D, queue_size=1)
         
     def update_sensors(self):
         self.nav_heading_last = self.nav_heading
@@ -356,7 +344,6 @@ class KFLocalization:
         self.nav_pos = self.RH.nav_pos
         self.nav_heading = self.RH.nav_heading
 
-        #tmp
         self.imu_heading = self.IH.imu_corr_heading
         self.dr_heading = self.DR.dr_heading
         self.dr_pos = self.DR.dr_pos
@@ -384,23 +371,23 @@ class KFLocalization:
             self.nav_cw_cnt -= 1
         if self.nav_heading - self.nav_heading_last > 355:
             self.nav_cw_cnt += 1
-        self.p_nav_heading = self.nav_heading - self.cw_cnt * 360
+        self.p_nav_heading = self.nav_heading - self.nav_cw_cnt * 360
 
         if self.imu_heading - self.imu_heading_last < -355:
             self.imu_cw_cnt -= 1
         if self.imu_heading - self.imu_heading_last > 355:
             self.imu_cw_cnt += 1
-        self.p_imu_heading = self.imu_heading - self.cw_cnt * 360
+        self.p_imu_heading = self.imu_heading - self.imu_cw_cnt * 360
 
         if self.dr_heading - self.dr_heading_last < -355:
             self.dr_cw_cnt -= 1
         if self.dr_heading - self.dr_heading_last > 355:
             self.dr_cw_cnt += 1
-        self.p_dr_heading = self.dr_heading - self.cw_cnt * 360
+        self.p_dr_heading = self.dr_heading - self.dr_cw_cnt * 360
 
     def init_heading_kalman_filter(self):
         kf = KalmanFilter(dim_x=1, dim_z=3)  # dim: state vector=1, measurement vector=3
-        kf.x = np.zeros(1)  # initial heading value
+        kf.x = np.ones(1) * 1000  # initial heading value
         kf.P = np.eye(1) * 1000.  # initial cov matrix
         kf.R = np.diag([1, 1, 1])  # initial meas_cov matrix
         kf.Q = np.eye(1) * 0.01  # inital process noise matrix
@@ -410,7 +397,7 @@ class KFLocalization:
 
     def init_pos_kalman_filter(self):
         kf = KalmanFilter(dim_x=2, dim_z=4)
-        kf.x = np.zeros(2)
+        kf.x = np.ones(2) * 1000
         kf.P = np.eye(2) * 1000.
         kf.R = np.diag([1, 1, 1, 1])
         kf.Q = np.eye(2) * 0.01
@@ -464,6 +451,15 @@ class KFLocalization:
                 self.RH.publish(self.filtered_heading, self.filtered_pos)
                 self.calculate_diffs()
             
+
+            self.filtered_positions.append(self.filtered_pos if self.filtered_pos is not None else 0)
+            self.nav_positions.append(self.nav_pos if self.nav_pos is not None else 0)
+            
+            filtered_pos_msg = Pose2D()
+            filtered_pos_msg.x = self.filtered_pos[0] if self.filtered_pos is not None else 0
+            filtered_pos_msg.y = self.filtered_pos[1] if self.filtered_pos is not None else 0
+            filtered_pos_msg.theta = self.filtered_heading if self.filtered_heading is not None else 0
+            self.filtered_pub.publish(filtered_pos_msg)
             
             print("Nav heading:", self.nav_heading)
             print("IMU heading:", self.imu_heading)
@@ -471,7 +467,7 @@ class KFLocalization:
             print("Filtered heading:", self.filtered_heading)
             print("Nav position:", self.nav_pos)
             print("DR position:", self.dr_pos)
-            print("Filtered position:", self.filtered_position)
+            print("Filtered position:", self.filtered_pos)
             print("----------------------")
 
             self.ax1.clear()
