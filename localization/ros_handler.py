@@ -28,12 +28,10 @@ class ROSHandler():
         self.nav_heading = None
         self.nav_roll = None
         self.nav_pitch = None
-        # self.nav_velocity = None
 
         self.nav_header_last = None
         self.nav_pos_last = [None, None]
         self.nav_heading_last = None
-        # self.nav_velocity_last = None
 
         self.imu_header = None
         self.imu_angular_velocity = None
