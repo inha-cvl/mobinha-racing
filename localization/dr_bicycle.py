@@ -51,13 +51,6 @@ class DR_BICYCLE:
         self.dt = now.to_sec() - last.to_sec() # [sec]
 
     def calculate_nextpos(self):
-        """
-        Parameters:
-        last pos, heading, steering angle(delta), wheelbase, dt
-
-        Returns:
-        calculated current pos, heading
-        """
         theta_rad = math.radians(self.RH.nav_heading_last)
         delta_rad = math.radians(self.RH.can_steer_last)
 
@@ -72,13 +65,9 @@ class DR_BICYCLE:
         return result
     
     def run(self): 
-        # rate = rospy.Rate(20)
-        # while not rospy.is_shutdown():
         if self.check_msg_valid():
             self.calculate_dt()
             self.calculate_nextpos() 
-            self.calculate_nav_v()
-            # rate.sleep()
 
 # if __name__ == "__main__":
 #     rospy.init_node('dr_model')

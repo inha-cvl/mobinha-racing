@@ -13,6 +13,18 @@ from ros_handler import ROSHandler
 from dr_bicycle import DR_BICYCLE
 from imu_heading import ImuHeading
 
+
+'''
+TODO:
+1. valid_pos, valid_hdg local variable 'diff' need field test
+2. KalmanFilter 'update' function needs new argument: hAcc reflected covariance matrix 
+3. DR.run(), IH.run() nees new argument: last_pos, last_heading
+    - different at initialization & after
+4. new method to overcome constraint of heading_postprocess
+5. fail-safe function
+'''
+
+
 def signal_handler(sig, frame):
     sys.exit(0)
 
@@ -62,8 +74,6 @@ class KFLocalization:
 
         self.nav_pos = self.RH.nav_pos
         self.nav_heading = self.RH.nav_heading
-
-        #tmp
         self.imu_heading = self.IH.imu_corr_heading
         self.dr_heading = self.DR.dr_heading
         self.dr_pos = self.DR.dr_pos
@@ -71,14 +81,14 @@ class KFLocalization:
         # TODO: Update self.lidar_pos and self.lidar_heading with Lidar data
 
 
-    def valid_pos(self, pos_last, pos_now, hz): # not used yet
-        # threshold : under 120[km/h]
+    def valid_pos(self, pos_last, pos_now, hz): # not used yet, variable 'diff' needs field test
+        # threshold : under 100[km/h]
         diff = ((pos_now[0]-pos_last[0])**2 + (pos_now[1]-pos_last[1])**2)**0.5
-        result = diff*hz < 120/3.6
+        result = diff*hz < 100/3.6
         
         return result
 
-    def valid_hdg(self, hdg_last, hdg_now, hz): # not used yet
+    def valid_hdg(self, hdg_last, hdg_now, hz): # not used yet, variable 'diff' needs field test
         # threshold : under 100[deg/s]
         val = abs(hdg_last - hdg_now)
         diff = min(val, 360 - val)
