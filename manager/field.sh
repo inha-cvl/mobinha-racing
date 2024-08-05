@@ -2,10 +2,10 @@
 rosparam load coordinates.yaml &
 cd ../ui/
 python3 ui.py & 
-cd ../visualizer
-python3 visualizer.py &
 cd ../localization/
 python3 localization.py &
+cd ../visualizer
+python3 visualizer.py &
 cd ../drive_message/
 python3 drive_message.py KIAPI_Racing &
 sleep 2 
