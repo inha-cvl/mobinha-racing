@@ -16,12 +16,6 @@ class DR_BICYCLE:
         self.RH = ROSHandler(map)
 
         self.wheelbase = 2.72
-        self.steer_scale_factor = 36.2/500
-
-        # velocity correction params
-        self.s_params = [-1.69519446e-01, 3.14832448e-02, -2.42469118e-04, 1.68413777e-06]
-        self.c_params = [-3.04750083e-01, 4.43420297e-02, -6.07069742e-04, 4.46079605e-06]
-        self.params = [-8.38357609e-03, 2.37367164e-02, -1.59672708e-04, 1.53623118e-06]
 
         # LLH to ENU
         base_lla = [35.65492524, 128.39351431, 7] # KIAPI_Racing base
@@ -35,9 +29,6 @@ class DR_BICYCLE:
         # result
         self.dr_pos = None
         self.dr_heading = None   
-
-        self.dr_pos_pub = rospy.Publisher("/dr/pos", Float32, queue_size=1)
-        self.dr_heading_pub = rospy.Publisher("/dr/heading", Float32, queue_size=1)
 
     def check_msg_valid(self):
         nav_checklist = [self.RH.nav_header, self.RH.nav_heading, self.RH.nav_pos] # excluded self.nav_velocity 
@@ -59,17 +50,7 @@ class DR_BICYCLE:
         last = self.RH.nav_header_last.stamp
         self.dt = now.to_sec() - last.to_sec() # [sec]
 
-    def calculate_nav_v(self):
-        self.RH.nav_velocity_last = math.sqrt((self.RH.nav_pos[0]-self.RH.nav_pos_last[0])**2 + (self.RH.nav_pos[1]-self.RH.nav_pos_last[1])**2)/self.dt    
-
     def calculate_nextpos(self):
-        """
-        Parameters:
-        last pos, heading, steering angle(delta), wheelbase, dt
-
-        Returns:
-        calculated current pos, heading
-        """
         theta_rad = math.radians(self.RH.nav_heading_last)
         delta_rad = math.radians(self.RH.can_steer_last)
 
@@ -84,18 +65,12 @@ class DR_BICYCLE:
         return result
     
     def run(self): 
-        # rate = rospy.Rate(20)
-        # while not rospy.is_shutdown():
         if self.check_msg_valid():
             self.calculate_dt()
             self.calculate_nextpos() 
-            self.calculate_nav_v()
-            # self.dr_pos_pub.publish(self.dr_pos)
-            # self.dr_heading_pub.publish(self.dr_heading)
-            # rate.sleep()
 
-if __name__ == "__main__":
-    rospy.init_node('dr_model')
-    model = DR_BICYCLE()
-    while not rospy.is_shutdown():
-        model.run()
+# if __name__ == "__main__":
+#     rospy.init_node('dr_model')
+#     model = DR_BICYCLE()
+#     while not rospy.is_shutdown():
+#         model.run()

@@ -20,9 +20,7 @@ class ImuHeading():
                            '24', '25', '26', '27', '36', '37', '38', '39', '43', '44', '54', '59',
                            '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
 
-        self.imu_heading = None
-
-        self.imu_heading_pub = rospy.Publisher("/imu_heading", Float32, queue_size=1)
+        self.imu_corr_heading = None
 
         self.last_s = None
         self.last_ns = None
@@ -45,13 +43,13 @@ class ImuHeading():
         return np.array([q0, q1, q2, q3])
     
     def check_msg_valid(self):
-        nav_att_checklist = [self.RH.navatt.roll, self.RH.navatt.pitch, self.RH.navatt.heading] # excluded self.nav_velocity 
-        imu_meas_checklist = [self.RH.imumeas.header, self.RH.imumeas.linear_acceleration, self.RH.imumeas.angular_velocity] # excluded self.nav_velocity_last
+        nav_att_checklist = [self.RH.nav_roll, self.RH.nav_pitch, self.RH.nav_heading]
+        imu_checklist = [self.RH.imu_header, self.RH.imu_linear_acceleration, self.RH.imu_angular_velocity]
 
         nav_att_check = None not in nav_att_checklist
-        imu_meas_check = None not in imu_meas_checklist
+        imu_check = None not in imu_checklist
 
-        checklist = [nav_att_check, imu_meas_check]
+        checklist = [nav_att_check, imu_check]
         result = False not in checklist
 
         return result
@@ -60,41 +58,38 @@ class ImuHeading():
 
         if self.check_msg_valid():
             if self.initial:
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
-                self.last_s = self.RH.imumeas.header.stamp.secs
-                self.last_ns = self.RH.imumeas.header.stamp.nsecs
+                q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
+                self.last_s = self.RH.imu_header.stamp.secs
+                self.last_ns = self.RH.imu_header.stamp.nsecs
                 self.initial = False
             
 
-            # heading from imu_meas
-            accel = np.array([self.RH.imumeas.linear_acceleration.x, self.RH.imumeas.linear_acceleration.y, self.RH.imumeas.linear_acceleration.z])
-            gyro = np.array([self.RH.imumeas.angular_velocity.x, self.RH.imumeas.angular_velocity.y, self.RH.imumeas.angular_velocity.z])
+            # heading from imu
+            accel = np.array([self.RH.imu_linear_acceleration.x, self.RH.imu_linear_acceleration.y, self.RH.imu_linear_acceleration.z])
+            gyro = np.array([self.RH.imu_angular_velocity.x, self.RH.imu_angular_velocity.y, self.RH.imu_angular_velocity.z])
             
             # calculate dt
-            ds = self.RH.imumeas.header.stamp.secs - self.last_s
-            dns = self.RH.imumeas.header.stamp.nsecs - self.last_ns
+            ds = self.RH.imu_header.stamp.secs - self.last_s
+            dns = self.RH.imu_header.stamp.nsecs - self.last_ns
             dt = ds + dns*1e-9
-            self.last_s = self.RH.imumeas.header.stamp.secs
-            self.last_ns = self.RH.imumeas.header.stamp.nsecs
-            # print("dt:", dt)
+            self.last_s = self.RH.imu_header.stamp.secs
+            self.last_ns = self.RH.imu_header.stamp.nsecs
 
             if self.RH.heading_fixed: # wrong heading
                 q = self.madgwick.updateIMU(q=q, gyr=gyro, acc=accel, dt=dt)
                 heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
             else: # right heading
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.navatt.roll), np.deg2rad(self.RH.navatt.pitch), np.deg2rad(self.RH.navatt.heading))
+                q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
                 self.cnt = 0
                 heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
-                self.initial_offset = self.RH.navatt.heading - heading
+                self.initial_offset = self.RH.nav_heading - heading
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
                 constant_offset = -0.015*self.cnt
-                #print('CURVE IMU')
             else:
                 constant_offset = -0.023*self.cnt
-                #print('STRAIGHT IMU')
-            
+
             heading += self.initial_offset
             offseted_heading = heading + constant_offset
 
@@ -108,14 +103,12 @@ class ImuHeading():
             
             self.cnt += 1
 
-            self.imu_heading = clipped_heading
-            # print(f"                                compensated heading : {clipped_heading:.2f}")
-            self.imu_heading_pub.publish(self.imu_heading)
+            self.imu_corr_heading = clipped_heading
 
-def main():
-    signal.signal(signal.SIGINT, signal_handler)
-    imu_heading = ImuHeading()
-    imu_heading.run()
+# def main():
+#     signal.signal(signal.SIGINT, signal_handler)
+#     imu_heading = ImuHeading()
+#     imu_heading.run()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

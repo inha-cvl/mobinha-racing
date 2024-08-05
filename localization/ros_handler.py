@@ -6,9 +6,6 @@ from std_msgs.msg import Float32
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
 from geometry_msgs.msg import Pose2D
-from navatt_subs import NAVATT
-from navpvt_subs import NAVPVT
-from imu_meas_subs import IMUMEAS
 
 from pyproj import Proj, Transformer
 
@@ -18,25 +15,27 @@ class ROSHandler():
         self.MAP = map
         self.set_values()
         self.set_protocol()
+        self.set_params()
 
     def set_values(self):
         self.heading_fixed = False
-        self.navatt = NAVATT()
-        self.navpvt = NAVPVT()
-        self.imumeas = IMUMEAS()
-        self.map_name = None
         self.transformer = None
         self.local_pose = [0,0]   
         self.curr_lane_id = None
         
         self.nav_header = None
-        self.nav_pos = None
+        self.nav_pos = [None, None]
         self.nav_heading = None
+        self.nav_roll = None
+        self.nav_pitch = None
 
         self.nav_header_last = None
-        self.nav_pos_last = None
+        self.nav_pos_last = [None, None]
         self.nav_heading_last = None
-        self.nav_velocity_last = None
+
+        self.imu_header = None
+        self.imu_angular_velocity = None
+        self.imu_linear_acceleration = None
 
         self.can_velocity = None
         self.can_steer = None
@@ -44,12 +43,20 @@ class ROSHandler():
 
         self.can_velocity_last = None
         self.can_steer_last = None
-
-        self.can_velocity_last = None
-        self.can_steer_last = None
         self.corr_can_velocity_last = None
 
-        self.wheelbase = 2.72
+    def set_protocol(self):
+        rospy.Subscriber('/ublox/navatt', NavATT, self.navatt_cb)
+        rospy.Subscriber('/ublox/navpvt', NavPVT, self.navpvt_cb)
+        rospy.Subscriber('/ublox/imu_meas', Imu, self.imu_cb)
+        rospy.Subscriber('/ublox/fix', NavSatFix, self.fix_cb)
+        rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
+        rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
+        rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
+        
+        self.kf_pose_pub = rospy.Publisher('/kf/pose', Pose2D, queue_size=1)
+    
+    def set_params(self):
         self.steer_scale_factor = 36.2/500
 
         self.s_params = [-1.69519446e-01, 3.14832448e-02, -2.42469118e-04, 1.68413777e-06]
@@ -61,38 +68,27 @@ class ROSHandler():
         proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
         self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
 
-    def set_protocol(self):
-        rospy.Subscriber("/ublox/navatt", NavATT, self.navatt.callback)
-        rospy.Subscriber("/ublox/navpvt", NavPVT, self.navpvt_cb)
-        rospy.Subscriber("/ublox/fix", NavSatFix, self.fix_cb)
-        rospy.Subscriber("/ublox/imu_meas", Imu, self.imumeas.callback)
-        rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
-        rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
-        rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
-        
-        # self.heading_pub = rospy.Publisher('/localization/heading', Float32, queue_size=1)
-        # self.position_pub = rospy.Publisher('/localization/position', Pose, queue_size=1)
-        # self.kf_heading_pub = rospy.Publisher('/kf/heading', Float32, queue_size=1)
-        self.kf_pose_pub = rospy.Publisher('/kf/pose', Pose2D, queue_size=1)
+    def navatt_cb(self, msg):  # gain heading
+        self.nav_heading_last = self.nav_heading
+        self.nav_heading = -(msg.heading*1e-5 - 90)%360 
+        self.nav_roll = msg.roll*1e-5
+        self.nav_pitch = msg.pitch*1e-5
 
-    def navpvt_cb(self, msg): # gain position, heading
-        self.navpvt_update()
+    def navpvt_cb(self, msg): # gain position
+        self.nav_pos_last = self.nav_pos
         lat = msg.lat*1e-7
         lon = msg.lon*1e-7
         x, y, _= self.transformer.transform(lon, lat, 7)
-        self.nav_pos = (x, y)
-        self.nav_heading = -(msg.heading*1e-5 - 90)%360 
+        self.nav_pos = [x, y]
     
-    def navpvt_update(self):
-        self.nav_pos_last = self.nav_pos
-        self.nav_heading_last = self.nav_heading
+    def imu_cb(self, msg):
+        self.imu_header = msg.header
+        self.imu_angular_velocity = msg.angular_velocity
+        self.imu_linear_acceleration = msg.linear_acceleration
     
     def fix_cb(self, msg): # gain header
-        self.fix_update()
-        self.nav_header = msg.header
-
-    def fix_update(self):
         self.nav_header_last = self.nav_header
+        self.nav_header = msg.header
 
     def system_status_cb(self, msg):
         if msg.headingSet.data == 1:
