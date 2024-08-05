@@ -1,15 +1,7 @@
-import rospy
-
-import sys
-import signal
 import numpy as np
-from std_msgs.msg import Float32
 
 from ros_handler import ROSHandler
 from ahrs.filters import Madgwick
-
-def signal_handler(sig, frame):
-    sys.exit(0)
 
 class ImuHeading():
     def __init__(self):
@@ -26,6 +18,8 @@ class ImuHeading():
         self.last_ns = None
 
         self.initial = True
+
+        self.q = None
 
     def euler_to_quaternion(self, roll, pitch, heading):
         cr = np.cos(roll / 2)
@@ -54,7 +48,7 @@ class ImuHeading():
 
         return result
 
-    def run(self):
+    def run(self, best_heading, nav_valid):
 
         if self.check_msg_valid():
             if self.initial:
@@ -63,7 +57,6 @@ class ImuHeading():
                 self.last_ns = self.RH.imu_header.stamp.nsecs
                 self.initial = False
             
-
             # heading from imu
             accel = np.array([self.RH.imu_linear_acceleration.x, self.RH.imu_linear_acceleration.y, self.RH.imu_linear_acceleration.z])
             gyro = np.array([self.RH.imu_angular_velocity.x, self.RH.imu_angular_velocity.y, self.RH.imu_angular_velocity.z])
@@ -75,14 +68,14 @@ class ImuHeading():
             self.last_s = self.RH.imu_header.stamp.secs
             self.last_ns = self.RH.imu_header.stamp.nsecs
 
-            if self.RH.heading_fixed: # wrong heading
-                q = self.madgwick.updateIMU(q=q, gyr=gyro, acc=accel, dt=dt)
-                heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
+            if not nav_valid: # wrong heading
+                self.q = self.madgwick.updateIMU(q=self.q, gyr=gyro, acc=accel, dt=dt)
+                heading = -np.rad2deg(np.arctan2(2.0*(self.q[0]*self.q[3] + self.q[1]*self.q[2]), 1.0 - 2.0*(self.q[2]**2 + self.q[3]**2)))
             else: # right heading
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
+                self.q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(best_heading))
                 self.cnt = 0
-                heading = -np.rad2deg(np.arctan2(2.0*(q[0]*q[3] + q[1]*q[2]), 1.0 - 2.0*(q[2]**2 + q[3]**2)))
-                self.initial_offset = self.RH.nav_heading - heading
+                heading = -np.rad2deg(np.arctan2(2.0*(self.q[0]*self.q[3] + self.q[1]*self.q[2]), 1.0 - 2.0*(self.q[2]**2 + self.q[3]**2)))
+                self.initial_offset = best_heading - heading
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
@@ -93,22 +86,14 @@ class ImuHeading():
             heading += self.initial_offset
             offseted_heading = heading + constant_offset
 
-            val = 0
-            if offseted_heading < 0:
-                val = 360
-            if offseted_heading > 360:
-                val = -360
+            # val = 0
+            # if offseted_heading < 0:
+            #     val = 360
+            # if offseted_heading > 360:
+            #     val = -360
             
-            clipped_heading = -(offseted_heading + val - 90)%360
+            # clipped_heading = -(offseted_heading + val - 90)%360
             
             self.cnt += 1
 
-            self.imu_corr_heading = clipped_heading
-
-# def main():
-#     signal.signal(signal.SIGINT, signal_handler)
-#     imu_heading = ImuHeading()
-#     imu_heading.run()
-
-# if __name__ == "__main__":
-#     main()
+            self.imu_corr_heading = offseted_heading

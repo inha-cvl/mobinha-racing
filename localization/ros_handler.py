@@ -1,8 +1,6 @@
 import rospy
-import numpy as np
 
 from drive_msgs.msg import *
-from std_msgs.msg import Float32
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
 from geometry_msgs.msg import Pose2D
@@ -54,7 +52,7 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
         
-        self.kf_pose_pub = rospy.Publisher('/kf/pose', Pose2D, queue_size=1)
+        self.best_pose_pub = rospy.Publisher('/best/pose', Pose2D, queue_size=1)
     
     def set_params(self):
         self.steer_scale_factor = 36.2/500
@@ -122,4 +120,4 @@ class ROSHandler():
         pos_msg.x = position[0]
         pos_msg.y = position[1]
         pos_msg.theta = heading
-        self.kf_pose_pub.publish(pos_msg)
+        self.best_pose_pub.publish(pos_msg)
