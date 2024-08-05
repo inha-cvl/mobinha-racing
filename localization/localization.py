@@ -110,9 +110,12 @@ class BestLocalization:
         
         if self.nav_valid:
             self.best_heading = self.p_nav_heading
+            print_result = "navatt_heading"
         else:
-            print("nav not valid !!!!")
             self.best_heading = (self.p_imu_heading*imu_weight + self.p_dr_heading*dr_weight)/(imu_weight+dr_weight)
+            print_result = "imu+dr_heading"
+
+        return print_result, [self.nav_valid, imu_valid, dr_valid]
 
     def integrate_position(self, hz):
         self.nav_valid = self.valid_pos(self.nav_pos_last, self.nav_pos, hz)
@@ -120,10 +123,14 @@ class BestLocalization:
 
         if self.nav_valid:
             self.best_pos = self.nav_pos
+            print_result = "navpvt_position"
         elif not self.nav_valid and dr_valid:
             self.best_pos = self.dr_pos
+            print_result = "deadrk_position"
         else:
             pass
+
+        return print_result, [self.nav_valid, dr_valid]
     
     def initiate(self):
         while self.nav_heading_last is None:
@@ -131,8 +138,15 @@ class BestLocalization:
             self.best_pos = self.nav_pos
             self.update_sensors()
 
+            if self.best_heading is not None and self.best_pos[0] is not None:
+                print("INITIALIZE [step 1]")
+            if self.best_heading_last is not None and self.best_pos_last[0] is not None:
+                print("INITIALIZE [step 2]")
+                
+
     def run(self):
         rate = rospy.Rate(20)
+        str6 = "GOOD NAV"
 
         while not rospy.is_shutdown():
             self.initiate()
@@ -141,16 +155,31 @@ class BestLocalization:
             self.IH.run(self.best_heading, self.nav_valid)
 
             self.update_sensors()
+
+            heading_source, position_source = "not determined", "not determined"
             if None not in [self.nav_heading_last, self.imu_heading_last, self.dr_heading_last]:
                 self.heading_postprocess()
-                self.integrate_heading(20)      
+                heading_source, heading_validity = self.integrate_heading(20)      
 
             if self.nav_pos_last[0] is not None and self.dr_pos_last[0] is not None:
-                self.integrate_position(20)
+                position_source, position_validity = self.integrate_position(20)
 
             if None not in [self.best_heading, self.best_pos[0]]:
                 self.RH.publish(self.best_heading, self.best_pos)
             
+            try:
+                str1 = "-------------------------------------------\n"
+                str2 = f"nav:{heading_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
+                str3 = f"imu:{heading_validity[1]} | {self.best_heading:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
+                str4 = f"dr :{heading_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
+                str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
+                if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
+                    str6 = f"NOT NAV"
+                print(str1+str2+str3+str4+str5+str6)
+
+            except:
+                pass
+
             rate.sleep()
 
 def main():

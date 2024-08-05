@@ -65,9 +65,9 @@ class ROSHandler():
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
-        rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
+        # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
         # rospy.Subscriber('/localization/heading', Float32, self.localization_heading_cb)
-        # rospy.Subscriber('/kf/pose', Pose2D, self.kf_pose_cb)
+        rospy.Subscriber('/best/pose', Pose2D, self.best_callback)
 
         # if not USE_LIDAR:
         #     rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
@@ -110,7 +110,7 @@ class ROSHandler():
             path.append([pts.x, pts.y])
         self.local_path = path
     
-    def kf_pose_cb(self, msg):
+    def best_callback(self, msg):
         self.vehicle_state.header = Header()
         self.vehicle_state.header.stamp = rospy.Time.now()
         self.vehicle_state.enu.x = msg.x

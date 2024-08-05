@@ -18,4 +18,4 @@ python3 control.py &
 # cd ../perception/
 # python3 perception.py &
 cd ../planning/
-python3 planning.py 
+python3 planning2.py 
