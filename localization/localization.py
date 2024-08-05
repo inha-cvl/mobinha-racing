@@ -167,18 +167,18 @@ class BestLocalization:
             if None not in [self.best_heading, self.best_pos[0]]:
                 self.RH.publish(self.best_heading, self.best_pos)
             
-            try:
-                str1 = "-------------------------------------------\n"
-                str2 = f"nav:{heading_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
-                str3 = f"imu:{heading_validity[1]} | {self.best_heading:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
-                str4 = f"dr :{heading_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
-                str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
-                if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
-                    str6 = f"NOT NAV"
-                print(str1+str2+str3+str4+str5+str6)
+            # try:
+            #     str1 = "-------------------------------------------\n"
+            #     str2 = f"nav:{heading_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
+            #     str3 = f"imu:{heading_validity[1]} | {self.best_heading:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
+            #     str4 = f"dr :{heading_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
+            #     str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
+            #     if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
+            #         str6 = f"NOT NAV"
+            #     print(str1+str2+str3+str4+str5+str6)
 
-            except:
-                pass
+            # except:
+            #     pass
 
             rate.sleep()
 

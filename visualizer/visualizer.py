@@ -55,6 +55,7 @@ class Visualizer:
         self.ego_car_info.text = info
         quaternion = tf.transformations.quaternion_from_euler(math.radians(0), math.radians(0), math.radians(yaw))  # RPY
         self.ego_pos = [msg.enu.x,msg.enu.y]
+
         if self.ego_time != msg.header.stamp:
             self.br.sendTransform(
                 (self.ego_pos[0], self.ego_pos[1], 0),

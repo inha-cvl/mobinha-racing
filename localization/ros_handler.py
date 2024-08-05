@@ -3,7 +3,7 @@ import rospy
 from drive_msgs.msg import *
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose
 
 from pyproj import Proj, Transformer
 
@@ -23,6 +23,7 @@ class ROSHandler():
         
         self.nav_header = None
         self.nav_pos = [None, None]
+        self.llh = [None, None]
         self.nav_heading = None
         self.nav_roll = None
         self.nav_pitch = None
@@ -52,7 +53,7 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
         
-        self.best_pose_pub = rospy.Publisher('/best/pose', Pose2D, queue_size=1)
+        self.best_pose_pub = rospy.Publisher('/best/pose', Pose, queue_size=1)
     
     def set_params(self):
         self.steer_scale_factor = 36.2/500
@@ -77,6 +78,7 @@ class ROSHandler():
         lat = msg.lat*1e-7
         lon = msg.lon*1e-7
         x, y, _= self.transformer.transform(lon, lat, 7)
+        self.llh = [lat, lon]
         self.nav_pos = [x, y]
     
     def imu_cb(self, msg):
@@ -115,9 +117,13 @@ class ROSHandler():
     def lanedata_cb(self, msg):
         self.curr_lane_id = str(msg.currentLane.id.data)
 
-    def publish(self, heading, position):
-        pos_msg = Pose2D()
-        pos_msg.x = position[0]
-        pos_msg.y = position[1]
-        pos_msg.theta = heading
+    def publish(self, heading, enu):
+        pos_msg = Pose()
+        pos_msg.position.x = enu[0]
+        pos_msg.position.y = enu[1]
+        # pos_msg.position.z = not used
+        pos_msg.orientation.x = self.llh[0]
+        pos_msg.orientation.y = self.llh[1]
+        pos_msg.orientation.z = heading
+        # pos_msg.orientation.w = not used
         self.best_pose_pub.publish(pos_msg)

@@ -3,7 +3,7 @@ import numpy as np
 from pyproj import Proj, Transformer
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray, Pose2D
+from geometry_msgs.msg import PoseArray, Pose
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32
 from sensor_msgs.msg import NavSatFix
@@ -65,9 +65,10 @@ class ROSHandler():
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
+
         # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
         # rospy.Subscriber('/localization/heading', Float32, self.localization_heading_cb)
-        rospy.Subscriber('/best/pose', Pose2D, self.best_callback)
+        rospy.Subscriber('/best/pose', Pose, self.best_callback)
 
         # if not USE_LIDAR:
         #     rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
@@ -75,7 +76,7 @@ class ROSHandler():
         #     rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         
         # Simulator
-        rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
+        rospy.Subscriber('/simulator/pose', Pose, self.sim_pose_cb)
 
         # Refine
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
@@ -113,33 +114,36 @@ class ROSHandler():
     def best_callback(self, msg):
         self.vehicle_state.header = Header()
         self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.enu.x = msg.x
-        self.vehicle_state.enu.y = msg.y
-        self.local_pose = (msg.x,msg.y)
-        self.vehicle_state.heading.data = msg.theta
+        self.vehicle_state.enu.x = msg.position.x
+        self.vehicle_state.enu.y = msg.position.y
+        self.vehicle_state.position.x = msg.orientation.x
+        self.vehicle_state.position.y = msg.orientation.y
+        self.local_pose = (msg.position.x,msg.position.y)
+        self.vehicle_state.heading.data = msg.orientation.z%360
         self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
 
+
     
     def nav_pvt_cb(self, msg):
-        heading = float(msg.heading*1e-5)
+        # heading = float(msg.heading*1e-5)
 
-        if self.localization_heading is not None:
-            if not calc_heading_error(heading, self.localization_heading):
-                heading = self.localization_heading
-                self.system_status.headingSet.data = 1 # wrong value
-            else:
-                self.system_status.headingSet.data = 0 # right value
+        # if self.localization_heading is not None:
+        #     if not calc_heading_error(heading, self.localization_heading):
+        #         heading = self.localization_heading
+        #         self.system_status.headingSet.data = 1 # wrong value
+        #     else:
+        #         self.system_status.headingSet.data = 0 # right value
         
-        heading = -1*(heading-90)%360
+        # heading = -1*(heading-90)%360
         latitude = msg.lat*1e-7
         longitude = msg.lon*1e-7
-        self.vehicle_state.header = Header()
-        self.vehicle_state.header.stamp = rospy.Time.now()
+        # self.vehicle_state.header = Header()
+        # self.vehicle_state.header.stamp = rospy.Time.now()
         self.vehicle_state.position.x = latitude
         self.vehicle_state.position.y = longitude
-        self.vehicle_state.heading.data = heading
-        self.add_enu(latitude, longitude)
+        # self.vehicle_state.heading.data = heading
+        # self.add_enu(latitude, longitude)
     
     def sim_pose_cb(self, msg):
         self.vehicle_state.header = Header()
