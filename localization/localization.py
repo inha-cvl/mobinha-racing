@@ -173,14 +173,14 @@ class KFLocalization:
                 self.RH.publish(self.filtered_heading, self.filtered_position)
                 self.calculate_diffs()
             
-            print("Nav heading:", self.nav_heading)
-            print("IMU heading:", self.imu_heading)
-            print("DR heading:", self.dr_heading)
-            print("Filtered heading:", self.filtered_heading)
-            print("Nav position:", self.nav_pos)
-            print("DR position:", self.dr_pos)
-            print("Filtered position:", self.filtered_position)
-            print("----------------------")
+            # print("Nav heading:", self.nav_heading)
+            # print("IMU heading:", self.imu_heading)
+            # print("DR heading:", self.dr_heading)
+            # print("Filtered heading:", self.filtered_heading)
+            # print("Nav position:", self.nav_pos)
+            # print("DR position:", self.dr_pos)
+            # print("Filtered position:", self.filtered_position)
+            # print("----------------------")
             rate.sleep()
 
 def main():
