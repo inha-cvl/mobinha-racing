@@ -129,7 +129,7 @@ class ROSHandler():
                                   + self.params[0] + self.params[1]*(self.can_velocity*3.6) \
                                     + self.params[2]*((self.can_velocity*3.6)**2) \
                                         + self.params[3]*((self.can_velocity*3.6)**3))/3.6 # [m/s]
-        self.nav_velocity = ((self.nav_pos_last[0] - self.nav_pos[0])**2+(self.nav_pos_last[1] - self.nav_pos[1])**2)**0.5*20
+        self.nav_velocity = (((self.nav_pos_last[0] - self.nav_pos[0])**2+(self.nav_pos_last[1] - self.nav_pos[1])**2)**0.5)*20
         # print(f" nav vel: {self.nav_velocity}\n can vel: {self.can_velocity_last}\ncorr vel: {self.corr_can_velocity_last}\n  error: {abs(self.corr_can_velocity_last - self.nav_velocity)}\n")
         # try:
         #     print(f"verror: {abs(self.corr_can_velocity_last - self.nav_velocity)}")

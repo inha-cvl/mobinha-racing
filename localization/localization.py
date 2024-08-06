@@ -49,17 +49,20 @@ class BestLocalization:
 
         self.llh = [None, None]
         
-    def update_sensors(self):
+    def update_sensors1(self):
         self.nav_heading_last = self.RH.nav_heading_last
         self.nav_pos_last = self.RH.nav_pos_last
+
+        self.nav_heading = self.RH.nav_heading
+        self.nav_pos = self.RH.nav_pos
+
+    def update_sensors2(self):
         self.dr_heading_last = self.dr_heading
         self.dr_pos_last = self.dr_pos
         self.imu_heading_last = self.imu_heading
         self.best_heading_last = self.best_heading
         self.best_pos_last = self.best_pos
 
-        self.nav_heading = self.RH.nav_heading
-        self.nav_pos = self.RH.nav_pos
         self.dr_heading = self.DR.dr_heading
         self.dr_pos = self.DR.dr_pos
         self.imu_heading = self.IH.imu_corr_heading
@@ -129,6 +132,7 @@ class BestLocalization:
 
         if self.nav_pos_valid:
             self.best_pos = self.nav_pos
+            print("using navpvt position")
             print_result = "navpvt_position"
         elif not self.nav_pos_valid and dr_valid:
             self.best_pos = self.dr_pos
@@ -145,11 +149,8 @@ class BestLocalization:
             while 1:
                 self.best_heading = self.nav_heading
                 self.best_pos = self.nav_pos
-                self.update_sensors()
-                # print("best heading", self.best_heading)
-                # print("best pos", self.best_pos)
-                # print("best heading_last", self.best_heading_last)
-                # print("best pos_last", self.best_pos_last, end='\n\n')
+                self.update_sensors1()
+                self.update_sensors2()
                 
                 if self.best_heading is not None and self.best_pos[0] is not None:
                     print("INITIALIZE [step 1]")
@@ -169,10 +170,10 @@ class BestLocalization:
         while not rospy.is_shutdown():
             self.initiate()
 
+            self.update_sensors1()
             self.DR.run(self.best_heading_last, self.best_pos_last)
             self.IH.run(self.best_heading, self.nav_hdg_valid)
-
-            self.update_sensors()
+            self.update_sensors2()
 
             heading_source, position_source = "not determined", "not determined"
 
@@ -186,18 +187,20 @@ class BestLocalization:
             if None not in [self.best_heading, self.best_pos[0]]:
                 self.RH.publish(self.best_heading, self.best_pos)
             
-            # try:
-            #     str1 = "-------------------------------------------\n"
-            #     str2 = f"nav:{heading_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
-            #     str3 = f"imu:{heading_validity[1]} | {self.best_heading%360:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
-            #     str4 = f"dr :{heading_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
-            #     str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
-            #     if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
-            #         str6 = f"NOT NAV"
-            #     print(str1+str2+str3+str4+str5+str6)
-
-            # except:
-            #     pass
+            if position_source == "deadrk_position":
+                print("dead reckoning")
+            
+            try:
+                str1 = "-------------------------------------------\n"
+                str2 = f"nav:{heading_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
+                str3 = f"imu:{heading_validity[1]} | {self.best_heading%360:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
+                str4 = f"dr :{heading_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
+                str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
+                if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
+                    str6 = f"NOT NAV"
+                print(str1+str2+str3+str4+str5+str6)
+            except:
+                pass
 
             rate.sleep()
 
