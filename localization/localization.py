@@ -195,7 +195,7 @@ class BestLocalization:
                 str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
                 if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
                     str6 = f"NOT NAV"
-                print(str1+str2+str3+str4+str5+str6)
+                #print(str1+str2+str3+str4+str5+str6)
             except:
                 pass
 

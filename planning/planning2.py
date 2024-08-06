@@ -78,12 +78,12 @@ class Planning():
             race_mode = 'to_goal'
             planning_state = 'INIT'
             self.first_lap = self.RH.lap_count
-        elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 5 and self.race_mode != 'pit_stop': #If pass the goal point, 
+        elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 8 and self.race_mode != 'pit_stop': #If pass the goal point, 
             self.start_pose_initialized = False
             self.prev_lap = self.RH.lap_count
             race_mode = 'race'
             planning_state = 'INIT'
-        elif (self.RH.lap_count >= 6 or self.RH.kiapi_signal == 5 )and self.race_mode != 'pit_stop':
+        elif (self.RH.lap_count >= 8 or self.RH.kiapi_signal == 5 )and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
             race_mode = 'pit_stop'
             planning_state = 'INIT'
@@ -243,7 +243,7 @@ class Planning():
                 planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.target_velocity, local_max_vel, R_list)
                 #planned_vel = self.gmv.smooth_velocity_by_R(local_max_vel, R_list)
 
-                if ( self.RH.lap_count >= 5 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
+                if ( self.RH.lap_count >= 8 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
                     planned_vel = [-2.5] * len(planned_vel)
                 else:
                     planned_vel = planned_vel

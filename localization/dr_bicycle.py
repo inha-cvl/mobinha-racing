@@ -56,7 +56,7 @@ class DR_BICYCLE:
         dr_x = start_pos[0] + x_delta
         dr_y = start_pos[1] + y_delta
         self.dr_pos = [dr_x, dr_y]
-        self.dr_heading = best_hdg_last + (self.dt * math.degrees((self.RH.corr_can_velocity_last / self.wheelbase) * math.tan(delta_rad)))
+        self.dr_heading = best_hdg_last + (self.dt * math.degrees((self.RH.corr_can_velocity_last / self.wheelbase) * math.tan(delta_rad)))*1.7
 
         # print("dxerror:" , (dr_x-self.RH.nav_pos[0]))
         # print("dyerror:" , (dr_y-self.RH.nav_pos[1]), end='\n\n')
