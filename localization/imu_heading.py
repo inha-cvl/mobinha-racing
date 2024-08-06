@@ -48,11 +48,10 @@ class ImuHeading():
 
         return result
 
-    def run(self, best_heading, nav_valid):
-
+    def run(self, best_heading, nav_hdg_valid):
         if self.check_msg_valid():
             if self.initial:
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
+                self.q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
                 self.last_s = self.RH.imu_header.stamp.secs
                 self.last_ns = self.RH.imu_header.stamp.nsecs
                 self.initial = False
@@ -68,7 +67,7 @@ class ImuHeading():
             self.last_s = self.RH.imu_header.stamp.secs
             self.last_ns = self.RH.imu_header.stamp.nsecs
 
-            if not nav_valid: # wrong heading
+            if not nav_hdg_valid: # wrong heading
                 self.q = self.madgwick.updateIMU(q=self.q, gyr=gyro, acc=accel, dt=dt)
                 heading = -np.rad2deg(np.arctan2(2.0*(self.q[0]*self.q[3] + self.q[1]*self.q[2]), 1.0 - 2.0*(self.q[2]**2 + self.q[3]**2)))
             else: # right heading
@@ -76,6 +75,8 @@ class ImuHeading():
                 self.cnt = 0
                 heading = -np.rad2deg(np.arctan2(2.0*(self.q[0]*self.q[3] + self.q[1]*self.q[2]), 1.0 - 2.0*(self.q[2]**2 + self.q[3]**2)))
                 self.initial_offset = best_heading - heading
+
+
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:

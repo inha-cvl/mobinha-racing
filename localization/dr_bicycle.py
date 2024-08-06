@@ -43,24 +43,26 @@ class DR_BICYCLE:
         last = self.RH.nav_header_last.stamp
         self.dt = now.to_sec() - last.to_sec() # [sec]
 
-    def calculate_nextpos(self, best_hdg_last, best_pos_last, nav_valid):
-        if nav_valid:
-            delta_rad = math.radians(self.RH.can_steer_last)
+    def calculate_nextpos(self, best_hdg_last, best_pos_last):
+        delta_rad = math.radians(self.RH.can_steer_last)
 
-            theta_rad = math.radians(self.RH.nav_heading_last) if best_hdg_last is None else best_hdg_last
-            start_pos = self.RH.nav_pos_last if best_pos_last[0] is None else best_pos_last
+        theta_rad = math.radians(self.RH.nav_heading_last) if best_hdg_last is None else math.radians(best_hdg_last)
+        start_pos = self.RH.nav_pos_last if best_pos_last[0] is None else best_pos_last
 
-            dr_x = start_pos[0] + self.dt * self.RH.corr_can_velocity_last * math.cos(theta_rad)
-            dr_y = start_pos[1] + self.dt * self.RH.corr_can_velocity_last * math.sin(theta_rad)
-            self.dr_pos = [dr_x, dr_y]
-            self.dr_heading = self.RH.nav_heading_last + self.dt * math.degrees((self.RH.corr_can_velocity_last / self.wheelbase) * math.tan(delta_rad))
+        x_delta = self.dt * self.RH.corr_can_velocity_last * math.cos(theta_rad)
+        y_delta = self.dt * self.RH.corr_can_velocity_last * math.sin(theta_rad)
+        dr_x = start_pos[0] + x_delta
+        dr_y = start_pos[1] + y_delta
+        self.dr_pos = [dr_x, dr_y]
+        self.dr_heading = best_hdg_last + self.dt * math.degrees((self.RH.corr_can_velocity_last / self.wheelbase) * math.tan(delta_rad))
 
+        # print("derror:" , ((dr_x-self.RH.nav_pos[0])**2+(dr_y-self.RH.nav_pos[1])**2)**0.5, end='\n\n')
 
     # def is_available(self):
     #     result = None not in [self.dr_pos[0], self.dr_heading]
     #     return result
     
-    def run(self, best_heading_last, best_pos_last, nav_valid): 
+    def run(self, best_heading_last, best_pos_last): 
         if self.check_msg_valid():
             self.calculate_dt()
-            self.calculate_nextpos(best_heading_last, best_pos_last, nav_valid) 
+            self.calculate_nextpos(best_heading_last, best_pos_last) 
