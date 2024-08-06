@@ -4,7 +4,7 @@ from drive_msgs.msg import *
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
 from geometry_msgs.msg import Pose
-
+from std_msgs.msg import Bool
 from pyproj import Proj, Transformer
 
 class ROSHandler():
@@ -44,6 +44,11 @@ class ROSHandler():
         self.can_steer_last = None
         self.corr_can_velocity_last = None
 
+        # tmp
+        self.hdg_hack = False
+        self.pos_hack = False
+        self.nav_velocity = 0
+
     def set_protocol(self):
         rospy.Subscriber('/ublox/navatt', NavATT, self.navatt_cb)
         rospy.Subscriber('/ublox/navpvt', NavPVT, self.navpvt_cb)
@@ -52,9 +57,19 @@ class ROSHandler():
         rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
+
+        # tmp
+        self.pub_hdg = rospy.Subscriber("/heading_hack", Bool, self.hdg_cb)
+        self.pub_pos = rospy.Subscriber("/position_hack", Bool, self.pos_cb)
+
         
         self.best_pose_pub = rospy.Publisher('/best/pose', Pose, queue_size=1)
-    
+
+    def hdg_cb(self, msg):
+        self.hdg_hack = msg.data
+    def pos_cb(self, msg):
+        self.pos_hack = msg.data
+
     def set_params(self):
         self.steer_scale_factor = 36.2/500
 
@@ -69,7 +84,11 @@ class ROSHandler():
 
     def navatt_cb(self, msg):  # gain heading
         self.nav_heading_last = self.nav_heading
-        self.nav_heading = -(msg.heading*1e-5 - 90)%360 
+        self.real_nav_heading = -(msg.heading*1e-5 - 90)%360
+        if not self.hdg_hack:
+            self.nav_heading = self.real_nav_heading 
+        else:
+            self.nav_heading = 0
         self.nav_roll = msg.roll*1e-5
         self.nav_pitch = msg.pitch*1e-5
 
@@ -78,8 +97,13 @@ class ROSHandler():
         lat = msg.lat*1e-7
         lon = msg.lon*1e-7
         x, y, _= self.transformer.transform(lon, lat, 7)
+        self.real_nav_pos = [x, y]
+        if not self.pos_hack:
+            self.nav_pos = self.real_nav_pos
+        else:
+            self.nav_pos = [0, 0]
+
         self.llh = [lat, lon]
-        self.nav_pos = [x, y]
     
     def imu_cb(self, msg):
         self.imu_header = msg.header
@@ -105,6 +129,12 @@ class ROSHandler():
                                   + self.params[0] + self.params[1]*(self.can_velocity*3.6) \
                                     + self.params[2]*((self.can_velocity*3.6)**2) \
                                         + self.params[3]*((self.can_velocity*3.6)**3))/3.6 # [m/s]
+        self.nav_velocity = ((self.nav_pos_last[0] - self.nav_pos[0])**2+(self.nav_pos_last[1] - self.nav_pos[1])**2)**0.5*20
+        # print(f" nav vel: {self.nav_velocity}\n can vel: {self.can_velocity_last}\ncorr vel: {self.corr_can_velocity_last}\n  error: {abs(self.corr_can_velocity_last - self.nav_velocity)}\n")
+        # try:
+        #     print(f"verror: {abs(self.corr_can_velocity_last - self.nav_velocity)}")
+        # except:
+        #     pass
 
         handle_ang = float(msg.StrAng.data)
         self.can_steer = handle_ang*self.steer_scale_factor 
