@@ -179,10 +179,10 @@ class ImuHeading():
         return result
 
     def run(self, best_heading, nav_valid):
-
+        print("running")
         if self.check_msg_valid():
             if self.initial:
-                q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
+                self.q = self.euler_to_quaternion(np.deg2rad(self.RH.nav_roll), np.deg2rad(self.RH.nav_pitch), np.deg2rad(self.RH.nav_heading))
                 self.last_s = self.RH.imu_header.stamp.secs
                 self.last_ns = self.RH.imu_header.stamp.nsecs
                 self.initial = False
@@ -209,11 +209,16 @@ class ImuHeading():
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
-                constant_offset = -0.015*self.cnt
+                # constant_offset = +0.15*self.cnt*self.RH.corr_can_velocity**0.6
+                constant_offset = -0.015
             else:
-                constant_offset = -0.023*self.cnt
+                # constant_offset = -0.01*self.cnt*self.RH.corr_can_velocity**0.55 # 낮춰야댐
+                constant_offset = -0.023
 
             heading += self.initial_offset
+            print(heading)
+            print(self.RH.nav_heading)
+            print("---------")
             offseted_heading = heading + constant_offset
 
             # val = 0
@@ -424,7 +429,7 @@ class BestLocalization:
             self.best_pos = self.nav_pos
             self.update_sensors()
 
-    def run(self):
+    def run(self): # test
         rate = rospy.Rate(20)
 
         while not rospy.is_shutdown():
@@ -432,7 +437,7 @@ class BestLocalization:
 
             self.DR.run(self.best_heading_last, self.best_pos_last, self.nav_valid)
             self.IH.run(self.best_heading, self.nav_valid)
-
+            print("IH ran")
             self.update_sensors()
             if None not in [self.nav_heading_last, self.imu_heading_last, self.dr_heading_last]:
                 self.heading_postprocess()

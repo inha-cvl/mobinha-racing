@@ -111,7 +111,7 @@ class BestLocalization:
         dr_valid = self.valid_hdg(self.best_heading_last, self.dr_heading, 5)
 
         imu_weight = 0.5
-        dr_weight = 0.5
+        dr_weight = 0.0
         if not imu_valid:
             imu_weight = 0
         if not dr_valid:
@@ -195,7 +195,7 @@ class BestLocalization:
                 str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
                 if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
                     str6 = f"NOT NAV"
-                #print(str1+str2+str3+str4+str5+str6)
+                print(str1+str2+str3+str4+str5+str6)
             except:
                 pass
 

@@ -80,9 +80,9 @@ class ImuHeading():
             # straight : -0.023
             # curve : -0.015
             if self.RH.curr_lane_id in self.curve_list:
-                constant_offset = -0.015*self.cnt
+                constant_offset = -0.010*self.cnt #turned right
             else:
-                constant_offset = -0.023*self.cnt
+                constant_offset = -0.0245*self.cnt
 
             heading += self.initial_offset
             offseted_heading = heading + constant_offset

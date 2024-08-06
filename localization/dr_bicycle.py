@@ -46,10 +46,10 @@ class DR_BICYCLE:
     def calculate_nextpos(self, best_hdg_last, best_pos_last):
         delta_rad = math.radians(self.RH.can_steer_last)
 
-        # theta_rad = math.radians(self.RH.nav_heading_last) if best_hdg_last is None else math.radians(best_hdg_last)
-        theta_rad = math.radians(self.RH.nav_heading_last)
-        start_pos2 = self.RH.nav_pos_last if best_pos_last[0] is None else best_pos_last
-        start_pos = self.RH.nav_pos_last
+        theta_rad = math.radians(self.RH.nav_heading_last) if best_hdg_last is None else math.radians(best_hdg_last)
+        # theta_rad = math.radians(self.RH.nav_heading_last)
+        start_pos = self.RH.nav_pos_last if best_pos_last[0] is None else best_pos_last
+        # start_pos2 = self.RH.nav_pos_last
 
         # print(start_pos)
         # print(start_pos2)
