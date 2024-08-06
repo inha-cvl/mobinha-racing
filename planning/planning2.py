@@ -123,8 +123,8 @@ class Planning():
             object_list = self.static_object_list
         else:
             object_list = self.RH.object_list  # List of objects
-        obj_radius_front = 25 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
+        obj_radius_front = 15 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front) 25
+        obj_radius_rear = 10 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear) 20
         
         updated_path = []
         check_object = []
@@ -148,7 +148,6 @@ class Planning():
                 w_right, w_left = point[2], point[3]
                 x_normvec, y_normvec = point[4], point[5]
                 updated_point = point.copy()
-                #if cnt > 6 :
                 for obj in check_object:
                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
                     # Check the relative position of the object

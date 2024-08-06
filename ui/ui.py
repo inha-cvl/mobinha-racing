@@ -34,8 +34,9 @@ class MyApp(QMainWindow, form_class):
         self.mode_strings = ['Autonomous Driving OFF','Auotnomous Driving ON', 'EPS Only Mode', 'ACC Only Mode']
         self.signal_strings = ['Off', 'Left Change', 'Right Change', 'Hazard', 'Straight']
         self.kiapi_signal_buttons = [None, self.buttonGo, self.buttonStop, self.buttonSlowOn, self.buttonSlowOff, self.buttonPitStop]
-        self.kiapi_signal_strings = ['NONE', 'GO', 'STOP', 'SLOW_ON', 'SLOW_OFF', 'PIT_STOP']
+        self.kiapi_signal_strings = ['WAIT', 'GO', 'STOP', 'SLOW ON', 'SLOW OFF', 'PIT STOP']
         self.prev_kiapi_signal = 0
+        self.prev_system_mode = 0
 
     def set_widgets(self):
         self.rviz_widget = RvizWidget(self)
@@ -71,7 +72,27 @@ class MyApp(QMainWindow, form_class):
         
     def system_label_update(self, mode, signal, lane_number, lap_count):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
-        self.systemLabel2.setText(self.kiapi_signal_strings[int(signal)])
+        
+        if self.prev_system_mode != int(mode):
+            if int(mode)==1:
+                self.systemLabel1.setStyleSheet("""QLabel {background-color: rgb(4,188,124); border-radius: 5px; color: rgb(255,255,255)}""")
+            elif int(mode) == 2 or int(mode) == 3:
+                self.systemLabel1.setStyleSheet("""QLabel {background-color: rgb(252,203,28); border-radius: 5px; color: rgb(255,255,255)}""")
+            elif int(mode) == 0:
+                self.systemLabel1.setStyleSheet("""QLabel {background-color: rgb(252,36,68); border-radius: 5px; color: rgb(255,255,255)}""")
+            self.prev_system_mode = int(mode)
+        
+        if self.prev_kiapi_signal != int(signal):
+            self.systemLabel2.setText(self.kiapi_signal_strings[int(signal)])
+            if int(signal) == 1:
+                self.systemLabel2.setStyleSheet("""QLabel {background-color:  rgb(0, 102, 255); border-radius: 5px; color: black;}""")
+            elif int(signal) == 2:
+                self.systemLabel2.setStyleSheet("""QLabel {background-color:  rgb(252,36,68); border-radius: 5px; color: black;}""")
+            elif int(signal) == 5:
+                self.systemLabel2.setStyleSheet("""QLabel {background-color:  rgb(246, 126, 82); border-radius: 5px; color: black;}""")
+            else:
+                self.systemLabel2.setStyleSheet("""QLabel {background-color: rgb(252,203,28); border-radius: 5px; color: black;}""")
+            
         self.laneNumberLabel.setText(f"Lane: {lane_number}")
         self.lapCountLabel.setText(f"Lap: {lap_count}")
     
@@ -86,12 +107,19 @@ class MyApp(QMainWindow, form_class):
         if self.prev_kiapi_signal != idx:
             for i, kiapi_button in enumerate(self.kiapi_signal_buttons):
                 if i == 0:
-                    continue
+                    continue 
                 if i == idx:
-                    kiapi_button.setStyleSheet(""" QPushButton {background-color: #0066ff;color: white;}""")
+                    if i == 1:
+                        kiapi_button.setStyleSheet(""" QPushButton {background-color: #0066ff;color: black;}""")
+                    elif i == 2:
+                        kiapi_button.setStyleSheet(""" QPushButton {background-color: rgb(252,36,68);color: black;}""")
+                    elif i == 5:
+                        kiapi_button.setStyleSheet(""" QPushButton {background-color: rgb(246, 126, 82);color: black;}""")
+                    else:
+                        kiapi_button.setStyleSheet(""" QPushButton {background-color: rgb(252,203,28);color: black;}""")
                 else:
                     kiapi_button.setStyleSheet(""" QPushButton {background-color: #eeeeec; color: black;}""")
-        
+             
 
     def click_mode(self, mode):
         self.RH.user_value['user_mode'] = mode

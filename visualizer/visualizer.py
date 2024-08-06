@@ -51,7 +51,7 @@ class Visualizer:
     def vehicle_state_cb(self, msg):
         yaw = msg.heading.data
         v = msg.velocity.data
-        info = f"{(v*3.6):.2f}km/h {yaw:.2f}deg R={self.planned_kappa:.3f}"
+        info = f"{int(v*3.6)}km/h {int(yaw)}deg"
         self.ego_car_info.text = info
         quaternion = tf.transformations.quaternion_from_euler(math.radians(0), math.radians(0), math.radians(yaw))  # RPY
         self.ego_pos = [msg.enu.x,msg.enu.y]
@@ -81,13 +81,36 @@ class Visualizer:
         viz_objects = ObjectsViz(objs)
         self.pub_objects_viz.publish(viz_objects)
     
+    def filter_duplicates(self, objs):
+        filtered_objects = []
+
+        for i, obj in enumerate(objs):
+            is_duplicate = False
+            
+            for filtered_obj in filtered_objects:
+                if self.is_within_threshold(obj, filtered_obj):
+                    is_duplicate = True
+                    break
+
+            if not is_duplicate:
+                filtered_objects.append(obj)
+                
+        return filtered_objects
+
+    def is_within_threshold(self, obj1, obj2):
+        distance = math.sqrt((obj1[0] - obj2[0]) ** 2 + (obj1[1] - obj2[1]) ** 2)
+        return distance < 1
+    
     def target_object_cb(self, msg):
         objs = []
         for obj in msg.objects:
             objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.distance.data])
-        viz_objects = TargetObjectsViz(objs)
+        
+        filtered_objs = self.filter_duplicates(objs)
+
+        viz_objects = TargetObjectsViz(filtered_objs)
         self.pub_target_objects_viz.publish(viz_objects)
-    
+        
     # calibr
     def publish_static_tfs(self, transforms):
         static_transformStamped_vec = []
