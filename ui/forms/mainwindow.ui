@@ -534,11 +534,13 @@ image-position:top;
                      </font>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">QLabel {border: 2px solid black;
-                border-radius: 5px;}</string>
+                     <string notr="true">QLabel {background-color: rgb(252,36,68);
+                border-radius: 5px;
+				  color: rgb(255,255,255)}
+</string>
                     </property>
                     <property name="text">
-                     <string/>
+                     <string>Autonomous Driving OFF</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -567,11 +569,10 @@ image-position:top;
                      </font>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">QLabel {border: 2px solid black;
-                border-radius: 5px;}</string>
+                     <string notr="true">QLabel {background-color: rgb(238, 238, 236); border-radius: 5px; color: black;}</string>
                     </property>
                     <property name="text">
-                     <string/>
+                     <string>WAIT</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -1144,8 +1145,8 @@ image-position:top;
           </font>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(46, 52, 54);
-color: rgb(245,252,20);</string>
+          <string notr="true">background-color: rgb(48, 48, 48);
+color: rgb(252,203,28);</string>
          </property>
          <property name="text">
           <string>Lap: 0</string>

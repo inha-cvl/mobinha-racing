@@ -109,7 +109,7 @@ def CarInfoViz(frame_id, name_space, info, position):
     marker.ns = name_space
     marker.type = Marker.TEXT_VIEW_FACING
     marker.lifetime = rospy.Duration(0)
-    marker.scale.z = 2.0
+    marker.scale.z = 1.0
     marker.color.r = 1
     marker.color.g = 1
     marker.color.b = 1
@@ -164,7 +164,7 @@ def TargetObjectsViz(objects):
     for n, obj in enumerate(objects):
         marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)
-        dist = f"{round(obj[3],3)} m"
+        dist = f"{round(obj[3])} m"
         marker = CarInfoViz('world',str(n+1), dist,(round(obj[0],1), round(obj[1],1)) )
         marker_array.markers.append(marker)
     return marker_array
@@ -178,7 +178,7 @@ def ObjectViz(_id, position, heading, color):
     #marker.mesh_resource = 'file://{}/car.dae'.format(dir_path)
     marker.action = Marker.ADD
     marker.lifetime = rospy.Duration(0)
-    marker.scale.x = 4
+    marker.scale.x = 3
     marker.scale.y = 1.2
     marker.scale.z = 1.2
     marker.color.r = color[0]/255

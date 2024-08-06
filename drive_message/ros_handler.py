@@ -3,7 +3,7 @@ import numpy as np
 from pyproj import Proj, Transformer
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray, Pose
+from geometry_msgs.msg import PoseArray, Pose, Pose2D
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32
 from sensor_msgs.msg import NavSatFix
@@ -76,7 +76,7 @@ class ROSHandler():
         #     rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         
         # Simulator
-        rospy.Subscriber('/simulator/pose', Pose, self.sim_pose_cb)
+        rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
 
         # Refine
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)

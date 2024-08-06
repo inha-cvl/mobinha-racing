@@ -118,8 +118,14 @@ class CarSimulator:
             can_output.StrAng.data = str(self._steer)
             if self.kiapi_signal == 1:
                 can_output.SIG_GO.data = 'On'
+            elif self.kiapi_signal == 2:
+                can_output.SIG_STOP.data = 'On'
+            elif self.kiapi_signal == 3:
+                can_output.SIG_SLOW_ON.data = 'On'
+            elif self.kiapi_signal == 4:
+                can_output.SIG_SLOW_OFF.data = 'On'
             elif self.kiapi_signal == 5:
-                can_output.PIT_STOP.data = 'On'
+                can_output.SIG_PIT_STOP.data = 'On'
 
             self.pub_can_output.publish(can_output)
 
