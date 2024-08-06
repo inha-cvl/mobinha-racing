@@ -123,8 +123,8 @@ class Planning():
             object_list = self.static_object_list
         else:
             object_list = self.RH.object_list  # List of objects
-        obj_radius_front = 15 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front) 25
-        obj_radius_rear = 10 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear) 20
+        obj_radius_front = 25 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
@@ -140,10 +140,7 @@ class Planning():
 
         self.object_detected = False
         if self.avoid_on:
-            cnt = 0
             for point in trim_global_path:
-                cnt += 1
-                
                 x, y = point[0], point[1]
                 w_right, w_left = point[2], point[3]
                 x_normvec, y_normvec = point[4], point[5]
@@ -159,9 +156,9 @@ class Planning():
                     if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
                         self.object_detected = True
                         if w_left < 4:
-                            points = np.arange(0, w_left, 1.8)
+                            points = np.arange(0, w_left, 1.2)
                         else:
-                            points = np.arange(3.9, w_left, 2)
+                            points = np.arange(3.9, w_left, 0.6 )
 
                         # 생성된 점들
                         generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
