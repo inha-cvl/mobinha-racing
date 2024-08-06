@@ -1,5 +1,6 @@
 #!/bin/bash
 rosparam load coordinates.yaml &
+sleep 1
 cd ../ui/
 python3 ui.py & 
 cd ../localization/

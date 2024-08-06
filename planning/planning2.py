@@ -83,7 +83,7 @@ class Planning():
             self.prev_lap = self.RH.lap_count
             race_mode = 'race'
             planning_state = 'INIT'
-        elif (self.RH.lap_count >= 5 or self.RH.kiapi_signal == 5 )and self.race_mode != 'pit_stop':
+        elif (self.RH.lap_count >= 6 or self.RH.kiapi_signal == 5 )and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
             race_mode = 'pit_stop'
             planning_state = 'INIT'
@@ -124,7 +124,7 @@ class Planning():
         else:
             object_list = self.RH.object_list  # List of objects
         obj_radius_front = 25 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
+        obj_radius_rear = 25 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
@@ -243,7 +243,7 @@ class Planning():
                 planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.target_velocity, local_max_vel, R_list)
                 #planned_vel = self.gmv.smooth_velocity_by_R(local_max_vel, R_list)
 
-                if ( self.RH.lap_count >= 6 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
+                if ( self.RH.lap_count >= 5 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
                     planned_vel = [-2.5] * len(planned_vel)
                 else:
                     planned_vel = planned_vel

@@ -132,7 +132,7 @@ class BestLocalization:
 
         if self.nav_pos_valid:
             self.best_pos = self.nav_pos
-            print("using navpvt position")
+            #print("using navpvt position")
             print_result = "navpvt_position"
         elif not self.nav_pos_valid and dr_valid:
             self.best_pos = self.dr_pos
@@ -153,12 +153,9 @@ class BestLocalization:
                 self.update_sensors2()
                 
                 if self.best_heading is not None and self.best_pos[0] is not None:
-                    print("INITIALIZE [step 1]")
                     key1 = True
                 if self.best_heading_last is not None and self.best_pos_last[0] is not None:
-                    print("INITIALIZE [step 2]")
                     key2 = True
-                    print(key1 and key2)
                 if key1 and key2:
                     self.initiated = True
                     break
@@ -198,7 +195,7 @@ class BestLocalization:
                 str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
                 if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
                     str6 = f"NOT NAV"
-                print(str1+str2+str3+str4+str5+str6)
+                #print(str1+str2+str3+str4+str5+str6)
             except:
                 pass
 
