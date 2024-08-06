@@ -103,7 +103,7 @@ def calculate_R_first_index(points):
         R = 1/kappa if kappa != 0 else 9999
     return abs(R)
 
-def calculate_R_list(points, base_offset=1, step_size=25):
+def calculate_R_list(points, base_offset=2, step_size=30):
     Rs = []
     numpoints = len(points)
     last_R = 99999
@@ -121,7 +121,7 @@ def calculate_R_list(points, base_offset=1, step_size=25):
             Rs.append(last_R)
     return Rs
 
-def interpolate_path(final_global_path, min_length=100, sample_rate=3, smoothing_factor=20.0, interp_points=10):
+def interpolate_path(final_global_path, min_length=100, sample_rate=3, smoothing_factor=30.0, interp_points=10):
     local_path = np.array([(point[0], point[1]) for point in final_global_path])
     local_vel = [point[10] for point in final_global_path]
 

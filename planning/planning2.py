@@ -123,8 +123,8 @@ class Planning():
             object_list = self.static_object_list
         else:
             object_list = self.RH.object_list  # List of objects
-        obj_radius_front = 35 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 25 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
+        obj_radius_front = 25 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_rear = 20 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
@@ -148,29 +148,29 @@ class Planning():
                 w_right, w_left = point[2], point[3]
                 x_normvec, y_normvec = point[4], point[5]
                 updated_point = point.copy()
-                if cnt > 6 :
-                    for obj in check_object:
-                        obj_x, obj_y = float(obj['X']), float(obj['Y'])
-                        # Check the relative position of the object
-                        if obj_y > y:
-                            obj_radius = obj_radius_front
+                #if cnt > 6 :
+                for obj in check_object:
+                    obj_x, obj_y = float(obj['X']), float(obj['Y'])
+                    # Check the relative position of the object
+                    if obj_y > y:
+                        obj_radius = obj_radius_front
+                    else:
+                        obj_radius = obj_radius_rear
+                    
+                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
+                        self.object_detected = True
+                        if w_left < 4:
+                            points = np.arange(0, w_left, 1.8)
                         else:
-                            obj_radius = obj_radius_rear
-                        
-                        if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
-                            self.object_detected = True
-                            if w_left < 4:
-                                points = np.arange(0, w_left, 1.6)
-                            else:
-                                points = np.arange(3.7, w_left, 1.8)
+                            points = np.arange(3.9, w_left, 2)
 
-                            # 생성된 점들
-                            generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
+                        # 생성된 점들
+                        generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
 
-                            # 가장 가까운 점은 첫 번째 점
-                            closest_point = generated_points[0]
-                            updated_point[0] = closest_point[0]
-                            updated_point[1] = closest_point[1]
+                        # 가장 가까운 점은 첫 번째 점
+                        closest_point = generated_points[0]
+                        updated_point[0] = closest_point[0]
+                        updated_point[1] = closest_point[1]
                     
                 updated_path.append(updated_point)
 
@@ -230,8 +230,8 @@ class Planning():
                 # Set Target Velocity
                 if not self.RH.set_go:
                     local_max_vel = 0
-                elif not self.start_pose_initialized:
-                    local_max_vel = 10/3.6
+                # elif not self.start_pose_initialized:
+                #     local_max_vel = 10/3.6
                 else:
                     #max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
                     max_vel = interped_vel[1]
@@ -239,7 +239,7 @@ class Planning():
                     #     local_max_vel = min(27/3.6, max_vel)
                     # el
                     if self.RH.lap_count-self.first_lap == 0 : # 1 lap under 30 km/h 
-                        local_max_vel = min(37/3.6, max_vel)
+                        local_max_vel = min(42/3.6, max_vel)
                     else:
                         local_max_vel = max_vel
                     #local_max_vel = max_vel
@@ -247,8 +247,8 @@ class Planning():
                 planned_vel = self.gmv.smooth_velocity_plan(interped_vel, self.target_velocity, local_max_vel, R_list)
                 #planned_vel = self.gmv.smooth_velocity_by_R(local_max_vel, R_list)
 
-                if ( self.RH.lap_count >= 5 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
-                    planned_vel = [-3] * len(planned_vel)
+                if ( self.RH.lap_count >= 6 or self.race_mode == 'pit_stop') and len(interped_path) < 10:
+                    planned_vel = [-2.5] * len(planned_vel)
                 else:
                     planned_vel = planned_vel
 
