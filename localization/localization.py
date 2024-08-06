@@ -15,9 +15,9 @@ def signal_handler(sig, frame):
 class BestLocalization:
     def __init__(self):
         self.initiated = False
-        self.RH = ROSHandler(map)
-        self.DR = DR_BICYCLE()
-        self.IH = ImuHeading()
+        self.RH = ROSHandler()
+        self.DR = DR_BICYCLE(self.RH)
+        self.IH = ImuHeading(self.RH)
 
         self.nav_heading = None
         self.nav_pos = None

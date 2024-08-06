@@ -52,7 +52,9 @@ class PurePursuit(object):
         if self.RH.current_velocity * MPS_TO_KPH > 30:
             steering_angle = steering_angle * 1.3
 
-        return steering_angle
+        saturated_angle = self.saturate_steering_angle(steering_angle)
+
+        return saturated_angle
 
     def saturate_steering_angle(self, now):
         saturated_steering_angle = now

@@ -1,11 +1,10 @@
 import numpy as np
 
-from ros_handler import ROSHandler
 from ahrs.filters import Madgwick
 
 class ImuHeading():
-    def __init__(self):
-        self.RH = ROSHandler(map)
+    def __init__(self, RH):
+        self.RH = RH
         self.madgwick = Madgwick()
         self.initial_offset = 0
         self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',

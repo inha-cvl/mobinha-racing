@@ -2,11 +2,9 @@ import math
 
 from pyproj import Proj, Transformer
 
-from ros_handler import ROSHandler
-
 class DR_BICYCLE:
-    def __init__(self):
-        self.RH = ROSHandler(map)
+    def __init__(self, RH):
+        self.RH = RH
 
         self.wheelbase = 2.72
 

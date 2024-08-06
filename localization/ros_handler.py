@@ -8,9 +8,8 @@ from std_msgs.msg import Bool
 from pyproj import Proj, Transformer
 
 class ROSHandler():
-    def __init__(self, map):
+    def __init__(self):
         rospy.init_node('localization', anonymous=False)
-        self.MAP = map
         self.set_values()
         self.set_protocol()
         self.set_params()
