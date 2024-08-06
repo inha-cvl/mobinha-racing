@@ -109,7 +109,7 @@ def CarInfoViz(frame_id, name_space, info, position):
     marker.ns = name_space
     marker.type = Marker.TEXT_VIEW_FACING
     marker.lifetime = rospy.Duration(0)
-    marker.scale.z = 1.0
+    marker.scale.z = 2.0
     marker.color.r = 1
     marker.color.g = 1
     marker.color.b = 1
