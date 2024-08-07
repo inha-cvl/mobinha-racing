@@ -103,7 +103,7 @@ def calculate_R_first_index(points):
         R = 1/kappa if kappa != 0 else 9999
     return abs(R)
 
-def calculate_R_list(points, base_offset=2, step_size=30):
+def calculate_R_list(points, base_offset=2, step_size=40):
     Rs = []
     numpoints = len(points)
     last_R = 99999

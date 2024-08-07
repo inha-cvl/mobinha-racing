@@ -117,6 +117,8 @@ class Planning():
     
         
     def path_update(self, trim_global_path):
+        if len(trim_global_path) < 5:
+            return trim_global_path
         final_global_path = trim_global_path.copy()  # Make a copy of the global path to modify
         
         if self.obstacle_mode == 'static':
@@ -230,7 +232,11 @@ class Planning():
                 #     local_max_vel = 10/3.6
                 else:
                     #max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
-                    max_vel = interped_vel[1]
+                    if len(interped_vel) < 2:
+                        max_vel = 0
+                    else:
+                        max_vel = interped_vel[1]
+
                     # if self.object_detected:
                     #     local_max_vel = min(27/3.6, max_vel)
                     # el

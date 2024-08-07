@@ -117,12 +117,15 @@ class Planning():
     
         
     def path_update(self, trim_global_path):
+        if len(trim_global_path) < 5:
+            return trim_global_path
         final_global_path = trim_global_path.copy()  # Make a copy of the global path to modify
         
         if self.obstacle_mode == 'static':
             object_list = self.static_object_list
         else:
             object_list = self.RH.object_list  # List of objects
+
         obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
         obj_radius_rear = 30 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
@@ -227,12 +230,17 @@ class Planning():
                 if not self.RH.set_go:
                     local_max_vel = 0
                 else:
-                    max_vel = interped_vel[1]
-                    # if self.RH.lap_count-self.first_lap == 0 : # 1 lap under 30 km/h 
-                    #     local_max_vel = min(47/3.6, max_vel)
-                    # else:
-                    #     local_max_vel = max_vel
-                    local_max_vel = max_vel
+                    #max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
+                    if len(interped_vel) < 2:
+                        max_vel = 0
+                    else:
+                        max_vel = interped_vel[1]
+
+                    if self.RH.lap_count-self.first_lap == 0 : # 1 lap under 30 km/h 
+                        local_max_vel = min(47/3.6, max_vel)
+                    else:
+                        local_max_vel = max_vel
+                    #local_max_vel = max_vel
 
                 planned_vel = self.gmv.smooth_velocity_plan2(interped_vel, self.target_velocity, local_max_vel, R_list)
                 #planned_vel = self.gmv.smooth_velocity_by_R(local_max_vel, R_list)
