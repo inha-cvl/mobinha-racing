@@ -161,7 +161,7 @@ class Planning():
                         if w_left < 4:
                             points = np.arange(0, w_left, 1.2)
                         else:
-                            points = np.arange(4, w_left, 0.6 )
+                            points = np.arange(3.8, w_left, 0.6 )
 
                         # 생성된 점들
                         generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
