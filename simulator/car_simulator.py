@@ -66,7 +66,7 @@ class CarSimulator:
             self.ego = Vehicle(-10.687, 0.029, -3.079,0,wheelbase)
         elif map == 'Harbor':
             self.ego = Vehicle(559.144, -112.223, 3.074, 0, wheelbase)
-        elif map == 'KIAPI_Racing':
+        elif map == 'KIAPI_Racing' or map == 'KIAPI_Racing_Fast':
             self.ego = Vehicle(10.759, 2.147, -2.99, 0, wheelbase)
 
     def run(self):

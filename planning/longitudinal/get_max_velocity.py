@@ -101,7 +101,7 @@ class GetMaxVelocity:
 
         return smoothed_velocities
 
-    def smooth_velocity_plan2(self, velocities, prev_target_velocity, target_velocity, R_list, window_size=2, max_delta_v_per_meter=0.5, step_distance=0.3):
+    def smooth_velocity_plan2(self, velocities, prev_target_velocity, target_velocity, R_list, window_size=2, max_delta_v_per_meter=0.5, step_distance=1):
         smoothed_velocities = np.copy(velocities)
         smoothed_velocities[0] = prev_target_velocity
 

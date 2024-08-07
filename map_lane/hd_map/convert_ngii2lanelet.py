@@ -24,7 +24,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    name = 'KIAPI_Racing'
+    name = 'KIAPI_Racing_Fast'
 
     parser.add_argument('--ngii_path', type=str, default='./%s'%(name))
     parser.add_argument('--precision', type=float, default=1)

@@ -32,6 +32,7 @@ class ROSHandler():
         self.current_lat_accel = 0
         self.current_long_accel = 0
         self.lap_count = 0
+        self.map_name = 'KIAPI_Racing_Fast'
 
 
     def set_publisher_protocol(self):

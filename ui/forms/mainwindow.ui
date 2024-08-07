@@ -889,6 +889,12 @@ image-position:top;
                    <property name="rowCount">
                     <number>2</number>
                    </property>
+                   <attribute name="horizontalHeaderStretchLastSection">
+                    <bool>true</bool>
+                   </attribute>
+                   <attribute name="verticalHeaderStretchLastSection">
+                    <bool>false</bool>
+                   </attribute>
                    <row/>
                    <row/>
                    <column>

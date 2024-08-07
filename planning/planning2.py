@@ -41,7 +41,7 @@ class Planning():
 
         self.shutdown_event = threading.Event()
 
-        self.specifiers = ['to_goal', 'race']
+        self.specifiers = ['to_goal_fast', 'race_fast']
         self.race_mode = self.specifiers[0]
         self.target_velocity = 0
 
@@ -57,7 +57,7 @@ class Planning():
         self.prev_lap = rospy.get_param('/now_lap')
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
 
-        self.gpp = GlobalPathPlanner('KIAPI_Racing')#self.RH.map_name)
+        self.gpp = GlobalPathPlanner(self.RH.map_name)
         
     def get_ref_path(self, specifier):
         toppath = os.path.dirname(os.path.realpath(__file__))

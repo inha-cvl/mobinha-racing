@@ -11,14 +11,14 @@ import global_path
 import global_path.libs.gp_utils as gput
 
 rospy.init_node('GlobalPath', anonymous=False)
-target = 'to_goal'
+target = 'to_goal_fast'
 pub_global_path = rospy.Publisher(f'/{target}_path', Marker, queue_size=1)
 
 
 diag_len = 20
 lane_width = 3.25
 
-map = global_path.libs.load_map.MAP('KIAPI_Racing')
+map = global_path.libs.load_map.MAP('KIAPI_Racing_Fast')
 gput.lanelets = map.lanelets
 gput.tiles = map.tiles
 gput.tile_size = map.tile_size
@@ -62,7 +62,7 @@ for i,f in enumerate(final_path):
     s += 1
 
 top_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-file_path = f'{top_path}/inputs/traj_ltpl_cl/traj_ltpl_cl_to_goal.csv'
+file_path = f'{top_path}/inputs/traj_ltpl_cl/traj_ltpl_cl_{target}.csv'
 global_path.libs.save_.to_csv(file_path, final_tr)
 print("saved")
 

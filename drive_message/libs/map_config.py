@@ -12,6 +12,8 @@ def get_base_lla(map):
         base_lla = [37.42390324724057, 126.60753475932731, 7]
     elif map == 'KIAPI_Racing':
         base_lla = [35.65492524, 128.39351431, 7]
+    elif map == 'KIAPI_Racing_Fast':
+        base_lla = [35.65492524, 128.39351431, 7]
     elif map == 'KIAPI_City':
         base_lla = [35.64699249, 128.40116601, 7]
     elif map == 'KCity':
