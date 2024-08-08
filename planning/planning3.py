@@ -126,8 +126,8 @@ class Planning():
         else:
             object_list = self.RH.object_list  # List of objects
 
-        obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 30 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
+        obj_radius_front = 25 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_rear = 25 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
@@ -231,7 +231,7 @@ class Planning():
                     local_max_vel = 0
                 else:
                     #max_vel =  self.gmv.get_max_velocity(self.RH.local_pos)
-                    if len(interped_vel) < 2:
+                    if len(interped_vel) < 3:
                         max_vel = 0
                     else:
                         max_vel = interped_vel[1]

@@ -42,7 +42,7 @@ class Transmitter():
                 can_messages = self.TH.encode_message(dicts)
                 for can_message in can_messages:
                     await asyncio.get_event_loop().run_in_executor(None, self.bus.send, can_message)
-                    await asyncio.sleep(0.01)  # 100Hz, 10ms 간격
+                    await asyncio.sleep(0.02)  # 100Hz, 10ms 간격
         except Exception as e:
             rospy.logerr(f"Error in send_on_can: {e}")
     

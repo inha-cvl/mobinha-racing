@@ -36,6 +36,9 @@ class LaneletHandler:
         idnidx = gput.lanelet_matching(obs_pos)
         if idnidx is not None:
             waypoints = gput.lanelets[idnidx[0]]['waypoints']
+            curr_lane_num = gput.lanelets[idnidx[0]]['laneNo']
+            if curr_lane_num < 3:
+                return None            
 
             next_idx = idnidx[1]+3 if idnidx[1]+3 < len(waypoints)-4 else len(waypoints)-4
             
