@@ -30,7 +30,7 @@ def lanelet_matching(t_pt):
     col = int(t_pt[1] // tile_size)
 
     min_dist = float('inf')
-    l_id, l_idx = None, None
+    l_id, l_idx, l_pt = None, None, None
 
     for i in range(-1, 2):
         for j in range(-1, 2):
@@ -39,14 +39,15 @@ def lanelet_matching(t_pt):
                 for id_, data in selected_tile.items():
                     for idx, pt in enumerate(data['waypoints']):
                         dist = euc_distance(t_pt, pt)
-                        if dist > 1:
+                        if dist > 2:
                             continue
                         if dist < min_dist:
                             min_dist = dist
                             l_id = id_
+                            l_pt = pt
                             l_idx = data['idx'][idx]
     if l_id is not None:
-        return (l_id, l_idx)
+        return (l_id, l_idx, l_pt)
     else:
         return None
 

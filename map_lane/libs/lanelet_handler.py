@@ -36,9 +36,9 @@ class LaneletHandler:
         idnidx = gput.lanelet_matching(obs_pos)
         if idnidx is not None:
             waypoints = gput.lanelets[idnidx[0]]['waypoints']
-            curr_lane_num = gput.lanelets[idnidx[0]]['laneNo']
-            if curr_lane_num < 3:
-                return None            
+            # curr_lane_num = gput.lanelets[idnidx[0]]['laneNo']
+            # if curr_lane_num < 3:
+            #     return None            
 
             next_idx = idnidx[1]+3 if idnidx[1]+3 < len(waypoints)-4 else len(waypoints)-4
             
@@ -49,20 +49,26 @@ class LaneletHandler:
             delta_y = next_point[1] - prev_point[1]
             
             heading = math.degrees(math.atan2(delta_y, delta_x))
+            waypoint = idnidx[2]
 
-            return heading
+            return heading, waypoint
         else:
             return None
             
 
     def refine_obstacles_heading(self,local_pose,  obstacle_lists):
         refine_obstacles = []
-        for obs_list in obstacle_lists:
+        for i, obs_list in enumerate(obstacle_lists):
             for obs in obs_list:
                 refine_heading = self.refine_heading_by_lane([obs[1], obs[2]]) # insert x,y
                 if refine_heading is not None:
-                    distance = self.distance(local_pose[0], local_pose[1], obs[1], obs[2])
-                    refine_obs = [obs[0], obs[1], obs[2], obs[3], refine_heading, distance]
+                    if i == 0:
+                        x, y = refine_heading[1]
+                    else:
+                        x, y = obs[1], obs[2]
+                    distance = self.distance(local_pose[0], local_pose[1],x,y)
+                    
+                    refine_obs = [obs[0],x,y, obs[3], refine_heading[0], distance]
                     refine_obstacles.append(refine_obs)
                 else:
                     continue

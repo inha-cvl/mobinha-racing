@@ -17,14 +17,17 @@ def LaneletMapViz(lanelet, for_viz):
             array.markers.append(marker)
 
     for n, (points, type_) in enumerate(for_viz):
-        if type_ == 'stop_line':
-            marker = Bound('for_viz', n, n, points,'solid',  1, (255/255, 123/255, 66/255, 1.0))
+        if type_ == 'start_line':
+            marker = Bound('for_viz', n, n, points,'solid',  2, (255/255, 123/255, 66/255, 1.0))
             array.markers.append(marker)
         elif type_ == 'goal_line':
             marker = Bound('for_viz', n, n, points,'solid', 2, (238/255, 255/255, 5/255, 1.0))
             array.markers.append(marker)
         elif type_ == 'bank_line':
-            marker = Bound('for_viz', n, n, points, 'solid', 1, (5/255, 197/255, 255/255, 1.0))
+            marker = Bound('for_viz', n, n, points, 'solid', 2, (5/255, 197/255, 255/255, 1.0))
+            array.markers.append(marker)
+        elif type_ == 'stop_line':
+            marker = Bound('for_viz', n, n, points,'solid',  1, (1.0, 1.0, 1.0, 1.0))
             array.markers.append(marker)
         else:
             marker = Bound('for_viz', n, n, points, type_, 0.15, (1.0, 1.0, 1.0, 1.0))

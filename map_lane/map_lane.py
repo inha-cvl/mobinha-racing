@@ -24,7 +24,7 @@ class MapLane():
         self.max_vel = 30
         self.stacked_refine_obstacles = []
         self.obstacle_timestamps = []
-        self.remian_duration = 3
+        self.remian_duration = 0.05
 
     def map_publish(self):
         self.RH.publish_map_viz(self.map.lmap_viz, self.map.mlmap_viz)
@@ -71,7 +71,8 @@ class MapLane():
             
             refine_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles])
             self.update_obstacles(refine_obstacles)
-            self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
+            #self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
+            self.RH.publish_refine_obstacles(refine_obstacles)
             
             lane_data, lane_id = self.llh.get_lane_number(self.RH.local_pose)
 

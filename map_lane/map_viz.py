@@ -5,7 +5,7 @@ from hd_map.map import MAP
 
 rospy.init_node('Map', anonymous=False)
 
-map = MAP('KIAPI_Racing')
+map = MAP('KIAPI_Racing_Fast')
 lmap_viz = map.lmap_viz
 mlmap_viz = map.mlmap_viz
 

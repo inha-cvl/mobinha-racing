@@ -134,6 +134,7 @@ class NGII2LANELET:
         from_node = {}
 
         stoplines = {}
+        startlines = {}
         goallines = {}
         banklines = {}
         safetysigns = {}
@@ -330,6 +331,15 @@ class NGII2LANELET:
 
                     banklines[stopline_id] = lines
                     for_vis.append([lines, 'bank_line'])
+                elif b2_surfacelinemark.Kind == '533':  #bank
+                    stopline_id = b2_surfacelinemark.ID
+                    lines = []
+                    for tx, ty, alt in b2_surfacelinemark.geometry.coords:
+                        x, y, z = self.to_cartesian(tx, ty, alt)
+                        lines.append((x, y))
+
+                    startlines[stopline_id] = lines
+                    for_vis.append([lines, 'start_line'])
 
 
         for id_, data in lanelets.items():
@@ -365,6 +375,7 @@ class NGII2LANELET:
         self.map_data['groups'] = groups
         self.map_data['for_vis'] = for_vis
         self.map_data['stoplines'] = stoplines
+        self.map_data['startlines'] = startlines
         self.map_data['goallines'] = goallines
         self.map_data['banklines'] = banklines
         self.map_data['safetysigns'] = safetysigns
