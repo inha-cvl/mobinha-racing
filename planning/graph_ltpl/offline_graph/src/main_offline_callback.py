@@ -70,7 +70,7 @@ def main_offline_callback(globtraj_param_path: str,
         if force_recalc:
             print("Manually forced recalculation of graph! Skipped graph import from file!")
         if graph_base is not None and calculated_md5 is not graph_base.md5_params:
-            print("MD5-Sum of any param-file does not match the one in the graph object! Triggered recalculation!")
+            print("Graph Object Recalculation!")
 
         # load graph configuration
         graph_config = configparser.ConfigParser()

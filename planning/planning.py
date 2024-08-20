@@ -28,13 +28,15 @@ class Planning():
         self.RH = ROSHandler()
         self.gmv = None
         self.gpp = None
-        self.setting_values()
+        self.setting_values(rospy.get_param("/now_lap"))
 
-    def setting_values(self):
+    def setting_values(self, now_lap):
         self.shutdown_event = threading.Event()
 
-        self.specifiers = ['to_goal', 'race']
+        #self.specifiers = ['to_goal_solchan', 'race_solchan']
+        self.specifiers = ['to_goal_fast', 'race_fast']
         self.race_mode = self.specifiers[0]
+        self.prev_race_mode = self.race_mode
 
         start_time = time.time()
         to_goal_path_dict = self.get_path_dict(self.specifiers[0])
@@ -46,12 +48,22 @@ class Planning():
         self.ltpl_obj = None
         rospy.loginfo(f'[Planning] {self.specifiers} Global Path set took {round(time.time()-start_time, 4)} sec')
 
+
         self.start_pose_initialized = False
         self.first_initialized = False
+        self.prev_target_vel = 0
+        self.first_lap = 0
+        self.slow_mode = 'OFF'
         
+
         self.local_action_set = []
-        self.prev_lap = rospy.get_param('/now_lap')
+        self.prev_lap = now_lap
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
+        self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
+        self.bank_list = ['37','43','44','80','79','78','63','62','61','54','59','60',
+                          '40','41','42','45','46','47','2','5','4','50','49','48',
+                          '14', '13', '12','1','10','11']
+
 
         self.gpp = GlobalPathPlanner(self.RH.map_name)
         
@@ -66,7 +78,7 @@ class Planning():
                     'graph_log_id': datetime.datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
                     }
         return path_dict
-
+    
     def check_planning_state(self):
         planning_state = 'NONE'
         race_mode = self.race_mode
@@ -74,15 +86,25 @@ class Planning():
         if self.first_initialized == False:
             race_mode = 'to_goal'
             planning_state = 'INIT'
-        elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 5 and self.race_mode != 'pit_stop': #If pass the goal point, 
+            self.first_lap = self.RH.lap_count
+        elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 10 and self.race_mode != 'pit_stop': #If pass the goal point, 
             self.start_pose_initialized = False
             self.prev_lap = self.RH.lap_count
             race_mode = 'race'
             planning_state = 'INIT'
-        elif (self.RH.lap_count >= 5 or self.RH.kiapi_signal == 5 )and self.race_mode != 'pit_stop':
+        elif self.RH.kiapi_signal == 5 and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
             race_mode = 'pit_stop'
             planning_state = 'INIT'
+        elif self.RH.kiapi_signal == 2 and self.race_mode != 'stop':
+            race_mode = 'stop'
+        elif self.RH.kiapi_signal == 3 and self.race_mode != 'slow_on':
+            self.prev_race_mode = self.race_mode
+            race_mode = 'slow_on'
+        elif self.RH.kiapi_signal == 4 and self.race_mode != 'slow_off':
+            race_mode = self.prev_race_mode
+            self.slow_mode = 'OFF'
+
         if self.start_pose_initialized == True:
             planning_state = 'MOVE'
 
@@ -100,11 +122,11 @@ class Planning():
         _, start_node, g_path = ltpl_obj.set_startpos(pos_est=self.RH.local_pos, heading_est=math.radians(self.RH.
         current_heading))
         if start_node is not None:
+            self.gmv = GetMaxVelocity(self.RH, race_mode)
             self.start_pose_initialized = True
             self.first_initialized = True
-            self.traj_set = {'follow': None}
+            self.traj_set = {'straight': None}            
             self.ltpl_obj = ltpl_obj
-            self.gmv = GetMaxVelocity(self.RH, race_mode)
             self.RH.publish_global_path(g_path)
             rospy.loginfo(f'[Planning] {race_mode} Start position set took {round(time.time()-start_time, 4)} sec')
     
@@ -117,6 +139,58 @@ class Planning():
             self.pit_stop_obj.graph_init()
             self.start_pose_initialized = False
             rospy.loginfo(f'[Planning] pit_stop Global Path set took {round(time.time()-start_time, 4)} sec')
+        
+    def check_bank(self):
+        if self.RH.current_lane_id in self.bank_list:
+            return True
+        else:
+            return False
+    
+    def calculate_road_max_vel(
+        self, 
+        local_action_set,
+        stop_vel_decrement=0.1,               # 기본값 0.1
+        slow_vel=10/3.6,                      # 기본값 10/3.6 (약 2.78 m/s)
+        slow_mode_threshold=0.1,              # 기본값 0.1
+        interval_divisor_base=4.6,              # 기본값 5
+        interval_factor=8.6                   # 기본값 9.6
+    ):
+        # 기본 조건: set_go가 False일 경우
+        if not self.RH.set_go:
+            return 0
+
+        # 'stop' 모드 처리
+        if self.race_mode == 'stop':
+            if not self.check_bank():
+                return -1
+            if len(local_action_set) > 2:
+                return local_action_set[1][5]
+            return self.prev_target_vel - stop_vel_decrement
+
+        # 'slow_on' 모드 처리
+        elif self.race_mode == 'slow_on':
+            if not self.check_bank():
+                road_max_vel = slow_vel
+                if self.RH.current_velocity <= road_max_vel + slow_mode_threshold:
+                    self.slow_mode = 'ON'
+                return road_max_vel
+            if self.slow_mode == 'ON':
+                return slow_vel
+            if len(local_action_set) > 2:
+                return local_action_set[1][5]
+            return self.prev_target_vel - stop_vel_decrement
+
+        # 'pit_stop' 모드 처리
+        elif self.race_mode == 'pit_stop' and 1 < len(local_action_set) < 40:
+            interval = self.RH.current_velocity / (len(local_action_set) / (interval_divisor_base + (self.RH.current_velocity / interval_factor)))
+            return max(self.RH.current_velocity - interval, 0)
+
+        # 일반적인 경우 처리
+        if len(local_action_set) < 2:
+            return max(self.prev_target_vel - stop_vel_decrement, 0)
+        
+        return local_action_set[1][5]
+
 
     def initd(self):
         rate = rospy.Rate(20)
@@ -135,6 +209,13 @@ class Planning():
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             while self.first_initialized:
+
+                if self.RH.current_signal == 5:
+                    rospy.loginfo("[Planning] Current signal is 5, resetting to initial state.")
+                    self.setting_values(self.prev_lap)  # 초기화
+                    self.RH.set_values()
+                    break  # 루프를 다시 시작하기 위해 중단
+                
                 for sel_action in [ "right", "left", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
@@ -148,23 +229,18 @@ class Planning():
                 self.traj_set = self.ltpl_obj.calc_vel_profile(
                                                 pos_est=self.RH.local_pos,
                                                 vel_est=self.RH.current_velocity,
-                                                vel_max=80/3.6,
-                                                safety_d=30)[0]
+                                                vel_max=self.max_vel,
+                                                safety_d=5)[0]
                 
-                # Set Target Velocity
-                if not self.RH.set_go:
-                    road_max_vel = 0
+                road_max_vel = self.calculate_road_max_vel(local_action_set)
+                if len(local_action_set) > 0 and len(local_action_set[:]) > 5:
+                    target_velocity = self.gmv.smooth_velocity_plan(local_action_set[:][5], self.prev_target_vel,road_max_vel)[1]
                 else:
-                    max_vel = self.gmv.get_max_velocity(self.RH.local_pos)
-                    if self.RH.lap_count == 0 : # 1 lap under 30 km/h 
-                        road_max_vel = min(42/3.6, max_vel)
-                    else:
-                        road_max_vel = max_vel
-                self.RH.publish(local_action_set, road_max_vel)
+                    target_velocity = road_max_vel
+                self.prev_target_vel = target_velocity
+                self.RH.publish(local_action_set, target_velocity)
 
-                rate.sleep()
-            rate.sleep()
-            
+                rate.sleep()            
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)

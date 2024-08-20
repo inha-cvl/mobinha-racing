@@ -31,8 +31,9 @@ class ROSHandler():
         self.transformer = None
         self.current_lat_accel = 0
         self.current_long_accel = 0
+        self.current_lane_id = None
         self.lap_count = 0
-        self.map_name = 'KIAPI_Racing_Fast'
+        self.map_name = None
 
 
     def set_publisher_protocol(self):
@@ -44,6 +45,7 @@ class ROSHandler():
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
+        rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
 
     def system_status_cb(self, msg):
@@ -55,6 +57,9 @@ class ROSHandler():
         #0:None, 1:Go, 2:Stop, 3:Slow On, 4:Slow Off, 5:Pit Stop
         if not self.set_go and self.kiapi_signal == 1:
             self.set_go = True
+        
+    def lane_data_cb(self, msg):
+        self.current_lane_id = str(msg.currentLane.id.data)
     
     def vehicle_state_cb(self, msg):
         self.current_velocity = msg.velocity.data
@@ -77,9 +82,10 @@ class ROSHandler():
         self.object_list = object_list
 
     def publish(self, local_action_set, road_max_vel):
+        
         if local_action_set is not None and len(local_action_set) > 0:
             self.navigation_data = NavigationData()
-            self.navigation_data.targetVelocity.data = min(local_action_set[1][5], road_max_vel)
+            self.navigation_data.targetVelocity.data = road_max_vel
             for set in local_action_set:
                 point = Point()
                 point.x = set[1]

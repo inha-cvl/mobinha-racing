@@ -347,7 +347,6 @@ class GraphBase(object):
             ref_radius = limit * limit
             idx = np.argwhere(distances2 < ref_radius).reshape(1, -1)[0]
 
-        # get actual distances of those k nodes
         distances = np.sqrt(distances2[idx])
 
         # return matching node ids (layer and node number)

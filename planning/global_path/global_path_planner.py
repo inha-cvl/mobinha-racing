@@ -1,9 +1,13 @@
 import os
 import copy
 import csv
+import numpy as np
 
 import global_path.libs.gp_utils as gput
 import global_path
+
+from scipy.interpolate import splprep, splev, interp1d
+
 
 class GlobalPathPlanner():
     def __init__(self, map_name):
@@ -25,6 +29,23 @@ class GlobalPathPlanner():
             writer.writerow(['#x', 'y', 'w_right', 'w_left', 'x_normvec', 'y_normvec', 'alpha', 's', 'psj', 'kappa', 'vx', 'ax'])
             for tri in trajectory_info:
                 writer.writerow(tri)
+    
+    def interpolate_path(self, path, sample_rate = 3, smoothing_factor = 30.0, interp_points=10):
+        local_path = np.array([(point[0], point[1]) for point in path])
+
+        sampled_indices = np.arange(0, len(local_path), sample_rate)
+        sampled_local_path = local_path[sampled_indices]
+        tck, u = splprep([sampled_local_path[:, 0], sampled_local_path[:, 1]], s=smoothing_factor)
+        t_new = np.linspace(0, 1, len(sampled_local_path) * interp_points)
+        path_interp = np.array(splev(t_new, tck)).T
+        # 보간된 경로를 원래 경로 길이로 리샘플링
+        original_length = len(local_path)
+        resampled_indices = np.linspace(0, len(path_interp) - 1, original_length).astype(int)
+        resampled_path = path_interp[resampled_indices]
+
+        interp_path = resampled_path.tolist()
+    
+        return interp_path
 
     def get_shortest_path(self, start, goal, name): 
         start_ll = gput.lanelet_matching(start)
@@ -42,6 +63,7 @@ class GlobalPathPlanner():
             shortest_path_id = shortest_path_id[0]
             final_path, final_ids, final_vs = gput.node_to_waypoints(shortest_path_id, start_ll, goal_ll)
             final_tr = []
+            final_path = self.interpolate_path(final_path)
             copy_final_path = copy.deepcopy(final_path)
             copy_final_path.insert(0, final_path[0])
             copy_final_path.append(final_path[-1])

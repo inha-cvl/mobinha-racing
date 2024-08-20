@@ -219,7 +219,7 @@ class OnlineTrajectoryHandler(object):
             # raise ValueError("VEHICLE SEEMS TO BE OUT OF TRACK!")
 
         # -- SELECT INITIAL PLANNING NODE ------------------------------------------------------------------------------
-        closest_nodes, distance = self.__graph_base.get_closest_nodes(pos=start_pos, limit=1)
+        closest_nodes, distance = self.__graph_base.get_closest_nodes(pos=start_pos, limit=100, fixed_amount=False)
 
         # determine goal node two layers ahead
         goal_layer = (closest_nodes[0][0]) % (self.__graph_base.num_layers - 1)

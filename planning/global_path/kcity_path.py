@@ -11,7 +11,7 @@ import global_path
 import global_path.libs.gp_utils as gput
 
 rospy.init_node('GlobalPath', anonymous=False)
-target = 'race'
+target = 'race_kcity'
 pub_global_path = rospy.Publisher(f'/{target}_path', Marker, queue_size=1)
 
 diag_len = 25
@@ -24,14 +24,14 @@ gput.tile_size = map.tile_size
 gput.graph = map.graph
 gput.lane_width = lane_width
 
-start_pose = [156.302, 53.070] #a littel behind goal position
+start_pose = [167.259, 55.401] #a littel behind goal position
 final_path = []
 final_ids = []
 final_vs = []
 
 
 start_ll = gput.lanelet_matching(start_pose)
-r1, idnidx1, ids1, vs1 = gput.get_straight_path(start_ll, 13000, '296', 'Left')
+r1, idnidx1, ids1, vs1 = gput.get_straight_path(start_ll, 8500, '264', 'Left')
 # idnidx2 = gput.get_merged_point(idnidx1, diag_len, 1)
 # r2, idnidx3, ids2, vs2 = gput.get_straight_path(idnidx2, 5000, '76', 'Right')
 # idnidx4 = gput.get_merged_point(idnidx3, diag_len, 2)
@@ -63,7 +63,7 @@ for i,f in enumerate(final_path):
     s += 1
 
 top_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-file_path = f'{top_path}/inputs/traj_ltpl_cl/traj_ltpl_cl_race2.csv'
+file_path = f'{top_path}/inputs/traj_ltpl_cl/traj_ltpl_cl_{target}.csv'
 global_path.libs.save_.to_csv(file_path, final_tr)
 print("saved")
 
