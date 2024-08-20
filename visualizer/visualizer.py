@@ -78,7 +78,9 @@ class Visualizer:
         objs = []
         for obj in msg.objects:
             objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.distance.data])
-        viz_objects = ObjectsViz(objs)
+        
+        filtered_objs = self.filter_duplicates(objs)
+        viz_objects = ObjectsViz(filtered_objs)
         self.pub_objects_viz.publish(viz_objects)
     
     def filter_duplicates(self, objs):
