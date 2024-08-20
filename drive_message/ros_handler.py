@@ -67,7 +67,6 @@ class ROSHandler():
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
 
         # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
-        # rospy.Subscriber('/localization/heading', Float32, self.localization_heading_cb)
         rospy.Subscriber('/best/pose', Pose, self.best_callback)
 
         # if not USE_LIDAR:
@@ -122,8 +121,6 @@ class ROSHandler():
         self.vehicle_state.heading.data = msg.orientation.z%360
         self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
-
-
     
     def nav_pvt_cb(self, msg):
         # heading = float(msg.heading*1e-5)
@@ -167,9 +164,6 @@ class ROSHandler():
         self.system_status.systemMode.data = mode
         self.system_status.systemSignal.data = int(msg.user_signal.data)
         self.system_status.kiapiSignal.data = int(msg.kiapi_signal.data)
-    
-    def localization_heading_cb(self, msg):
-        self.localization_heading = msg.data
 
     def target_actuator_cb(self, msg):
         steer = np.clip(msg.steer.data*12.9, -500, 500)
