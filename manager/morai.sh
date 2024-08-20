@@ -12,4 +12,6 @@ python3 map_lane.py &
 cd ../simulator/
 python3 morai.py & 
 cd ../control/
-python3 control.py
+python3 control.py &
+cd ../planning/
+python3 planning.py

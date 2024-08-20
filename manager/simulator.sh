@@ -16,4 +16,4 @@ python3 car_simulator.py &
 cd ../control/
 python3 control.py &
 cd ../planning/
-python3 planning3.py
+python3 planning.py
