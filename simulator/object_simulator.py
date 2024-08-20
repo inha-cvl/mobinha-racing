@@ -44,7 +44,7 @@ class ObjectSimulator:
         dt = 0.05
         while not rospy.is_shutdown():
             if self.object_ready:
-                if time.time()-start_time > 3:
+                if time.time()-start_time > 15:
                     self.object_ready = False
                     vel = 0
                 x,y,yaw,v = self.object.next_state(dt, self.object.yaw, self._accel, self._brake)

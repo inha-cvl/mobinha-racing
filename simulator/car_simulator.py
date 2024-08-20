@@ -68,6 +68,10 @@ class CarSimulator:
             self.ego = Vehicle(559.144, -112.223, 3.074, 0, wheelbase)
         elif map == 'KIAPI_Racing' or map == 'KIAPI_Racing_Fast':
             self.ego = Vehicle(10.759, 2.147, -2.99, 0, wheelbase)
+        elif map == 'KCity':
+            self.ego = Vehicle(167.259, 55.401, 2.810, 0, wheelbase)
+        elif map == 'Solchan':
+            self.ego = Vehicle(-0.881, -1.105, 0.829, 0, wheelbase)
 
     def run(self):
         rate = rospy.Rate(20)
@@ -106,6 +110,7 @@ class CarSimulator:
                 2:['Off','Off','On'],
                 3:['Off','On','Off'],
                 4:['Off', 'Off', 'Off'],
+                5:['Off', 'Off', 'Off']
             }
             turn_sig = signal_to_turn.get(self.signal)
             can_output.Turn_Left_En.data = turn_sig[0]
