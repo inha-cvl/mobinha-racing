@@ -319,53 +319,6 @@ image-position:top;
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="buttonRight">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>60</height>
-                    </size>
-                   </property>
-                   <property name="cursor">
-                    <cursorShape>PointingHandCursor</cursorShape>
-                   </property>
-                   <property name="autoFillBackground">
-                    <bool>false</bool>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">border-color: rgb(245, 121, 0);</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset>
-                     <normaloff>../icon/right.png</normaloff>../icon/right.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>60</width>
-                     <height>60</height>
-                    </size>
-                   </property>
-                   <property name="shortcut">
-                    <string>Right</string>
-                   </property>
-                   <property name="autoDefault">
-                    <bool>false</bool>
-                   </property>
-                   <property name="flat">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <widget class="QPushButton" name="buttonLeftRight">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -413,7 +366,7 @@ image-position:top;
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="buttonUp">
+                  <widget class="QPushButton" name="buttonRight">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                      <horstretch>0</horstretch>
@@ -440,7 +393,7 @@ image-position:top;
                    </property>
                    <property name="icon">
                     <iconset>
-                     <normaloff>../icon/up.png</normaloff>../icon/up.png</iconset>
+                     <normaloff>../icon/right.png</normaloff>../icon/right.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -449,7 +402,7 @@ image-position:top;
                     </size>
                    </property>
                    <property name="shortcut">
-                    <string>Up</string>
+                    <string>Right</string>
                    </property>
                    <property name="autoDefault">
                     <bool>false</bool>
@@ -794,7 +747,104 @@ image-position:top;
          </item>
          <item>
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="0">
+           <item row="1" column="1">
+            <widget class="QTabWidget" name="tabWidgetLane">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>1</horstretch>
+               <verstretch>1</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="LaneData">
+              <attribute name="title">
+               <string>Lane Data</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <item>
+                <widget class="QWidget" name="widget_8" native="true">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_11">
+                  <item>
+                   <widget class="QLabel" name="laneNumberLabel">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>50</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Ubuntu</family>
+                      <pointsize>12</pointsize>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="focusPolicy">
+                     <enum>Qt::NoFocus</enum>
+                    </property>
+                    <property name="contextMenuPolicy">
+                     <enum>Qt::DefaultContextMenu</enum>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QLabel {border: 2px solid black;
+                border-radius: 5px;}</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="indent">
+                     <number>30</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item row="1" column="0" rowspan="2">
             <widget class="QTabWidget" name="tabWidgetCluster">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -925,100 +975,41 @@ image-position:top;
              </widget>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QTabWidget" name="tabWidgetLane">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
+           <item row="2" column="1">
+            <widget class="QTabWidget" name="tabWidget_2">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>1</horstretch>
-               <verstretch>4</verstretch>
+               <verstretch>3</verstretch>
               </sizepolicy>
              </property>
-             <property name="currentIndex">
-              <number>0</number>
-             </property>
-             <widget class="QWidget" name="LaneData">
+             <widget class="QWidget" name="tab_5">
               <attribute name="title">
-               <string>Lane Data</string>
+               <string>Reset</string>
               </attribute>
-              <layout class="QVBoxLayout" name="verticalLayout_12">
+              <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
-                <widget class="QWidget" name="widget_8" native="true">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
+                <widget class="QPushButton" name="resetButton">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_11">
-                  <item>
-                   <widget class="QLabel" name="laneNumberLabel">
-                    <property name="enabled">
-                     <bool>true</bool>
-                    </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>50</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>Ubuntu</family>
-                      <pointsize>12</pointsize>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="focusPolicy">
-                     <enum>Qt::NoFocus</enum>
-                    </property>
-                    <property name="contextMenuPolicy">
-                     <enum>Qt::DefaultContextMenu</enum>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">QLabel {border: 2px solid black;
-                border-radius: 5px;}</string>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignCenter</set>
-                    </property>
-                    <property name="indent">
-                     <number>30</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Expanding</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>100</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
+                 <property name="font">
+                  <font>
+                   <family>Ubuntu Condensed</family>
+                   <pointsize>13</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background-color: rgb(238, 238, 236);</string>
+                 </property>
+                 <property name="text">
+                  <string>Reset</string>
+                 </property>
                 </widget>
                </item>
               </layout>

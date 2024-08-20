@@ -128,6 +128,10 @@ class MyApp(QMainWindow, form_class):
     def click_signal(self, v):
         self.RH.user_value['user_signal'] = v
         self.check_timer()
+    
+    def click_reset(self):
+        self.RH.user_value['user_signal'] = 5
+        self.check_timer()
 
     # KIAPI CAN signal
     def click_kiapi_signal(self, signal_value):
@@ -165,11 +169,12 @@ class MyApp(QMainWindow, form_class):
         top_buttons1 = [self.buttonOff, self.buttonOn, self.buttonACCOnly, self.buttonEPSOnly]
         for i, button in enumerate(top_buttons1):
             button.clicked.connect(partial(self.click_mode, int(i)))
-        top_buttons2 = [None,self.buttonLeft, self.buttonRight, self.buttonLeftRight, self.buttonUp]
-        for i in range(1,5):
+        top_buttons2 = [None,self.buttonLeft, self.buttonRight, self.buttonLeftRight]
+        for i in range(1,4):
             top_buttons2[i].clicked.connect(partial(self.click_signal, int(i)))
         for i in range(1,6):
             self.kiapi_signal_buttons[i].clicked.connect(partial(self.click_kiapi_signal, int(i)))
+        self.resetButton.clicked.connect(self.click_reset)
 
 def main():
     app = QApplication(sys.argv)
