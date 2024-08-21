@@ -272,7 +272,7 @@ class DR_BICYCLE:
         last = self.RH.nav_header_last.stamp
         self.dt = now.to_sec() - last.to_sec() # [sec]
 
-    def calculate_nextpos(self, best_hdg_last, best_pos_last, nav_valid):
+    def calculate_nextstep(self, best_hdg_last, best_pos_last, nav_valid):
         if nav_valid:
             delta_rad = math.radians(self.RH.can_steer_last)
 
@@ -292,7 +292,7 @@ class DR_BICYCLE:
     def run(self, best_heading_last, best_pos_last, nav_valid): 
         if self.check_msg_valid():
             self.calculate_dt()
-            self.calculate_nextpos(best_heading_last, best_pos_last, nav_valid) 
+            self.calculate_nextstep(best_heading_last, best_pos_last, nav_valid) 
 
 class BestLocalization:
     def __init__(self):
@@ -410,7 +410,7 @@ class BestLocalization:
             self.best_heading = self.p_nav_heading
         else:
             print("nav not valid !!!!")
-            self.best_heading = (self.p_imu_heading*imu_weight + self.p_dr_heading*dr_weight)/(imu_weight+dr_weight)
+            self.best_heading = (self.p_imu_heading*imu_weight + self.p_dr_heading*dr_weight)/(imu_weirght+dr_weight)
 
     def integrate_position(self, hz):
         self.nav_valid = self.valid_pos(self.nav_pos_last, self.nav_pos, hz)

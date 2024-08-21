@@ -19,53 +19,53 @@ class BestLocalization:
         self.DR = DR_BICYCLE(self.RH)
         self.IH = ImuHeading(self.RH)
 
-        self.nav_heading = None
+        self.nav_hdg = None
         self.nav_pos = None
-        self.dr_heading = None
+        self.dr_hdg = None
         self.dr_pos = [None, None]
-        self.imu_heading = None
+        self.imu_hdg = None
 
-        self.best_heading = None
+        self.best_hdg = None
         self.best_pos = [None, None]
         
-        self.nav_heading_last = None
+        self.nav_hdg_last = None
         self.nav_pos_last = [None, None]
-        self.dr_heading_last = None
+        self.dr_hdg_last = None
         self.dr_pos_last = [None, None]
-        self.imu_heading_last = None
+        self.imu_hdg_last = None
 
-        self.best_heading_last = None
+        self.best_hdg_last = None
         self.best_pos_last = [None, None]
 
         self.nav_cw_cnt = 0
         self.imu_cw_cnt = 0
         self.dr_cw_cnt = 0
-        self.p_nav_heading = None
-        self.p_imu_heading = None
-        self.p_dr_heading = None
+        self.p_nav_hdg = None
+        self.p_imu_hdg = None
+        self.p_dr_hdg = None
 
         self.nav_hdg_valid = True
         self.nav_pos_valid = True
 
         self.llh = [None, None]
         
-    def update_sensors1(self):
-        self.nav_heading_last = self.RH.nav_heading_last
+    def update_sensors1(self): # sensor values update
+        self.nav_hdg_last = self.RH.nav_hdg_last
         self.nav_pos_last = self.RH.nav_pos_last
 
-        self.nav_heading = self.RH.nav_heading
+        self.nav_hdg = self.RH.nav_hdg
         self.nav_pos = self.RH.nav_pos
 
-    def update_sensors2(self):
-        self.dr_heading_last = self.dr_heading
+    def update_sensors2(self): # calculated values update
+        self.dr_hdg_last = self.dr_hdg
         self.dr_pos_last = self.dr_pos
-        self.imu_heading_last = self.imu_heading
-        self.best_heading_last = self.best_heading
+        self.imu_hdg_last = self.imu_hdg
+        self.best_hdg_last = self.best_hdg
         self.best_pos_last = self.best_pos
 
-        self.dr_heading = self.DR.dr_heading
+        self.dr_hdg = self.DR.dr_hdg
         self.dr_pos = self.DR.dr_pos
-        self.imu_heading = self.IH.imu_corr_heading
+        self.imu_hdg = self.IH.imu_corr_heading
     
     def valid_hdg(self, hdg_last, hdg_now, threshold): # not used yet, variable 'diff' needs field test
         if None in [hdg_last, hdg_now]:
@@ -86,43 +86,37 @@ class BestLocalization:
 
         return result
         
-    def heading_postprocess(self):
-        if self.nav_heading - self.nav_heading_last < -355:
+    def hdg_postprocess(self):
+        if self.nav_hdg - self.nav_hdg_last < -355:
             self.nav_cw_cnt -= 1
-        if self.nav_heading - self.nav_heading_last > 355:
+        if self.nav_hdg - self.nav_hdg_last > 355:
             self.nav_cw_cnt += 1
-        self.p_nav_heading = self.nav_heading - self.nav_cw_cnt * 360
+        self.p_nav_hdg = self.nav_hdg - self.nav_cw_cnt * 360
 
-        if self.imu_heading - self.imu_heading_last < -355:
+        if self.imu_hdg - self.imu_hdg_last < -355:
             self.imu_cw_cnt -= 1
-        if self.imu_heading - self.imu_heading_last > 355:
+        if self.imu_hdg - self.imu_hdg_last > 355:
             self.imu_cw_cnt += 1
-        self.p_imu_heading = self.imu_heading - self.imu_cw_cnt * 360
+        self.p_imu_hdg = self.imu_hdg - self.imu_cw_cnt * 360
 
-        if self.dr_heading - self.dr_heading_last < -355:
+        if self.dr_hdg - self.dr_hdg_last < -355:
             self.dr_cw_cnt -= 1
-        if self.dr_heading - self.dr_heading_last > 355:
+        if self.dr_hdg - self.dr_hdg_last > 355:
             self.dr_cw_cnt += 1
-        self.p_dr_heading = self.dr_heading - self.dr_cw_cnt * 360
+        self.p_dr_hdg = self.dr_hdg - self.dr_cw_cnt * 360
 
-    def integrate_heading(self, hz):
-        self.nav_hdg_valid = self.valid_hdg(self.best_heading_last, self.nav_heading, 20)
-        imu_valid = self.valid_hdg(self.best_heading_last, self.imu_heading, 5)
-        dr_valid = self.valid_hdg(self.best_heading_last, self.dr_heading, 5)
+    def integrate_hdg(self, hz):
+        self.nav_hdg_valid = self.valid_hdg(self.best_hdg_last, self.nav_hdg, 20)
+        imu_valid = self.valid_hdg(self.best_hdg_last, self.imu_hdg, 5)
+        dr_valid = self.valid_hdg(self.best_hdg_last, self.dr_hdg, 5)
 
-        imu_weight = 0.5
-        dr_weight = 0.0
-        if not imu_valid:
-            imu_weight = 0
-        if not dr_valid:
-            dr_weight = 0
         
         if self.nav_hdg_valid:
-            self.best_heading = self.p_nav_heading
-            print_result = "navatt_heading"
+            self.best_hdg = self.p_nav_hdg
+            print_result = "navatt_hdg"
         else:
-            self.best_heading = (self.p_imu_heading*imu_weight + self.p_dr_heading*dr_weight)/(imu_weight+dr_weight)
-            print_result = "imu+dr_heading"
+            self.best_hdg = self.p_dr_hdg
+            print_result = "ddreck_hdg"
 
         return print_result, [self.nav_hdg_valid, imu_valid, dr_valid]
 
@@ -145,16 +139,16 @@ class BestLocalization:
     def initiate(self):
         if not self.initiated:
             key1, key2 = False, False
-            # while self.nav_heading_last is None:
+            # while self.nav_hdg_last is None:
             while 1:
-                self.best_heading = self.nav_heading
+                self.best_hdg = self.nav_hdg
                 self.best_pos = self.nav_pos
                 self.update_sensors1()
                 self.update_sensors2()
                 
-                if self.best_heading is not None and self.best_pos[0] is not None:
+                if self.best_hdg is not None and self.best_pos[0] is not None:
                     key1 = True
-                if self.best_heading_last is not None and self.best_pos_last[0] is not None:
+                if self.best_hdg_last is not None and self.best_pos_last[0] is not None:
                     key2 = True
                 if key1 and key2:
                     self.initiated = True
@@ -168,32 +162,32 @@ class BestLocalization:
             self.initiate()
 
             self.update_sensors1()
-            self.DR.run(self.best_heading_last, self.best_pos_last)
-            self.IH.run(self.best_heading, self.nav_hdg_valid)
+            self.DR.run(self.best_hdg_last, self.best_pos_last)
+            self.IH.run(self.best_hdg, self.nav_hdg_valid)
             self.update_sensors2()
 
-            heading_source, position_source = "not determined", "not determined"
+            hdg_source, position_source = "not determined", "not determined"
 
-            if None not in [self.nav_heading_last, self.imu_heading_last, self.dr_heading_last]:
-                self.heading_postprocess()
-                heading_source, heading_validity = self.integrate_heading(20)      
+            if None not in [self.nav_hdg_last, self.imu_hdg_last, self.dr_hdg_last]:
+                self.hdg_postprocess()
+                hdg_source, hdg_validity = self.integrate_hdg(20)      
 
             if self.nav_pos_last[0] is not None and self.dr_pos_last[0] is not None:
                 position_source, position_validity = self.integrate_position(20)
 
-            if None not in [self.best_heading, self.best_pos[0]]:
-                self.RH.publish(self.best_heading, self.best_pos)
+            if None not in [self.best_hdg, self.best_pos[0]]:
+                self.RH.publish(self.best_hdg, self.best_pos)
             
             if position_source == "deadrk_position":
                 print("dead reckoning")
             
             try:
                 str1 = "-------------------------------------------\n"
-                str2 = f"nav:{heading_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
-                str3 = f"imu:{heading_validity[1]} | {self.best_heading%360:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
-                str4 = f"dr :{heading_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
-                str5 = f"HDG SOURCE : {heading_source} | POS SOURCE : {position_source}\n"
-                if heading_source == "imu+dr_heading" or position_source == "deadrk_position":
+                str2 = f"nav:{hdg_validity[0]} | BEST HDG         | nav:{position_validity[0]} | BEST POS\n"
+                str3 = f"imu:{hdg_validity[1]} | {self.best_hdg%360:3.4f}         |          | {self.best_pos[0]:3.4f}\n"
+                str4 = f"dr :{hdg_validity[2]} |                  | dr :{position_validity[1]} | {self.best_pos[1]:3.4f}\n"
+                str5 = f"HDG SOURCE : {hdg_source} | POS SOURCE : {position_source}\n"
+                if hdg_source == "imu+dr_hdg" or position_source == "deadrk_position":
                     str6 = f"NOT NAV"
                 # print(str1+str2+str3+str4+str5+str6)
             except:
