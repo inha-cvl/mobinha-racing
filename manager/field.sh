@@ -4,7 +4,7 @@ sleep 1
 cd ../ui/
 python3 ui.py & 
 cd ../localization/
-python3 localization.py &
+python3 localization_new.py &
 cd ../visualizer
 python3 visualizer.py &
 cd ../drive_message/
@@ -21,4 +21,4 @@ python3 control.py &
 # cd ../perception/
 # python3 perception.py &
 cd ../planning/
-python3 planning2.py 
+python3 planning.py 
