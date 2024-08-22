@@ -47,7 +47,8 @@ class DR_BICYCLE:
         self.nav_pitch_last = None ## new
         self.nav_pitch = None ## new
         rospy.Subscriber("/ublox/navpvt", NavPVT, self.PVT_cb)
-        base_lla = [35.65492524, 128.39351431, 7] # KIAPI_Racing base
+        #base_lla = [35.65492524, 128.39351431, 7] # KIAPI_Racing base
+        base_lla = [37.36549921,126.64108444,7]
         proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
         proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
         self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
@@ -370,10 +371,10 @@ class DR_BICYCLE:
             self.calculate_imu_hdg()
             ### self.accel, gyro_integral = 0
             self.update_last_pos(source="NAV", timer=5) # update last_pos variable (choose: NAV, DR)
-            self.update_last_hdg(source="DR", timer=5) # update last_hdg variable (choose: NAV, DR, IMU)
+            self.update_last_hdg(source="NAV", timer=5) # update last_hdg variable (choose: NAV, DR, IMU)
             # self.print_pos_error() # print pos error in terminal
             # self.print_hdg_error(target="DR") # print hdg error in terminal
-            self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU)
+            # self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU)
             if self.last_hdg is not None and self.last_pos is not None:
                 self.RH.publish(self.last_hdg, self.last_pos)
             rate.sleep()

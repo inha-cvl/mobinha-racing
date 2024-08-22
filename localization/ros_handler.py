@@ -174,6 +174,7 @@ class ROSHandler():
         self.set_params()
 
     def set_values(self):
+        self.base_lla = None
         self.heading_fixed = False
         self.transformer = None
         self.local_pose = [0,0]   
@@ -277,6 +278,7 @@ class ROSHandler():
             self.heading_fixed = True 
         else:
             self.heading_fixed = False
+        self.base_lla = msg.baseLLA
     
     def canoutput_cb(self, msg): # gain velocity, steering angle
         self.canoutput_update()
