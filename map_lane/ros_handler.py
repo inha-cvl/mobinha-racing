@@ -105,7 +105,7 @@ class ROSHandler():
     def lidar_track_box_cb(self, msg):
         obstacles = []
         for obj in msg.boxes:
-            if obj.pose.position.z > 0.5 and obj.header.seq < 10:
+            if obj.pose.position.z > 0.5 and obj.header.seq < 3:
                 continue
             conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
             if conv is None:
