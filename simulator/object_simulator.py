@@ -47,7 +47,7 @@ class ObjectSimulator:
                 if time.time()-start_time > 15:
                     self.object_ready = False
                     vel = 0
-                x,y,yaw,v = self.object.next_state(dt, self.object.yaw, self._accel, self._brake)
+                x,y,yaw,v = self.object.next_state(dt, self.object.yaw, 1, self._brake)
                 v =+ vel
                 yaw = math.degrees(yaw)
                 pose_array = PoseArray()
@@ -55,10 +55,10 @@ class ObjectSimulator:
                 pose.position.x = x
                 pose.position.y = y
                 pose.position.z = 1
-                pose.orientation.x = v 
+                pose.orientation.x = vel 
                 pose.orientation.y = yaw
                 pose_array.poses.append(pose)
-                vel += 0.01
+                vel += 0.05
             else:
                 pose_array = PoseArray()
                 start_time = time.time()

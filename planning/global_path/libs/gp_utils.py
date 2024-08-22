@@ -490,6 +490,9 @@ def get_lane_width(id):
         elif lane_num == 4:
             l_w = (3*lane_width)+h_w
             r_w = h_w
+        elif lane_num == 5:
+            l_w = (4*lane_width)+h_w
+            r_w = h_w
         else:
             l_w = r_w = h_w
     else:

@@ -5,7 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded: ~
       Splitter Ratio: 0.23280423879623413
-    Tree Height: 795
+    Tree Height: 371
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -377,7 +377,6 @@ Visualization Manager:
         for_viz_40: true
         for_viz_400: true
         for_viz_401: true
-        for_viz_402: true
         for_viz_41: true
         for_viz_42: true
         for_viz_43: true
@@ -1140,9 +1139,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5753988027572632
+      Pitch: 0.465398907661438
       Target Frame: ego_car
-      Yaw: 3.6404051780700684
+      Yaw: 3.230396032333374
     Saved: ~
 Window Geometry:
   Displays:
