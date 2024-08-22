@@ -1,4 +1,4 @@
-    import math
+import math
 import rospy
 from ublox_msgs.msg import NavATT, NavPVT
 from drive_msgs.msg import VehicleState, CANOutput
