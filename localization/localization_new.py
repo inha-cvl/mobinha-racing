@@ -212,8 +212,8 @@ class DR_BICYCLE:
         while self.RH.pvt_cb:
             self.RH.can_velocity_last = self.RH.can_velocity
             self.RH.corr_can_velocity_last = self.RH.corr_can_velocity
-            self.RH.nav_self.last_hdg = self.RH.nav_hdg
-            self.RH.nav_self.last_pos = self.RH.nav_pos
+            self.RH.nav_hdg_last = self.RH.nav_hdg
+            self.RH.nav_pos_last = self.RH.nav_pos
             self.RH.pvt_cb = False
         self.accel_integral = 0
         self.gyro_integral = 0

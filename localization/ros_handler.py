@@ -51,6 +51,9 @@ class ROSHandler():
         self.nav_velocity = 0
 
         # change
+        self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',
+                           '24', '25', '26', '27', '36', '37', '38', '39', '43', '44', '54', '59',
+                           '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
         self.curved = False
 
         self.pvt_cb = False
@@ -97,12 +100,16 @@ class ROSHandler():
         self.params = [-8.38357609e-03, 2.37367164e-02, -1.59672708e-04, 1.53623118e-06]
 
         # base_lla = [35.65492524, 128.39351431, 7] # KIAPI_Racing base
-        if self.base_lla is not None:
-            proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
-            proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=self.base_lla[0], lon_0=self.base_lla[1], h_0=self.base_lla[2])
-            self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
-        else:
-            print("baseLLA is NONE")
+        # print("BASELLA!!!!!!!!!", self.base_lla)
+        while 1: 
+            if self.base_lla is not None:
+                proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
+                proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=self.base_lla[0], lon_0=self.base_lla[1], h_0=self.base_lla[2])
+                self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
+                break
+            else:
+                # print("baseLLA is NONE")
+                pass
 
     def navatt_cb(self, msg):  # gain heading
         self.nav_hdg_last = self.nav_hdg
