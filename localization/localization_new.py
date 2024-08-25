@@ -11,6 +11,7 @@ import numpy as np
 import time
 import sys
 import signal
+import os
 
 from ros_handler import ROSHandler
 
@@ -147,10 +148,10 @@ class Localization:
     def localization_sensor_health(self):
         if self.nav_hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:
             self.RH.nav_health_pub.publish(False)
-            #TODO Restart RTK
+            os.system("pkill -f rtk.sh")
         if self.nav_pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
             self.RH.nav_health_pub.publish(False)
-            #TODO Restart RTK
+            os.system("pkill -f rtk.sh")
 
     def init_all_msgs(self):
         key1, key2, key3, key4 = False, False, False, False
@@ -214,7 +215,7 @@ class Localization:
             self.last_pos = self.dr_pos
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
-            #TODO Restart RTK
+            os.system("pkill -f rtk.sh")
 
     def update_last_hdg(self):
         if self.RH.headAcc < 30000:
@@ -253,7 +254,7 @@ class Localization:
             self.last_hdg = self.RH.imu_hdg
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
-            #TODO Restart RTK    
+            os.system("pkill -f rtk.sh")    
         
     def update_plot(self, target):
         nav_hdgs.append(self.RH.nav_hdg)
