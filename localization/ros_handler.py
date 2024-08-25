@@ -85,7 +85,7 @@ class ROSHandler():
 
         self.best_pose_pub = rospy.Publisher('/best/pose', Pose, queue_size=1)
         ## Sensot health
-        # self.nav_health_pub = rospy.Publisher('/nav_health', Bool, queue_size=1)
+        self.nav_health_pub = rospy.Publisher('/nav_health', Bool, queue_size=1)
 
     def hdg_cb(self, msg):
         self.hdg_hack = msg.data

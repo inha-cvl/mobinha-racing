@@ -14,63 +14,15 @@ import signal
 
 from ros_handler import ROSHandler
 
-
-
 nav_poss = []
 dr_poss = []
 nav_hdgs = []
 dr_hdgs = []
 imu_hdgs = []
 
-class DR_BICYCLE:
+class Localization:
     def __init__(self):
         self.RH = ROSHandler()
-
-        # rospy.Subscriber("/LaneData", LaneData, self.LD_cb)
-        # self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23',
-        #                    '24', '25', '26', '27', '36', '37', '38', '39', '43', '44', '54', '59',
-        #                    '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
-        # self.RH.curved = False
-        # rospy.Subscriber("/VehicleState", VehicleState, self.VS_cb)
-        # self.RH.corr_can_velocity_last = None
-        # self.RH.corr_can_velocity = None
-        # self.RH.can_velocity_last = None
-        # self.RH.can_velocity = None
-        # rospy.Subscriber("/CANOutput", CANOutput, self.CO_cb)
-        # self.RH.can_steer_last = None
-        # self.RH.can_steer = None
-        # rospy.Subscriber("/ublox/navatt", NavATT, self.ATT_cb)
-        # self.RH.nav_self.last_hdg = None
-        # self.RH.nav_hdg = None
-        # self.RH.nav_roll_last = None ## new
-        # self.RH.nav_roll = None ## new
-        # self.RH.nav_pitch_last = None ## new
-        # self.RH.nav_pitch = None ## new
-        # rospy.Subscriber("/ublox/navpvt", NavPVT, self.RH.PVT_cb)
-        # #base_lla = [35.65492524, 128.39351431, 7] # KIAPI_Racing base
-        # base_lla = [37.36549921,126.64108444,7]
-        # proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
-        # proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
-        # self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
-        # self.RH.nav_pos[0]_last = None
-        # self.RH.nav_pos[1]_last = None
-        # self.RH.nav_pos[0] = None
-        # self.RH.nav_pos[1] = None
-        # self.RH.gspeed = None
-        # self.RH.pvt_cb = False
-
-        # rospy.Subscriber('/ublox/imu_meas', Imu, self.RH.imu_cb)
-        # self.madgwick = Madgwick()
-        # self.initial_offset = 0
-        # self.RH.q = None
-        # self.RH.imu_header = None ## new
-        # self.RH.imu_angular_velocity = None ## new
-        # self.RH.imu_linear_acceleration = None ## new
-        # self.accel = None
-        # self.gyro = None
-        # self.accel_integral = 0
-        # self.gyro_integral = 0
-
         self.initiated = False
 
         self.last_pos = None
@@ -79,6 +31,12 @@ class DR_BICYCLE:
         self.dr_pos = None
         self.dr_hdg = None
         # self.imu_hdg = None
+
+        self.nav_hdg_invalid_cnt = 0
+        self.nav_pos_invalid_cnt = 0
+
+        self.hdg_mct = 5  # min compensation time
+        self.pos_mct = 5
 
         # Initialize plot
         self.fig, self.ax = plt.subplots()
@@ -119,79 +77,6 @@ class DR_BICYCLE:
         q3 = cr * cp * sy - sr * sp * cy
 
         return np.array([q0, q1, q2, q3])
-        
-    # def LD_cb(self, msg):
-    #     if msg.currentLane.id.data in self.curve_list:
-    #         self.RH.curved = True
-    #     else:
-    #         self.RH.curved = False
-
-    # def VS_cb(self, msg):
-    #     self.RH.can_velocity = msg.velocity.data # [m/s]
-    #     # self.params = [-8.38357609e-03, 2.37367164e-02, -1.59672708e-04, 1.53623118e-06]
-    #     self.s_params = [-1.69519446e-01, 3.14832448e-02, -2.42469118e-04, 1.68413777e-06]
-    #     self.c_params = [-3.04750083e-01, 4.43420297e-02, -6.07069742e-04, 4.46079605e-06]
-
-    #     if self.RH.curved:
-    #         self.params = self.c_params
-    #     else:
-    #         self.params = self.s_params
-
-    #     self.RH.corr_can_velocity = (self.RH.can_velocity*3.6 \
-    #                         + self.params[0] + self.params[1]*(self.RH.can_velocity*3.6) \
-    #                         + self.params[2]*((self.RH.can_velocity*3.6)**2) \
-    #                         + self.params[3]*((self.RH.can_velocity*3.6)**3))/3.6 # [m/s]  
-        
-    
-    # def CO_cb(self, msg):
-    #     self.RH.can_steer_last = self.RH.can_steer
-    #     handle_ang = float(msg.StrAng.data)
-    #     steer_scale_factor = 32.2/450
-    #     self.RH.can_steer = handle_ang*steer_scale_factor
-
-    # def ATT_cb(self, msg):
-    #     self.RH.nav_hdg = -(msg.heading*1e-5 - 90)%360 # [deg]
-    #     self.RH.nav_roll = msg.roll*1e-5
-    #     self.RH.nav_pitch = msg.pitch*1e-5
-
-
-    # def PVT_cb(self, msg):
-    #     lat = msg.lat*1e-7
-    #     lon = msg.lon*1e-7
-    #     x, y, _= self.transformer.transform(lon, lat, 7)
-    #     self.RH.nav_pos = [x, y]
-    #     self.RH.pvt_cb = True
-    #     self.RH.gspeed = msg.gSpeed
-
-
-    # def imu_cb(self, msg):
-    #     self.RH.imu_header_last = self.RH.imu_header
-    #     self.RH.imu_angular_velocity_last = self.RH.imu_angular_velocity
-    #     self.RH.imu_linear_acceleration_last = self.RH.imu_linear_acceleration
-    #     self.accel_last = self.accel
-    #     self.gyro_last = self.gyro
-
-    #     self.RH.imu_header = msg.header
-    #     self.RH.imu_angular_velocity = msg.angular_velocity
-    #     self.RH.imu_linear_acceleration = msg.linear_acceleration
-    #     self.accel = np.array([self.RH.imu_linear_acceleration.x, self.RH.imu_linear_acceleration.y, self.RH.imu_linear_acceleration.z])
-    #     self.gyro = np.array([self.RH.imu_angular_velocity.x, self.RH.imu_angular_velocity.y, self.RH.imu_angular_velocity.z])
-
-    #     if self.RH.imu_header_last is not None:
-    #         ds = self.RH.imu_header.stamp.secs - self.RH.imu_header_last.stamp.secs
-    #         dns = self.RH.imu_header.stamp.nsecs - self.RH.imu_header_last.stamp.nsecs
-    #         dt = ds + dns*1e-9
-    #         if self.RH.q is not None:
-    #             self.RH.q = self.madgwick.updateIMU(q=self.RH.q, gyr=(self.gyro+self.gyro_last)/2, acc=(self.accel+self.accel_last)/2, dt=dt)
-    #             imu_hdg_tmp = np.rad2deg(np.arctan2(2.0*(self.RH.q[0]*self.RH.q[3] + self.RH.q[1]*self.RH.q[2]), 1.0 - 2.0*(self.RH.q[2]**2 + self.RH.q[3]**2)))
-
-    #             if self.RH.curved:
-    #                 constant_offset = 0
-    #             else:
-    #                 constant_offset = 0 
-
-    #             self.RH.imu_hdg = (imu_hdg_tmp + constant_offset)%360
-
             
     def initiate(self):
         if not self.initiated:
@@ -259,6 +144,14 @@ class DR_BICYCLE:
     def calculate_imu_hdg(self):
         pass
 
+    def localization_sensor_health(self):
+        if self.nav_hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:
+            self.RH.nav_health_pub.publish(False)
+            #TODO Restart RTK
+        if self.nav_pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
+            self.RH.nav_health_pub.publish(False)
+            #TODO Restart RTK
+
     def init_all_msgs(self):
         key1, key2, key3, key4 = False, False, False, False
         vehiclestates = [self.RH.corr_can_velocity_last, self.RH.corr_can_velocity, self.RH.can_velocity_last, self.RH.can_velocity, self.RH.can_steer, self.RH.can_steer_last]
@@ -302,6 +195,7 @@ class DR_BICYCLE:
             nav_pos_valid = True
         else:
             nav_pos_valid = False
+            self.nav_pos_invalid_cnt += 1
         
         if None in [self.last_pos, self.dr_pos]:
             dr_pos_valid = False
@@ -318,12 +212,16 @@ class DR_BICYCLE:
         # elif source == "DR":
         elif dr_pos_valid:
             self.last_pos = self.dr_pos
+        else:
+            self.RH.nav_health_pub.publish(False)  # emergency stop
+            #TODO Restart RTK
 
     def update_last_hdg(self):
         if self.RH.headAcc < 30000:
             nav_hdg_valid = True
         else:
             nav_hdg_valid = False
+            self.nav_hdg_invalid_cnt += 1
         
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False
@@ -353,6 +251,9 @@ class DR_BICYCLE:
         # elif source == "IMU":
         elif imu_hdg_valid:
             self.last_hdg = self.RH.imu_hdg
+        else:
+            self.RH.nav_health_pub.publish(False)  # emergency stop
+            #TODO Restart RTK    
         
     def update_plot(self, target):
         nav_hdgs.append(self.RH.nav_hdg)
@@ -402,6 +303,7 @@ class DR_BICYCLE:
             # self.print_pos_error() # print pos error in terminal
             # self.print_hdg_error(target="DR") # print hdg error in terminal
             # self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU)
+            self.localization_sensor_health()
             if self.last_hdg is not None and self.last_pos is not None:
                 self.RH.publish(self.last_hdg, self.last_pos)
             rate.sleep()
@@ -413,7 +315,7 @@ def signal_handler(sig, frame):
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
-    localization = DR_BICYCLE()
+    localization = Localization()
     localization.run()
 
 if __name__ == "__main__":
@@ -421,7 +323,7 @@ if __name__ == "__main__":
 
 # if __name__ == "__main__":
 #     rospy.init_node("dr_simul")
-#     dr = DR_BICYCLE()
+#     dr = Localization()
 #     rate = rospy.Rate(20)
 #     while not rospy.is_shutdown():
 #         dr.run()
