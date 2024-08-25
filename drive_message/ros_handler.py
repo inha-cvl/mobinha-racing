@@ -5,7 +5,7 @@ from pyproj import Proj, Transformer
 from drive_msgs.msg import *
 from geometry_msgs.msg import PoseArray, Pose, Pose2D
 from ublox_msgs.msg import NavPVT
-from std_msgs.msg import Header, Float32
+from std_msgs.msg import Header, Float32, Bool
 from sensor_msgs.msg import NavSatFix
 from jsk_recognition_msgs.msg import BoundingBoxArray
 from visualization_msgs.msg import MarkerArray
@@ -79,6 +79,10 @@ class ROSHandler():
 
         # Refine
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
+
+        # Sensor Health
+        rospy.Subscriber('/nav_health', Bool, self.sensor_health_cb)
+        rospy.Subscriber('/lid_health', Bool, self.sensor_health_cb)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -182,6 +186,8 @@ class ROSHandler():
             object_info.distance.data = float(obj.orientation.z)
             self.detection_data.objects.append(object_info)
 
+    def sensor_health_cb(self, msg):
+        self.system_status.systemHealth = msg.data
     
     def publish(self):
         self.can_input_pub.publish(self.can_input)
