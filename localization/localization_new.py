@@ -148,10 +148,10 @@ class Localization:
     def localization_sensor_health(self):
         if self.nav_hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:
             self.RH.nav_health_pub.publish(False)
-            os.system("pkill -f rtk.sh")
+            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
         if self.nav_pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
             self.RH.nav_health_pub.publish(False)
-            os.system("pkill -f rtk.sh")
+            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
 
     def init_all_msgs(self):
         key1, key2, key3, key4 = False, False, False, False
@@ -215,7 +215,7 @@ class Localization:
             self.last_pos = self.dr_pos
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
-            os.system("pkill -f rtk.sh")
+            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
 
     def update_last_hdg(self):
         if self.RH.headAcc < 30000:
@@ -254,7 +254,7 @@ class Localization:
             self.last_hdg = self.RH.imu_hdg
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
-            os.system("pkill -f rtk.sh")    
+            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')    
         
     def update_plot(self, target):
         nav_hdgs.append(self.RH.nav_hdg)
