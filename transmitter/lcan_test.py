@@ -8,7 +8,7 @@ import rospy
 import asyncio
 import sys
 import signal
-
+import time
 
 def signal_handler(sig, frame):
     sys.exit(0)
@@ -71,13 +71,16 @@ class LCANTest():
         self.dbc = cantools.database.load_file('./RDR_Obj.dbc')
         self.setup_message_dicts()
         self.setup_decode_handlers()
+        self.recording = False  # 녹화 상태를 확인하기 위한 플래그
 
     async def read_from_can(self):
         try:
             while not rospy.is_shutdown():
-                message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)               
+                message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)
                 if message:
                     self.decode_message(message)
+                    if self.recording:
+                        self.record_message(message)  # 녹화 상태면 메시지 기록
         except Exception as e:
             rospy.logerr(f"Error in read_from_can: {e}")
         finally:
@@ -149,6 +152,31 @@ class LCANTest():
         for i in range(1, 17):  # 1부터 16까지
             setattr(self, f'RDR_Obj_{i:02}', base_RDR_Obj.copy())
 
+    def record_message(self, message):
+        """CAN 메시지를 로그 파일에 기록하는 함수"""
+        timestamp = message.timestamp
+        can_id = message.arbitration_id
+        data = message.data.hex()
+
+        if not hasattr(self, 'log_file'):  # 로그 파일이 없다면 생성
+            self.log_file = open('can_log.log', 'w')
+            self.log_file.write("Timestamp,ID,Data\n")  # 로그 헤더 작성
+
+        # 로그 파일에 CAN 메시지 기록
+        self.log_file.write(f"{timestamp},{can_id},{data}\n")
+
+    def start_recording(self):
+        """녹화를 시작하는 함수"""
+        self.recording = True
+        print("Recording started.")
+
+    def stop_recording(self):
+        """녹화를 중지하는 함수"""
+        self.recording = False
+        if hasattr(self, 'log_file'):
+            self.log_file.close()
+            print("Recording stopped and saved.")
+
     def run(self):
         loop = asyncio.get_event_loop()
         read_task = loop.create_task(self.read_from_can())
@@ -164,7 +192,5 @@ def main():
     lcan_test = LCANTest()
     visualizer = Visualizer(lcan_test)
     lcan_test.set_visualizer(visualizer)
-    lcan_test.run()
-
-if __name__ == "__main__":
-    main()
+    
+   
