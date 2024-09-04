@@ -1,0 +1,10 @@
+std_msgs/Int16 alvAge
+std_msgs/Int8 coastAge
+std_msgs/Int8 trkSta
+std_msgs/Int8 mvngFlag
+std_msgs/Int8 qualLvl
+std_msgs/Float32 relPosX
+std_msgs/Float32 relPosY
+std_msgs/Float32 relVelX
+std_msgs/Float32 relVelY
+std_msgs/Float32 relAccel

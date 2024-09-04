@@ -1,9 +1,6 @@
 import rospy
-import numpy as np
-import cv2
-from cv_bridge import CvBridge, CvBridgeError
 from visualization_msgs.msg import MarkerArray, Marker
-from sensor_msgs.msg import Image, CompressedImage
+from drive_msgs.msg import *
 
 class ROSHandler():
     def __init__(self):
@@ -12,48 +9,31 @@ class ROSHandler():
         self.set_protocol()
     
     def set_values(self):
-        self.local_pose = []
-        self.local_path = []
-        self.bridge = CvBridge()
-        self.frame = None
-
+        self.radar_objects = []
 
     def set_protocol(self):
-        rospy.Subscriber('/stereo/left/image_raw', Image, self.front_center_camera_cb)
-        self.processed_image_pub = rospy.Publisher('/camera/processed_image', Image, queue_size=10)
-        self.box_detection_pub = rospy.Publisher('/perception/box_detection', MarkerArray, queue_size=1)
+        rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
+        self.radar_objects_marker_pub = rospy.Publisher('/RadarObjects', MarkerArray, queue_size=1)
+    
+    def radar_object_array_cb(self, msg):
+        radar_objects = []
+        for ro in msg.radarObjects:
+            obj = [ro.relPosX.data, ro.relPosY.data]
+            radar_objects.append(obj)
+        self.radar_objects = radar_objects
 
-    def front_center_camera_cb(self, msg):    
-        frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        height, width, _ = frame.shape
-        y_start = int(2.05 * height / 5)
-        y_end = int(3.78 * height / 5)
-        
-        # remove background
-        # fgmask = self.fgbg.apply(frame)
-        # self.frame = fgmask[y_start:y_end, :]
-
-        self.frame = frame[y_start:y_end, :]
-
-
-    def publish(self, frame, positions):
-        try:
-            # Convert OpenCV image to ROS Image message
-            image_message = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
-            # Publish the Image message
-            self.processed_image_pub.publish(image_message)
-        except CvBridgeError as e:
-            rospy.logerr(f"Failed to convert and publish image: {e}")
+    def publish(self, positions):
         
         marker_array = MarkerArray()
         for i, (x, y) in enumerate(positions):
             marker = Marker()
-            marker.header.frame_id = "camera_frame"
+            marker.header.frame_id = "radar_frame"
             marker.header.stamp = rospy.Time.now()
             marker.ns = "objects"
             marker.id = i
             marker.type = Marker.CUBE
             marker.action = Marker.ADD
+            marker.lifetime = rospy.Duration(0.05)
             marker.pose.position.x = x
             marker.pose.position.y = y
             marker.pose.position.z = 0  # Assume ground level for simplicity
@@ -69,4 +49,4 @@ class ROSHandler():
             marker.color.g = 1.0
             marker.color.b = 0.0
             marker_array.markers.append(marker)
-        self.box_detection_pub.publish(marker_array)
+        self.radar_objects_marker_pub.publish(marker_array)

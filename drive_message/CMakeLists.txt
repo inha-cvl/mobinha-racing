@@ -24,6 +24,8 @@ add_message_files(
   LaneLet.msg
   UserInput.msg
   SystemStatus.msg
+  RadarObject.msg
+  RadarObjectArray.msg
 )
 
 generate_messages(

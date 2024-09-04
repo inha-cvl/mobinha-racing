@@ -180,7 +180,7 @@ def ObjectViz(_id, position, heading, color):
     marker.type = Marker.CUBE
     #marker.mesh_resource = 'file://{}/car.dae'.format(dir_path)
     marker.action = Marker.ADD
-    marker.lifetime = rospy.Duration(0.01)
+    marker.lifetime = rospy.Duration(0.05)
     marker.scale.x = 3
     marker.scale.y = 1.2
     marker.scale.z = 1.2

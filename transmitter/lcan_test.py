@@ -2,12 +2,15 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
 import numpy as np
+import time
 import can
 import cantools
 import rospy
 import asyncio
 import sys
 import signal
+
+from drive_msgs.msg import RadarObjectArray, RadarObject
 
 def signal_handler(sig, frame):
     sys.exit(0)
@@ -66,7 +69,8 @@ class Visualizer:
 
 class LCANTest():
     def __init__(self):
-        self.bus = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
+        rospy.init_node('lcan_test', anonymous=True)
+        #self.bus = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
         self.dbc = cantools.database.load_file('./RDR_Obj.dbc')
         self.setup_message_dicts()
         self.setup_decode_handlers()
@@ -87,6 +91,46 @@ class LCANTest():
         finally:
             self.stop_recording()
             self.bus.shutdown()
+            
+    async def replay_can(self):
+        try:
+            filename = "/home/kana/Documents/Dataset/Log/can_log.log"
+            with open(filename, 'r') as log_file:
+                next(log_file)  # 헤더 건너뛰기
+                prev_timestamp = None
+                
+                for line in log_file:
+                    parts = line.strip().split(',')
+                    timestamp = float(parts[0])
+                    
+                    can_id = int(parts[1])
+                    data = bytes.fromhex(parts[2])
+
+                    self.decode_message2(can_id, data)
+                    if prev_timestamp is not None:
+                        # 시간 간격 유지 (녹화된 시간에 맞춰 재생)
+                        time_diff = (timestamp - prev_timestamp) / 1
+                        await asyncio.sleep(time_diff)  # 기존의 time.sleep을 await asyncio.sleep으로 대체
+
+                    prev_timestamp = timestamp
+        except Exception as e:
+            rospy.logerr(f"Error {e}")
+    
+    async def ros_publisher(self):
+        try:
+            await asyncio.sleep(0.5)
+            cnt = 0 
+            while not rospy.is_shutdown():
+                await asyncio.get_event_loop().run_in_executor(None, self.publish_objects, cnt)
+                cnt += 1
+                await asyncio.sleep(0.05) #20hz
+        except Exception as e:
+            rospy.logerr(f"Error {e}")
+    
+    def publish_objects(self, cnt):
+        self.radar_object_array_pub.publish(self.radar_object_array)
+        if cnt % 3 == 0:
+            self.radar_object_array = RadarObjectArray()
 
     def setup_decode_handlers(self):
         self.decode_handler = {
@@ -107,6 +151,60 @@ class LCANTest():
             0x21E: self.RDR_Obj_15,
             0x21F: self.RDR_Obj_16
         }
+        self.radar_object_array = RadarObjectArray()
+        self.radar_object_array_pub = rospy.Publisher('/RadarObjectArray',RadarObjectArray, queue_size=1)
+
+    def decode_message2(self, id, data):
+        if id in self.decode_handler.keys():
+            getter_dict = self.decode_handler.get(id)
+            decoded_message = self.dbc.decode_message(id, data)            
+            for getter_key in getter_dict.keys():
+                base_key_getter = getter_key[:-2]  # '01', '02' 등의 숫자 제거한 부분
+                suffix_getter = getter_key[-2:]  # '01' 또는 '02' 숫자 부분
+
+                # decoded_message에서 base_key가 같은 모든 항목을 찾음
+                for decoded_key in decoded_message.keys():
+                    base_key_decoded = decoded_key[:-2]  # '01', '02', '03', '04', '05', '06' 등을 제거한 부분
+                    suffix_decoded = decoded_key[-2:]  # 숫자 부분 ('01', '02', ..., '31', '32')
+
+                    if base_key_getter == base_key_decoded:
+                        # suffix가 홀수면 '01' 필드에, 짝수면 '02' 필드에 업데이트
+                        if int(suffix_decoded) % 2 == 1 and suffix_getter == '01':
+                            getter_dict[getter_key] = decoded_message[decoded_key]
+                        elif int(suffix_decoded) % 2 == 0 and suffix_getter == '02':
+                            getter_dict[getter_key] = decoded_message[decoded_key]
+
+            # if getter_dict['AlvAge01'] > 1:
+            #     print(f"ID: {getter_dict['RefObjID01']}, alv age:{getter_dict['AlvAge01']}, coast age:{getter_dict['CoastAge01']}, x: {getter_dict['RelPosX01']:.2f}, y: {getter_dict['RelPosY01']:.2f}, vx: {getter_dict['RelVelX01']:.2f}, vy: {getter_dict['RelVelY01']:.2f}, accel: {getter_dict['RelAccelX01']:.2f}, trk sta: {getter_dict['TrkSta01']}, mvng flag: {getter_dict['MvngFlag01']}, qual lv: {getter_dict['QualLvl01']}")
+            # if getter_dict['AlvAge02'] > 1:
+            #     print(f"ID: {getter_dict['RefObjID02']}, alv age:{getter_dict['AlvAge02']}, coast age:{getter_dict['CoastAge02']}, x: {getter_dict['RelPosX02']:.2f}, y: {getter_dict['RelPosY02']:.2f}, vx: {getter_dict['RelVelX02']:.2f}, vy: {getter_dict['RelVelY02']:.2f}, accel: {getter_dict['RelAccelX02']:.2f}, trk sta: {getter_dict['TrkSta02']}, mvng flag: {getter_dict['MvngFlag02']}, qual lv: {getter_dict['QualLvl02']}")
+            if getter_dict['AlvAge01'] > 1:
+                radar_object = RadarObject()
+                radar_object.alvAge.data = int(getter_dict['AlvAge01'])
+                radar_object.coastAge.data = int(getter_dict['CoastAge01'])
+                radar_object.trkSta.data = int(getter_dict['TrkSta01'])
+                radar_object.mvngFlag.data = int(getter_dict['MvngFlag01'])
+                radar_object.qualLvl.data = int(getter_dict['QualLvl01'])
+                radar_object.relPosX.data = float(getter_dict['RelPosX01'])
+                radar_object.relPosY.data = float(getter_dict['RelPosY01'])
+                radar_object.relVelX.data = float(getter_dict['RelVelX01'])
+                radar_object.relVelY.data = float(getter_dict['RelVelY01'])
+                radar_object.relAccel.data = float(getter_dict['RelAccelX01'])
+                self.radar_object_array.radarObjects.append(radar_object)
+            if getter_dict['AlvAge02'] > 1:
+                radar_object = RadarObject()
+                radar_object.alvAge.data = int(getter_dict['AlvAge02'])
+                radar_object.coastAge.data = int(getter_dict['CoastAge02'])
+                radar_object.trkSta.data = int(getter_dict['TrkSta02'])
+                radar_object.mvngFlag.data = int(getter_dict['MvngFlag02'])
+                radar_object.qualLvl.data = int(getter_dict['QualLvl02'])
+                radar_object.relPosX.data = float(getter_dict['RelPosX02'])
+                radar_object.relPosY.data = float(getter_dict['RelPosY02'])
+                radar_object.relVelX.data = float(getter_dict['RelVelX02'])
+                radar_object.relVelY.data = float(getter_dict['RelVelY02'])
+                radar_object.relAccel.data = float(getter_dict['RelAccelX02'])
+                self.radar_object_array.radarObjects.append(radar_object)
+
 
     def decode_message(self, message):
         _id = message.arbitration_id
@@ -163,6 +261,10 @@ class LCANTest():
         base_RDR_Obj = {
             'RefObjID01': 1,
             'AlvAge01': 0,
+            'TrkSta01': 0,
+            'MvngFlag01': 0,
+            'QualLvl01':0,
+            'CoastAge01':0,
             'RelPosX01': 0.05,
             'RelPosY01': 0.05,
             'RelVelX01': 0.01,
@@ -170,6 +272,10 @@ class LCANTest():
             'RelAccelX01': 0.05,
             'RefObjID02': 1,
             'AlvAge02': 0,
+            'TrkSta02': 0,
+            'MvngFlag02': 0,
+            'QualLvl02':0,
+            'CoastAge02':0,
             'RelPosX02': 0.05,
             'RelPosY02': 0.05,
             'RelVelX02': 0.01,
@@ -183,8 +289,10 @@ class LCANTest():
 
     def run(self):
         loop = asyncio.get_event_loop()
-        read_task = loop.create_task(self.read_from_can())  # CAN 메시지를 읽는 작업
-        visualize_task = loop.create_task(self.lcan_visualizer.run_visualization())  # 비동기 시각화 작업
+        #read_task = loop.create_task(self.read_from_can())  # CAN 메시지를 읽는 작업
+        replay_task = loop.create_task(self.replay_can())
+        #visualize_task = loop.create_task(self.lcan_visualizer.run_visualization())  # 비동기 시각화 작업
+        ros_task = loop.create_task(self.ros_publisher())
         loop.run_forever()
 
     def set_visualizer(self, visualizer):
