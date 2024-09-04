@@ -18,9 +18,9 @@ def signal_handler(sig, frame):
 
 class CAN2Test():
     def __init__(self):
-        self.bus = can.ThreadSafeBus(interface='socketcan',fd=True, channel='can0', bitrate=500000)
+        self.bus = can.ThreadSafeBus(interface='socketcan',fd=True, channel='can2', bitrate=500000)
         self.TH = TransmitterHandler()
-        self.dbc = cantools.database.load_file('/home/inha/catkin_ws/src/mobinha-racing/transmitter/RDR.dbc')
+        self.dbc = cantools.database.load_file('./RDR_Obj.dbc')
 
     async def read_from_can(self):
         try:
@@ -28,7 +28,7 @@ class CAN2Test():
                 message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)               
                 if message:
                     try:
-                        print(self.dbc.decode_message(message.arbitration_id, message.data)['Long01'])
+                        print(self.dbc.decode_message(message.arbitration_id, message.data))
                         print('\n')
                     except Exception as E:
                         pass
