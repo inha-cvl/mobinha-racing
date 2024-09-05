@@ -19,6 +19,7 @@ import graph_ltpl
 from ros_handler import ROSHandler
 from longitudinal.get_max_velocity import GetMaxVelocity
 from global_path.global_path_planner import GlobalPathPlanner
+import planning_handler as ph
 
 def signal_handler(sig, frame):
     os._exit(0)
@@ -163,8 +164,8 @@ class Planning():
         if self.race_mode == 'stop':
             if not self.check_bank():
                 return -1
-            if len(local_action_set) > 2:
-                return local_action_set[1][5]
+            if len(local_action_set) > 3:
+                return local_action_set[2][5]
             return self.prev_target_vel - stop_vel_decrement
 
         # 'slow_on' 모드 처리
@@ -176,8 +177,8 @@ class Planning():
                 return road_max_vel
             if self.slow_mode == 'ON':
                 return slow_vel
-            if len(local_action_set) > 2:
-                return local_action_set[1][5]
+            if len(local_action_set) > 3:
+                return local_action_set[2][5]
             return self.prev_target_vel - stop_vel_decrement
 
         # 'pit_stop' 모드 처리
@@ -189,9 +190,18 @@ class Planning():
         if len(local_action_set) < 2:
             return max(self.prev_target_vel - stop_vel_decrement, 0)
         
-        return local_action_set[1][5]
+        return local_action_set[2][5]
 
-
+    def check_lane_deaprture(self, action_set, localpos):
+        if action_set is not None and len(action_set) > 0:
+            dist = ph.distance(action_set[0][1], action_set[0][2], localpos[0], localpos[1])
+            if dist <= 3:
+                return 'Normal'
+            elif 3 < dist < 6:
+                return 'Warning'
+            else:
+                return 'Danger'
+    
     def initd(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
@@ -230,13 +240,20 @@ class Planning():
                                                 pos_est=self.RH.local_pos,
                                                 vel_est=self.RH.current_velocity,
                                                 vel_max=self.max_vel,
-                                                safety_d=5)[0]
+                                                safety_d=30)[0]
                 
                 road_max_vel = self.calculate_road_max_vel(local_action_set)
                 if len(local_action_set) > 0 and len(local_action_set[:]) > 5:
                     target_velocity = self.gmv.smooth_velocity_plan(local_action_set[:][5], self.prev_target_vel,road_max_vel)[1]
                 else:
                     target_velocity = road_max_vel
+                
+                res = self.check_lane_deaprture(local_action_set, self.RH.local_pos)
+                if res == 'Warning':
+                    target_velocity = self.prev_target_vel - 0.5 if self.prev_target_vel - 0.5 >= 0 else 0
+                elif res == 'Danger':
+                    target_velocity = 0
+
                 self.prev_target_vel = target_velocity
                 self.RH.publish(local_action_set, target_velocity)
 

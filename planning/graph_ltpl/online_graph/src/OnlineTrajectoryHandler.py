@@ -925,7 +925,6 @@ class OnlineTrajectoryHandler(object):
                             bp_out2 = np.column_stack((s, x_y_psi_kappa, vx))
 
                             bp_out = np.where(bp_out[5, :] < bp_out2[5, :], bp_out, bp_out2)
-
                     # -- FINALIZE VEL PROFILE AND CALCULATE ACCELERATION -----------------------------------------------
                     # filter vx profile
                     if self.__vp_fb is not None:
