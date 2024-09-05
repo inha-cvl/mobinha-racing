@@ -5,7 +5,7 @@ from drive_msgs.msg import *
 from geometry_msgs.msg import Point, Pose, PoseArray
 from visualization_msgs.msg import Marker, MarkerArray
 from jsk_recognition_msgs.msg import BoundingBoxArray
-from std_msgs.msg import String 
+from std_msgs.msg import Float32MultiArray
 
 from libs.planning_utils import *
 from pyproj import Proj, Transformer
@@ -30,10 +30,12 @@ class ROSHandler():
         self.current_signal = 0
         self.local_pose = [0,0]
         self.transformer = None
+        self.est_veh_spd = 0
 
         self.sim_obstacles = [] # cls, x, y, v
         self.cam_obstacles = []
         self.lid_obstacles = []
+        self.rad_obstacles = []
 
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
@@ -50,10 +52,12 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
 
         rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
-        rospy.Subscriber('/perception/box_detection', MarkerArray, self.cam_box_objects_cb)
         rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
-        
+
+        rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
+        rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb)
+    
     def system_status_cb(self, msg):
         self.map_name = msg.mapName.data
         base_lla = msg.baseLLA
@@ -72,6 +76,26 @@ class ROSHandler():
         x, y, _ = self.transformer.transform(msg.position.y, msg.position.x, 7) 
         self.local_pose = [x,y]
         self.oh.update_value(self.local_pose, self.current_heading)
+    
+    def adas_drv_cb(self, msg):
+        self.est_veh_spd = msg.data[5]
+
+    def radar_object_array_cb(self, msg):
+        rad_obstacles = []
+        for ro in msg.radarObjects:
+            if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
+                obj = [ro.relPosX.data, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
+                rad_obstacles.append(obj)
+        clustered_obstacles = self.oh.cluster_radar_obstacles(rad_obstacles)
+        obstacles = []
+        for co in clustered_obstacles:
+            conv = self.oh.object2enu([co[0],co[1]])
+            if conv is None:
+                continue
+            else:
+                nx, ny = conv
+                obstacles.append([0, nx, ny, co[3]+self.current_velocity]) # id, x, y, vel
+        self.rad_obstacles = obstacles
 
     def sim_objects_cb(self, msg):
         obstacles = []
@@ -81,17 +105,6 @@ class ROSHandler():
 
     
     def cam_objects_cb(self,msg):
-        obstacles = []
-        for obj in msg.markers:
-            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
-            if conv is None:
-                continue
-            else:
-                nx,ny = conv
-                obstacles.append([0, nx, ny, 3])
-        self.cam_obstacles = obstacles
-    
-    def cam_box_objects_cb(self,msg):
         obstacles = []
         for obj in msg.markers:
             conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
@@ -112,7 +125,8 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
-                obstacles.append([0, nx, ny, 3])
+                v =  ( abs(obj.value) if obj.value != 0 else 0 ) + self.current_velocity
+                obstacles.append([0, nx, ny, v])
         self.lid_obstacles = obstacles 
 
     def publish(self, path, kappa, velocity):
