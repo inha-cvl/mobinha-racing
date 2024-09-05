@@ -18,7 +18,5 @@ cd ../transmitter/
 python3 transmitter.py & 
 cd ../control/  
 python3 control.py &
-# cd ../perception/
-# python3 perception.py &
 cd ../planning/
 python3 planning.py 

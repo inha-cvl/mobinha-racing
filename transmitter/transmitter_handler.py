@@ -58,27 +58,28 @@ class TransmitterHandler:
         _id = message.arbitration_id
         if _id in self.decode_handler1.keys():
             getter_dict = self.decode_handler1.get(_id)
-            decoded_message = self.dbc.decode_message(_id, message.data)
+            decoded_message = self.dbc1.decode_message(_id, message.data)
             getter_dict.update({key: decoded_message.get(key) for key in getter_dict.keys()})
             return getter_dict
     
     def encode_message(self, dicts):
         can_messages = []
         for i, (key,value) in enumerate(self.encode_dbc.items()):
-            message = self.dbc.encode_message(value, dicts[i])
+            message = self.dbc1.encode_message(value, dicts[i])
             can_message = can.Message(arbitration_id=key, data=message, is_extended_id=False)
             can_messages.append(can_message)
         return can_messages
 
     def decode_message2(self, message):
         _id = message.arbitration_id
-        if _id in self.decode_handler.keys():
-            getter_dict = self.decode_handler.get(_id)
-            decoded_message = self.dbc.decode_message(_id, message.data)
+        if _id in self.decode_handler2.keys():
+            getter_dict = self.decode_handler2.get(_id)
+            decoded_message = self.dbc2.decode_message(_id, message.data)
             if _id == 81:
                 getter_dict.update({key: decoded_message.get(key) for key in getter_dict.keys()})
+                type = 0
             else:
-              
+                type = 1
                 for getter_key in getter_dict.keys():
                     base_key_getter = getter_key[:-2] 
                     suffix_getter = getter_key[-2:]
@@ -92,7 +93,9 @@ class TransmitterHandler:
                             elif int(suffix_decoded) % 2 == 0 and suffix_getter == '02':
                                 getter_dict[getter_key] = decoded_message[decoded_key]
 
-            return getter_dict
+            return type, getter_dict
+        else:
+            return None, None
         
     def setup_message_dicts(self):
 
@@ -171,6 +174,28 @@ class TransmitterHandler:
             'SIG_REPAIR': 0xFF # 0xFF: Repair Enable, 0xFF > Value: Repair Disable
         }
 
+        self.ADAS_DRV = {
+            'CRC01':0,
+            'AlvCnt01':0,
+            'Radar_RadiCmdSta':0,
+            'YawRateVal':0,
+            'SASAngleVal':0,
+            'EstVehSpdVal':0,
+            'EstRadVal':0,
+            'CIPVRadarIDVal':0,
+            'CIPSRadarIDVal':0,
+            'StrTqSeldSta':0,
+            'FcaCIPVRadarIDVal':0,
+            'WhlSpdCalcVal':0,
+            'VehTgtRelDistVal':0,
+            'VehTgtRelSpdVal':0,
+            'PedTgtRelDistVal':0,
+            'PedTgtRelSpdVal':0,
+            'JTTgtRelDistVal':0,
+            'JTTgtRelSpdVal':0,
+            'EngRunSta':0
+        }
+
         base_RDR_Obj = {
             'RefObjID01': 1,
             'AlvAge01': 0,
@@ -200,24 +225,4 @@ class TransmitterHandler:
         for i in range(1, 17):  # 1부터 16까지
             setattr(self, f'RDR_Obj_{i:02}', base_RDR_Obj.copy())
         
-        self.ADAS_DRV = {
-            'CRC01':0,
-            'AlvCnt01':0,
-            'Radar_RadiCmdSta':0,
-            'YawRateVal':0,
-            'SASAngleVal':0,
-            'EstVehSpdVal':0,
-            'EstRadVal':0,
-            'CIPVRadarIDVal':0,
-            'CIPSRadarIDVal':0,
-            'StrTqSeldSta':0,
-            'FcaCIPVRadarIDVal':0,
-            'WhlSpdCalcVal':0,
-            'VehTgtRelDistVal':0,
-            'VehTgtRelSpdVal':0,
-            'PedTgtRelDistVal':0,
-            'PedTgtRelSpdVal':0,
-            'JTTgtRelDistVal':0,
-            'JTTgtRelSpdVal':0,
-            'EngRunSta':0
-        }
+        

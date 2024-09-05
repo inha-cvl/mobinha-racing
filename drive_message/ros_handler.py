@@ -3,12 +3,12 @@ import numpy as np
 from pyproj import Proj, Transformer
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray, Pose, Pose2D
+from geometry_msgs.msg import PoseArray, Pose, Pose2D, QuaternionStamped
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32, Bool
 from sensor_msgs.msg import NavSatFix
-from jsk_recognition_msgs.msg import BoundingBoxArray
-from visualization_msgs.msg import MarkerArray
+from novatel_oem7_msgs.msg import INSPVA
+
 
 from libs.message_handler import *
 from libs.obstalce_handler import ObstacleHandler
@@ -67,22 +67,41 @@ class ROSHandler():
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
 
         # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
-        rospy.Subscriber('/best/pose', Pose, self.best_callback)
+        #rospy.Subscriber('/best/pose', Pose, self.best_callback)
 
-        # if not USE_LIDAR:
-        #     rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
-        # else:
-        #     rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
-        
+        # if Synnerex rtk.sh not working
+        #rospy.Subscriber('/fix',NavSatFix, self.nav_sat_fix_cb )
+        #rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
+
+        # If use Novatel
+        rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
+    
         # Simulator
         rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
-
         # Refine
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
 
         # Sensor Health
         rospy.Subscriber('/nav_health', Bool, self.sensor_health_cb)
         rospy.Subscriber('/lid_health', Bool, self.sensor_health_cb)
+
+    def heading_cb(self, msg):
+        yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
+        self.vehicle_state.heading.data = yaw  
+
+    def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
+        self.vehicle_state.header = msg.header
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+        self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
+        self.add_enu(msg.latitude, msg.longitude)
+    
+    def novatel_inspva_cb(self, msg):
+        self.vehicle_state.header = msg.header
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+        self.vehicle_state.heading.data = 89-msg.azimuth
+        self.add_enu(msg.latitude, msg.longitude)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -187,7 +206,7 @@ class ROSHandler():
             self.detection_data.objects.append(object_info)
 
     def sensor_health_cb(self, msg):
-        self.system_status.systemHealth = msg.data
+        self.system_status.systemHealth.data = msg.data
     
     def publish(self):
         self.can_input_pub.publish(self.can_input)

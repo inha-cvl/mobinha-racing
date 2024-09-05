@@ -17,8 +17,8 @@ def signal_handler(sig, frame):
 
 class Transmitter():
     def __init__(self):
-        self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000)
-        self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
+        self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can1', bitrate=500000)
+        self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can0', bitrate=500000)
         self.TH = TransmitterHandler()
         self.RH = ROSHandler(self.TH)
 
@@ -50,11 +50,11 @@ class Transmitter():
     async def read_from_can2(self):
         try:
             while not rospy.is_shutdown():
-                message = await asyncio.get_event_loop().run_in_executor(None, self.bus2.recv, 0.2)               
+                message = await asyncio.get_event_loop().run_in_executor(None, self.bus2.recv, 0.2)     
                 if message:
-                    message_dict = self.TH.decode_message2(message)
-                    if message_dict != None:
-                        self.RH.update_radar_output(message_dict)
+                    type, message_dict = self.TH.decode_message2(message)
+                    if message_dict is not None:
+                        self.RH.update_radar_output(type, message_dict)
                 # await asyncio.sleep(0.002)  # 500Hz, 2ms 간격
         except Exception as e:
             rospy.logerr(f"Error in read_from_can2: {e}")

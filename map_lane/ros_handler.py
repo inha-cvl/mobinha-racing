@@ -52,7 +52,7 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
 
         rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
-        rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        #rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
 
         rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)

@@ -12,7 +12,7 @@ class ROSHandler():
         self.decode_handler1 = TH.decode_handler1
         self.decode_handler2 = TH.decode_handler2
         self.encode_handler = TH.encode_handler
-
+        self.ADAS_DRV = TH.ADAS_DRV
         self.set_protocol()
         self.set_messages()
 
@@ -42,7 +42,10 @@ class ROSHandler():
         for key, value in message_dict.items():
             getattr(self.can_output, key).data = str(value)
     
-    def update_radar_output(self, message_dict):
+    def update_radar_output(self, type, message_dict):
+        if type == 0:
+            return 
+        
         if message_dict['AlvAge01'] > 1 and (-50<message_dict['RelPosY01']<50):
             radar_object = RadarObject()
             radar_object.alvAge.data = int(message_dict['AlvAge01'])
