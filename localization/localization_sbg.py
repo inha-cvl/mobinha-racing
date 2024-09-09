@@ -8,7 +8,7 @@ import sys
 import signal
 import os
 
-from ros_handler import ROSHandler
+from ros_handler_sbg import ROSHandler
 
 nav_poss = []
 dr_poss = []
@@ -94,12 +94,12 @@ class Localization:
 
 
     def update_sensor_data(self): # updates when pvt callbacked
-        while self.RH.pvt_cb:
-            self.RH.can_velocity_last = self.RH.can_velocity
-            self.RH.corr_can_velocity_last = self.RH.corr_can_velocity
+        while self.RH.nav_cb:
+            self.RH.can_vel_last = self.RH.can_vel
+            self.RH.corr_can_vel_last = self.RH.corr_can_vel
             self.RH.nav_hdg_last = self.RH.nav_hdg
             self.RH.nav_pos_last = self.RH.nav_pos
-            self.RH.pvt_cb = False
+            self.RH.nav_cb = False
         self.accel_integral = 0
         self.gyro_integral = 0
 
@@ -127,10 +127,10 @@ class Localization:
             # print("straight")
 
         # print(self.RH.can_steer)
-        x_delta = (dt * self.RH.corr_can_velocity_last) * math.cos(math.radians(self.RH.nav_hdg))
-        y_delta = (dt * self.RH.corr_can_velocity_last) * math.sin(math.radians(self.RH.nav_hdg))
-        x_delta_wth_offset = (dt * self.RH.corr_can_velocity_last) * (math.cos(math.radians(self.RH.nav_hdg)) - offset*self.RH.can_steer*math.sin(math.radians(self.RH.nav_hdg)))
-        y_delta_wth_offset = (dt * self.RH.corr_can_velocity_last) * (math.sin(math.radians(self.RH.nav_hdg)) + offset*self.RH.can_steer*math.cos(math.radians(self.RH.nav_hdg)))
+        x_delta = (dt * self.RH.corr_can_vel_last) * math.cos(math.radians(self.RH.nav_hdg))
+        y_delta = (dt * self.RH.corr_can_vel_last) * math.sin(math.radians(self.RH.nav_hdg))
+        x_delta_wth_offset = (dt * self.RH.corr_can_vel_last) * (math.cos(math.radians(self.RH.nav_hdg)) - offset*self.RH.can_steer*math.sin(math.radians(self.RH.nav_hdg)))
+        y_delta_wth_offset = (dt * self.RH.corr_can_vel_last) * (math.sin(math.radians(self.RH.nav_hdg)) + offset*self.RH.can_steer*math.cos(math.radians(self.RH.nav_hdg)))
         normalize_factor = (x_delta**2+y_delta**2)**0.5 / (x_delta_wth_offset**2+y_delta_wth_offset**2)**0.5
         x_delta_normalized = x_delta_wth_offset * normalize_factor
         y_delta_normalized = y_delta_wth_offset * normalize_factor
@@ -140,7 +140,7 @@ class Localization:
     def calculate_dr_hdg(self):
         dt = 0.05
         delta_rad = math.radians(self.RH.can_steer_last)
-        self.dr_hdg = self.last_hdg + (dt * math.degrees((self.RH.corr_can_velocity_last / 2.72) * math.tan(delta_rad)))
+        self.dr_hdg = self.last_hdg + (dt * math.degrees((self.RH.corr_can_vel_last / 2.72) * math.tan(delta_rad)))
         
     
     def calculate_imu_hdg(self):
@@ -149,20 +149,18 @@ class Localization:
     def localization_sensor_health(self):
         if self.nav_hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:
             self.RH.nav_health_pub.publish(False)
-            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
-            # os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+            os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
         if self.nav_pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
             self.RH.nav_health_pub.publish(False)
-            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
-            # os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+            os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
 
 
     def init_all_msgs(self):
         key1, key2, key3, key4 = False, False, False, False
-        vehiclestates = [self.RH.corr_can_velocity_last, self.RH.corr_can_velocity, self.RH.can_velocity_last, self.RH.can_velocity, self.RH.can_steer, self.RH.can_steer_last]
+        vehiclestates = [self.RH.corr_can_vel_last, self.RH.corr_can_vel, self.RH.can_vel_last, self.RH.can_vel, self.RH.can_steer, self.RH.can_steer_last]
         navatts = [self.last_hdg, self.RH.nav_hdg, self.RH.nav_pitch, self.RH.nav_roll]
         navpvts = [self.RH.nav_pos_last[0], self.RH.nav_pos[0], self.RH.nav_pos_last[1], self.RH.nav_pos[1]]
-        imus = [self.RH.imu_angular_velocity, self.RH.imu_linear_acceleration, self.RH.imu_header]
+        imus = [self.RH.imu_ang_vel, self.RH.imu_lin_acc, self.RH.imu_header]
         if not None in vehiclestates:
             key1 = True
         if not None in navatts:
@@ -182,7 +180,7 @@ class Localization:
     def print_pos_error(self):
         xerror = self.RH.nav_pos[0] - self.dr_pos[0]
         yerror = self.RH.nav_pos[1] - self.dr_pos[1]
-        print(f"at speed {self.RH.corr_can_velocity*3.6:3.2f}, pos error: {(xerror**2+yerror**2)**0.5:2.2f} ||||\
+        print(f"at speed {self.RH.corr_can_vel*3.6:3.2f}, pos error: {(xerror**2+yerror**2)**0.5:2.2f} ||||\
     x: {xerror:.3f} \
     y: {yerror:.3f}")
         
@@ -190,14 +188,14 @@ class Localization:
     def print_hdg_error(self, target="DR"):
         if target == "DR":
             error = self.RH.nav_hdg - self.dr_hdg
-            print(f"at speed {self.RH.corr_can_velocity*3.6:3.2f}, hdg error: {error:2.2f}")
+            print(f"at speed {self.RH.corr_can_vel*3.6:3.2f}, hdg error: {error:2.2f}")
         elif target == "IMU":
             error = self.RH.nav_hdg - self.RH.imu_hdg
-            print(f"at speed {self.RH.corr_can_velocity*3.6:3.2f}, hdg error: {error:2.2f}")
+            print(f"at speed {self.RH.corr_can_vel*3.6:3.2f}, hdg error: {error:2.2f}")
 
 
     def update_last_pos(self):
-        if self.RH.hAcc < 30:
+        if self.RH.hAcc < 30:    # need to modify
             nav_pos_valid = True
         else:
             nav_pos_valid = False
@@ -220,12 +218,11 @@ class Localization:
             self.last_pos = self.dr_pos
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
-            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
-            # os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+            os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
 
 
     def update_last_hdg(self):
-        if self.RH.headAcc < 30000:
+        if self.RH.headAcc < 30000:    # need to modify
             nav_hdg_valid = True
         else:
             nav_hdg_valid = False
@@ -261,8 +258,7 @@ class Localization:
             self.last_hdg = self.RH.imu_hdg
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
-            os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')    
-            # os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+            os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
 
         
     def update_plot(self, target):
@@ -292,7 +288,7 @@ class Localization:
         plt.draw()
         plt.legend()
         plt.pause(0.00001)
-
+        
 
     def run(self): 
         
@@ -327,10 +323,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-# if __name__ == "__main__":
-#     rospy.init_node("dr_simul")
-#     dr = Localization()
-#     rate = rospy.Rate(20)
-#     while not rospy.is_shutdown():
-#         dr.run()
-#         rate.sleep()
