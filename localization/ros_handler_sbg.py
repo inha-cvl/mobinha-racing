@@ -1,8 +1,7 @@
 import rospy
 
 from drive_msgs.msg import *
-from ublox_msgs.msg import NavATT, NavPVT
-from sensor_msgs.msg import Imu, NavSatFix
+from sbg_driver.msg import SbgEkfEuler, SbgEkfNav, SbgImuData
 from geometry_msgs.msg import Pose
 from std_msgs.msg import Bool
 from pyproj import Proj, Transformer
@@ -34,21 +33,21 @@ class ROSHandler():
         self.nav_hdg_last = None
 
         self.imu_header = None
-        self.imu_angular_velocity = None
-        self.imu_linear_acceleration = None
+        self.imu_ang_vel = None
+        self.imu_lin_acc = None
 
-        self.can_velocity = None
+        self.can_vel = None
         self.can_steer = None
-        self.corr_can_velocity = None
+        self.corr_can_vel = None
 
-        self.can_velocity_last = None
+        self.can_vel_last = None
         self.can_steer_last = None
-        self.corr_can_velocity_last = None
+        self.corr_can_vel_last = None
 
         # tmp
         self.hdg_hack = False
         self.pos_hack = False
-        self.nav_velocity = 0
+        self.nav_vel = 0
 
         # change
         self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23', '24', 
@@ -56,7 +55,7 @@ class ROSHandler():
                            '59', '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
         self.curved = False
 
-        self.pvt_cb = False
+        self.nav_cb = False
         self.gspeed = None
         self.hAcc = None
         self.headAcc = None
@@ -71,10 +70,9 @@ class ROSHandler():
         self.imu_hdg = None
 
     def set_protocol(self):
-        rospy.Subscriber('/ublox/navatt', NavATT, self.navatt_cb)
-        rospy.Subscriber('/ublox/navpvt', NavPVT, self.navpvt_cb)
-        rospy.Subscriber('/ublox/imu_meas', Imu, self.imu_cb)
-        rospy.Subscriber('/ublox/fix', NavSatFix, self.fix_cb)
+        rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.sbgeuler_cb)
+        rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.sbgnav_cb)
+        rospy.Subscriber('/sbg/imu_data', SbgImuData, self.sbgimu_cb)
         rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
@@ -89,6 +87,7 @@ class ROSHandler():
 
     def hdg_cb(self, msg):
         self.hdg_hack = msg.data
+
     def pos_cb(self, msg):
         self.pos_hack = msg.data
 
@@ -111,20 +110,21 @@ class ROSHandler():
                 # print("baseLLA is NONE")
                 pass
 
-    def navatt_cb(self, msg):  # gain heading
+    def sbgeuler_cb(self, msg):  # gain heading
         self.nav_hdg_last = self.nav_hdg
-        self.real_nav_hdg = -(msg.heading*1e-5 - 90)%360
+        self.real_nav_hdg = -(np.rad2deg(msg.angle.Yaw) - 90)%360
         if not self.hdg_hack:
             self.nav_hdg = self.real_nav_hdg 
         else:
             self.nav_hdg = 0
-        self.nav_roll = msg.roll*1e-5
-        self.nav_pitch = msg.pitch*1e-5
+        self.nav_roll = np.rad2deg(msg.angle.Roll)
+        self.nav_pitch = np.rad2deg(msg.angle.Pitch)
+        self.headAcc = msg.accuracy
 
-    def navpvt_cb(self, msg): # gain position
+    def sbgnav_cb(self, msg): # gain position
         self.nav_pos_last = self.nav_pos
-        lat = msg.lat*1e-7
-        lon = msg.lon*1e-7
+        lat = msg.latitude
+        lon = msg.longitude
         x, y, _= self.transformer.transform(lon, lat, 7)
         self.real_nav_pos = [x, y]
         if not self.pos_hack:
@@ -134,25 +134,24 @@ class ROSHandler():
 
         self.llh = [lat, lon]
         # change
-        self.pvt_cb = True
-        self.gspeed = msg.gSpeed
-        self.hAcc = msg.hAcc
-        self.headAcc = msg.headAcc
+        self.nav_cb = True
+        self.gspeed = np.sqrt(msg.velocity.x**2 + msg.velocity.y**2)
+        self.hAcc = np.sqrt(msg.position_accuracy.x**2 + msg.position_accuracy.y**2)
     
-    def imu_cb(self, msg):
+    def sbgimu_cb(self, msg):
         # change
         self.imu_header_last = self.imu_header
-        self.imu_angular_velocity_last = self.imu_angular_velocity
-        self.imu_linear_acceleration_last = self.imu_linear_acceleration
+        self.imu_ang_vel_last = self.imu_ang_vel
+        self.imu_lin_acc_last = self.imu_lin_acc
         self.accel_last = self.accel
         self.gyro_last = self.gyro
 
         self.imu_header = msg.header
-        self.imu_angular_velocity = msg.angular_velocity
-        self.imu_linear_acceleration = msg.linear_acceleration
+        self.imu_ang_vel = msg.gyro
+        self.imu_lin_acc = msg.accel
 
-        self.accel = np.array([self.imu_linear_acceleration.x, self.imu_linear_acceleration.y, self.imu_linear_acceleration.z])
-        self.gyro = np.array([self.imu_angular_velocity.x, self.imu_angular_velocity.y, self.imu_angular_velocity.z])
+        self.accel = np.array([self.imu_lin_acc.x, self.imu_lin_acc.y, self.imu_lin_acc.z])
+        self.gyro = np.array([self.imu_ang_vel.x, self.imu_ang_vel.y, self.imu_ang_vel.z])
 
         if self.imu_header_last is not None:
             ds = self.imu_header.stamp.secs - self.imu_header_last.stamp.secs
@@ -176,20 +175,20 @@ class ROSHandler():
     def system_status_cb(self, msg):
         self.base_lla = msg.baseLLA
     
-    def canoutput_cb(self, msg): # gain velocity, steering angle
+    def canoutput_cb(self, msg): # gain vel, steering angle
         self.canoutput_update()
         vRR = float(msg.WHEEL_SPD_RR.data)
         vRL = float(msg.WHEEL_SPD_RL.data) 
-        self.can_velocity = (vRR + vRL)/7.2 # [m/s]
-        self.corr_can_velocity = (self.can_velocity*3.6 \
-                                  + self.params[0] + self.params[1]*(self.can_velocity*3.6) \
-                                    + self.params[2]*((self.can_velocity*3.6)**2) \
-                                        + self.params[3]*((self.can_velocity*3.6)**3))/3.6 # [m/s]
+        self.can_vel = (vRR + vRL)/7.2 # [m/s]
+        self.corr_can_vel = (self.can_vel*3.6 \
+                                  + self.params[0] + self.params[1]*(self.can_vel*3.6) \
+                                    + self.params[2]*((self.can_vel*3.6)**2) \
+                                        + self.params[3]*((self.can_vel*3.6)**3))/3.6 # [m/s]
         if self.nav_pos_last[0] is not None:
-            self.nav_velocity = (((self.nav_pos_last[0] - self.nav_pos[0])**2+(self.nav_pos_last[1] - self.nav_pos[1])**2)**0.5)*20
-        # print(f" nav vel: {self.nav_velocity}\n can vel: {self.can_velocity_last}\ncorr vel: {self.corr_can_velocity_last}\n  error: {abs(self.corr_can_velocity_last - self.nav_velocity)}\n")
+            self.nav_vel = (((self.nav_pos_last[0] - self.nav_pos[0])**2+(self.nav_pos_last[1] - self.nav_pos[1])**2)**0.5)*20
+        # print(f" nav vel: {self.nav_vel}\n can vel: {self.can_vel_last}\ncorr vel: {self.corr_can_vel_last}\n  error: {abs(self.corr_can_vel_last - self.nav_vel)}\n")
         # try:
-        #     print(f"verror: {abs(self.corr_can_velocity_last - self.nav_velocity)}")
+        #     print(f"verror: {abs(self.corr_can_vel_last - self.nav_vel)}")
         # except:
         #     pass
 
@@ -197,8 +196,8 @@ class ROSHandler():
         self.can_steer = handle_ang*self.steer_scale_factor 
     
     def canoutput_update(self):
-        self.can_velocity_last = self.can_velocity
-        self.corr_can_velocity_last = self.corr_can_velocity
+        self.can_vel_last = self.can_vel
+        self.corr_can_vel_last = self.corr_can_vel
         self.can_steer_last = self.can_steer
 
     def lanedata_cb(self, msg):
