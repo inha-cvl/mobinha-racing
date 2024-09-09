@@ -69,7 +69,7 @@ class Visualizer:
 class LCANTest():
     def __init__(self):
         rospy.init_node('lcan_test', anonymous=True)
-        self.bus = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can0', bitrate=500000)
+        self.bus = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
         self.dbc = cantools.database.load_file('./RDR_Obj.dbc')
         self.setup_message_dicts()
         self.setup_decode_handlers()

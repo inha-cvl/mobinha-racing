@@ -87,7 +87,8 @@ class ROSHandler():
         rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
 
         # If use SBG
-        rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
+        #rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
+        rospy.Subscriber('/imu/nav_sat_fix', NavSatFix, self.nav_sat_fix_cb)
         rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
    
 
@@ -175,7 +176,7 @@ class ROSHandler():
         self.vehicle_state.header = msg.header
         self.vehicle_state.position.x = msg.latitude
         self.vehicle_state.position.y = msg.longitude
-        self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
+        #self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
         self.add_enu(msg.latitude, msg.longitude)
     
     def novatel_inspva_cb(self, msg):
@@ -193,7 +194,7 @@ class ROSHandler():
     
     def ekf_euler_cb(self, msg):
         yaw = math.degrees(msg.angle.z)
-        self.vehicle_state.heading.data = 90 - yaw if (yaw >= -90 and yaw <= 180) else -270 - yaw
+        self.vehicle_state.heading.data = (-1*(yaw+450)%360)+180#90 - yaw if (yaw >= -90 and yaw <= 180) else -270 - yaw
 
     def sim_pose_cb(self, msg):
         self.vehicle_state.header = Header()
@@ -215,7 +216,8 @@ class ROSHandler():
     
     
     def publish(self):
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
+        if len(self.local_pose) > 0:
+            self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
 
         self.can_input_pub.publish(self.can_input)
