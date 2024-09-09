@@ -46,7 +46,7 @@ class ROSHandler():
         if type == 0:
             return 
         
-        if message_dict['AlvAge01'] > 1 and (-50<message_dict['RelPosY01']<50):
+        if message_dict['AlvAge01'] > 1 and (-80<message_dict['RelPosY01']<80):
             radar_object = RadarObject()
             radar_object.alvAge.data = int(message_dict['AlvAge01'])
             radar_object.coastAge.data = int(message_dict['CoastAge01'])
@@ -59,7 +59,7 @@ class ROSHandler():
             radar_object.relVelY.data = float(message_dict['RelVelY01'])
             radar_object.relAccel.data = float(message_dict['RelAccelX01'])
             self.radar_object_array.radarObjects.append(radar_object)
-        if message_dict['AlvAge02'] > 1 and (-50<message_dict['RelPosY02']<50):
+        if message_dict['AlvAge02'] > 1 and (-80<message_dict['RelPosY02']<80):
             radar_object = RadarObject()
             radar_object.alvAge.data = int(message_dict['AlvAge02'])
             radar_object.coastAge.data = int(message_dict['CoastAge02'])

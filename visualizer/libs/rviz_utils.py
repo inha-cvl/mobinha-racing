@@ -150,12 +150,21 @@ def CarViz(frame_id, name_space, position, color):
 def ObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color = [255, 114, 48, 1]
+    color1 = [255, 114, 48, 1] 
+    color2 = [69,255,48,1] #green: LiDAR
+    color3 = [48,255,255,1] #cyan: Radar
     for n, obj in enumerate(objects):
-        marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
+        if obj[0] == 1:
+            color = color1
+        elif obj[0] == 2:
+            color = color2
+        else:
+            color = color3
+
+        marker = ObjectViz(n, (round(obj[1],1), round(obj[2],1)), obj[3], color)
         marker_array.markers.append(marker)
-        dist = f"{round(obj[3])} m"
-        marker = CarInfoViz('world',str(n+1), dist,(round(obj[0],1), round(obj[1],1)) )
+        dist = f"{round(obj[4])} m"
+        marker = CarInfoViz('world',str(n+1), dist,(round(obj[1],1), round(obj[2],1)) )
         marker_array.markers.append(marker)
     return marker_array
 

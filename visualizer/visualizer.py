@@ -77,7 +77,7 @@ class Visualizer:
     def detection_data_cb(self, msg):
         objs = []
         for obj in msg.objects:
-            objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.distance.data])
+            objs.append([obj.type.data, obj.position.x, obj.position.y, obj.heading.data, obj.distance.data])
         
         filtered_objs = self.filter_duplicates(objs)
         viz_objects = ObjectsViz(filtered_objs)
@@ -90,7 +90,7 @@ class Visualizer:
             is_duplicate = False
             
             for filtered_obj in filtered_objects:
-                if self.is_within_threshold(obj, filtered_obj):
+                if self.is_within_threshold(obj[1:], filtered_obj[1:]):
                     is_duplicate = True
                     break
 
