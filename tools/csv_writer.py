@@ -8,7 +8,7 @@ from sensor_msgs.msg import NavSatFix
 
 class VehicleStateRecorder:
     def __init__(self):
-        self.csv_file = open('./csv/0826_sbg.csv', 'w', newline='')
+        self.csv_file = open('./csv/0906_sbg.csv', 'w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['latitude', 'longitude'])
         rospy.init_node('vehicle_state_recorder', anonymous=True)

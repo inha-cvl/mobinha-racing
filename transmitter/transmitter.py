@@ -17,8 +17,8 @@ def signal_handler(sig, frame):
 
 class Transmitter():
     def __init__(self):
-        self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can1', bitrate=500000)
-        self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can0', bitrate=500000)
+        self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000)
+        self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
         self.TH = TransmitterHandler()
         self.RH = ROSHandler(self.TH)
 

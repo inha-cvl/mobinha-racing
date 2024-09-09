@@ -7,6 +7,8 @@ from geometry_msgs.msg import PoseArray, Pose, Pose2D, QuaternionStamped
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32, Bool
 from sensor_msgs.msg import NavSatFix
+from sbg_driver.msg import SbgEkfNav, SbgEkfEuler
+
 from novatel_oem7_msgs.msg import INSPVA
 
 
@@ -65,8 +67,16 @@ class ROSHandler():
         rospy.Subscriber('/control/target_actuator', Actuator, self.target_actuator_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
+        rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb) # Simulator
+        rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb) # Obstacles
 
-        # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
+        # Sensor Health
+        rospy.Subscriber('/nav_health', Bool, self.sensor_health_cb)
+        rospy.Subscriber('/lid_health', Bool, self.sensor_health_cb)
+
+        
+        # If Synnerex working
+        #rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
         #rospy.Subscriber('/best/pose', Pose, self.best_callback)
 
         # if Synnerex rtk.sh not working
@@ -75,33 +85,12 @@ class ROSHandler():
 
         # If use Novatel
         rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
-    
-        # Simulator
-        rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb)
-        # Refine
-        rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb)
 
-        # Sensor Health
-        rospy.Subscriber('/nav_health', Bool, self.sensor_health_cb)
-        rospy.Subscriber('/lid_health', Bool, self.sensor_health_cb)
+        # If use SBG
+        rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
+        rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
+   
 
-    def heading_cb(self, msg):
-        yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
-        self.vehicle_state.heading.data = yaw  
-
-    def nav_sat_fix_cb(self, msg):  # nmea_sentence error handling
-        self.vehicle_state.header = msg.header
-        self.vehicle_state.position.x = msg.latitude
-        self.vehicle_state.position.y = msg.longitude
-        self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
-        self.add_enu(msg.latitude, msg.longitude)
-    
-    def novatel_inspva_cb(self, msg):
-        self.vehicle_state.header = msg.header
-        self.vehicle_state.position.x = msg.latitude
-        self.vehicle_state.position.y = msg.longitude
-        self.vehicle_state.heading.data = 89-msg.azimuth
-        self.add_enu(msg.latitude, msg.longitude)
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -133,54 +122,6 @@ class ROSHandler():
             path.append([pts.x, pts.y])
         self.local_path = path
     
-    def best_callback(self, msg):
-        self.vehicle_state.header = Header()
-        self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.enu.x = msg.position.x
-        self.vehicle_state.enu.y = msg.position.y
-        self.vehicle_state.position.x = msg.orientation.x
-        self.vehicle_state.position.y = msg.orientation.y
-        self.local_pose = (msg.position.x,msg.position.y)
-        self.vehicle_state.heading.data = msg.orientation.z%360
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
-        self.system_status.lapCount.data = self.lap_cnt
-    
-    def nav_pvt_cb(self, msg):
-        # heading = float(msg.heading*1e-5)
-
-        # if self.localization_heading is not None:
-        #     if not calc_heading_error(heading, self.localization_heading):
-        #         heading = self.localization_heading
-        #         self.system_status.headingSet.data = 1 # wrong value
-        #     else:
-        #         self.system_status.headingSet.data = 0 # right value
-        
-        # heading = -1*(heading-90)%360
-        latitude = msg.lat*1e-7
-        longitude = msg.lon*1e-7
-        # self.vehicle_state.header = Header()
-        # self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.position.x = latitude
-        self.vehicle_state.position.y = longitude
-        # self.vehicle_state.heading.data = heading
-        # self.add_enu(latitude, longitude)
-    
-    def sim_pose_cb(self, msg):
-        self.vehicle_state.header = Header()
-        self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.position.x = msg.x
-        self.vehicle_state.position.y = msg.y
-        self.add_enu(msg.x, msg.y)
-        self.vehicle_state.heading.data = msg.theta
-
-    def add_enu(self, lat, lng):
-        x, y, _ = self.transformer.transform(lng, lat, 7)
-        self.vehicle_state.enu.x = x
-        self.vehicle_state.enu.y = y
-        self.local_pose = (x,y)
-        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
-        self.system_status.lapCount.data = self.lap_cnt
-
     def user_input_cb(self, msg): #mode, signal, state, health
         mode = int(msg.user_mode.data)
         self.system_to_can(mode)
@@ -207,21 +148,25 @@ class ROSHandler():
 
     def sensor_health_cb(self, msg):
         self.system_status.systemHealth.data = msg.data
+
+# ~~~~~~~~~~~~~~~~~~~ Positions ~~~~~~~~~~~~~~~~~~~~~~ #
     
-    def publish(self):
-        self.can_input_pub.publish(self.can_input)
-        self.sensor_data_pub.publish(self.sensor_data)
-        self.system_status_pub.publish(self.system_status)
-        self.vehicle_state_pub.publish(self.vehicle_state)
-        self.detection_data_pub.publish(self.detection_data)
-        self.ego_actuator_pub.publish(self.ego_actuator)
-        self.oh.update_value(self.local_pose, self.vehicle_state.heading.data)
-
-
-
-'''
-
-
+    def best_callback(self, msg):
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
+        self.vehicle_state.enu.x = msg.position.x
+        self.vehicle_state.enu.y = msg.position.y
+        self.vehicle_state.position.x = msg.orientation.x
+        self.vehicle_state.position.y = msg.orientation.y
+        self.local_pose = (msg.position.x,msg.position.y)
+        self.vehicle_state.heading.data = msg.orientation.z%360
+    
+    def nav_pvt_cb(self, msg):
+        latitude = msg.lat*1e-7
+        longitude = msg.lon*1e-7
+        self.vehicle_state.position.x = latitude
+        self.vehicle_state.position.y = longitude
+    
     def heading_cb(self, msg):
         yaw = match_heading(msg.quaternion.x, msg.quaternion.y, msg.quaternion.z, msg.quaternion.w)
         self.vehicle_state.heading.data = yaw  
@@ -232,7 +177,57 @@ class ROSHandler():
         self.vehicle_state.position.y = msg.longitude
         self.vehicle_state.heading.data = (-1*(self.local_heading+450)%360)+180
         self.add_enu(msg.latitude, msg.longitude)
+    
+    def novatel_inspva_cb(self, msg):
+        self.vehicle_state.header = msg.header
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+        self.vehicle_state.heading.data = 89-msg.azimuth
+        self.add_enu(msg.latitude, msg.longitude)
+    
+    def ekf_nav_cb(self, msg):
+        self.vehicle_state.header = msg.header
+        self.vehicle_state.position.x = msg.latitude
+        self.vehicle_state.position.y = msg.longitude
+        self.add_enu(msg.latitude, msg.longitude)
+    
+    def ekf_euler_cb(self, msg):
+        yaw = math.degrees(msg.angle.z)
+        self.vehicle_state.heading.data = 90 - yaw if (yaw >= -90 and yaw <= 180) else -270 - yaw
 
+    def sim_pose_cb(self, msg):
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
+        self.vehicle_state.position.x = msg.x
+        self.vehicle_state.position.y = msg.y
+        self.add_enu(msg.x, msg.y)
+        self.vehicle_state.heading.data = msg.theta
+
+    def add_enu(self, lat, lng):
+        x, y, _ = self.transformer.transform(lng, lat, 7)
+        self.vehicle_state.enu.x = x
+        self.vehicle_state.enu.y = y
+        self.local_pose = (x,y)
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
+        self.system_status.lapCount.data = self.lap_cnt
+
+
+    
+    
+    def publish(self):
+        self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
+        self.system_status.lapCount.data = self.lap_cnt
+
+        self.can_input_pub.publish(self.can_input)
+        self.sensor_data_pub.publish(self.sensor_data)
+        self.system_status_pub.publish(self.system_status)
+        self.vehicle_state_pub.publish(self.vehicle_state)
+        self.detection_data_pub.publish(self.detection_data)
+        self.ego_actuator_pub.publish(self.ego_actuator)
+        self.oh.update_value(self.local_pose, self.vehicle_state.heading.data)
+
+
+'''
     def nmea_sentence_cb(self, msg):
         self.vehicle_state.header = msg.header
         if self.prev_lla is None:

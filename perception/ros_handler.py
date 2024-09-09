@@ -29,7 +29,7 @@ class ROSHandler():
         radar_objects = []
         for ro in msg.radarObjects:
             if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
-                obj = [ro.relPosX.data, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
+                obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
                 radar_objects.append(obj)
         self.radar_objects = radar_objects
 
@@ -40,25 +40,25 @@ class ROSHandler():
         for i, (x, y, o1, o2, o3) in enumerate(positions):
 
             marker = Marker()
-            marker.header.frame_id = "radar_frame"
+            marker.header.frame_id = "hesai_lidar"
             marker.header.stamp = rospy.Time.now()
             marker.ns = "objects"
             marker.id = i
-            marker.type = Marker.CUBE
+            marker.type = Marker.SPHERE
             marker.action = Marker.ADD
             marker.lifetime = rospy.Duration(0.05)
-            marker.pose.position.x = x
+            marker.pose.position.x = x+0.8
             marker.pose.position.y = y
-            marker.pose.position.z = 0  # Assume ground level for simplicity
+            marker.pose.position.z = -1.2  # Assume ground level for simplicity
             quaternion = tf.transformations.quaternion_from_euler(0, 0, math.radians(o1))
             marker.pose.orientation.x = quaternion[0]
             marker.pose.orientation.y = quaternion[1]
             marker.pose.orientation.z = quaternion[2]
             marker.pose.orientation.w = quaternion[3]
-            marker.scale.x = 1
-            marker.scale.y = 0.5
-            marker.scale.z = 0.5
-            marker.color.a = 1.0  # Don't forget to set the alpha!
+            marker.scale.x = 1.6
+            marker.scale.y = 1.6
+            marker.scale.z = 1.6
+            marker.color.a = 0.5  # Don't forget to set the alpha!
             marker.color.r = 1.0
             marker.color.g = 1.0
             marker.color.b = 0.0
@@ -66,7 +66,7 @@ class ROSHandler():
             marker_array.markers.append(marker)
 
             marker = Marker()
-            marker.header.frame_id = "radar_frame"
+            marker.header.frame_id = "hesai_lidar"
             marker.ns = "objects"
             marker.id = i+32
             marker.type = Marker.TEXT_VIEW_FACING
@@ -76,11 +76,11 @@ class ROSHandler():
             marker.color.g = 1
             marker.color.b = 1
             marker.color.a = 1.0
-            marker.pose.position.x = x
+            marker.pose.position.x = x+0.8
             marker.pose.position.y = y
-            marker.pose.position.z = 0.75
-            marker.text = f"{o1:.1f}° {o2:.1f}m/s"
-            
+            marker.pose.position.z = -1.2+0.65
+            marker.text = f"{(x-2.325):.1f}m {o2:.1f}m/s"
+            #°
             marker_array.markers.append(marker)
 
         self.radar_objects_marker_pub.publish(marker_array)
