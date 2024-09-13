@@ -393,10 +393,10 @@ class Localization:
             self.update_last_hdg() # update last_hdg variable (choose: NAV, DR, IMU)
             # self.print_pos_error() # print pos error in terminal
             # self.print_hdg_error(target="DR") # print hdg error in terminal
-            # self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU
-            print(f"HDG_INV: {self.RH.hdg_invalid_cnt}, POS_INV: {self.RH.pos_invalid_cnt}")
-            print(f"HDG_ACC: {self.RH.headAcc}, POS_ACC: {self.RH.hAcc}")
-            print("-------------------------------------------------------------------------")
+            # # self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU
+            # print(f"HDG_INV: {self.RH.hdg_invalid_cnt}, POS_INV: {self.RH.pos_invalid_cnt}")
+            # print(f"HDG_ACC: {self.RH.headAcc}, POS_ACC: {self.RH.hAcc}")
+            # print("-------------------------------------------------------------------------")
             self.localization_sensor_health()
             if self.last_hdg is not None and self.last_pos is not None:
                 self.RH.publish(self.last_hdg, self.last_pos)
