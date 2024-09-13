@@ -222,12 +222,13 @@ class Localization:
 
 
     def update_last_hdg(self):
-        if self.RH.headAcc < 30000:    # need to modify
-            nav_hdg_valid = True
-        else:
-            nav_hdg_valid = False
-            self.nav_hdg_invalid_cnt += 1
-        
+        # if self.RH.headAcc < 30000:    # need to modify
+        #     nav_hdg_valid = True
+        # else:
+        #     nav_hdg_valid = False
+        #     self.nav_hdg_invalid_cnt += 1
+        nav_hdg_valid = True
+
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False
         val = abs(self.last_hdg - self.dr_hdg)
@@ -303,6 +304,7 @@ class Localization:
             ### self.accel, gyro_integral = 0
             self.update_last_pos() # update last_pos variable (choose: NAV, DR)
             self.update_last_hdg() # update last_hdg variable (choose: NAV, DR, IMU)
+            print(f"HEADING: {self.RH.nav_hdg}")
             # self.print_pos_error() # print pos error in terminal
             # self.print_hdg_error(target="DR") # print hdg error in terminal
             # self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU)

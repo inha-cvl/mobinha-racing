@@ -45,10 +45,16 @@ class ROSHandler():
         self.can_steer_last = None
         self.corr_can_velocity_last = None
 
+        self.laneNumber = None
+
         # tmp
         self.hdg_hack = False
         self.pos_hack = False
         self.nav_velocity = 0
+        self.pos_test_velocity = 0
+        self.hdg_test_velocity = 0
+        self.hdg_invalid_cnt = 0
+        self.pos_invalid_cnt = 0
 
         # change
         self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23', '24', 
@@ -78,7 +84,7 @@ class ROSHandler():
         rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lanedata_cb)
-
+        
         # tmp
         self.pub_hdg = rospy.Subscriber("/heading_hack", Bool, self.hdg_cb)
         self.pub_pos = rospy.Subscriber("/position_hack", Bool, self.pos_cb)
@@ -116,29 +122,54 @@ class ROSHandler():
         self.real_nav_hdg = -(msg.heading*1e-5 - 90)%360
         if not self.hdg_hack:
             self.nav_hdg = self.real_nav_hdg 
+            # self.headAcc = 0
         else:
             self.nav_hdg = 0
         self.nav_roll = msg.roll*1e-5
         self.nav_pitch = msg.pitch*1e-5
 
     def navpvt_cb(self, msg): # gain position
-        self.nav_pos_last = self.nav_pos
-        lat = msg.lat*1e-7
-        lon = msg.lon*1e-7
-        x, y, _= self.transformer.transform(lon, lat, 7)
-        self.real_nav_pos = [x, y]
-        if not self.pos_hack:
-            self.nav_pos = self.real_nav_pos
-        else:
-            self.nav_pos = [0, 0]
+        if self.transformer is not None:
+            self.nav_pos_last = self.nav_pos
+            lat = msg.lat*1e-7
+            lon = msg.lon*1e-7
+            x, y, _= self.transformer.transform(lon, lat, 7)
+            self.real_nav_pos = [x, y]
 
-        self.llh = [lat, lon]
-        # change
-        self.pvt_cb = True
-        self.gspeed = msg.gSpeed
-        self.hAcc = msg.hAcc
-        self.headAcc = msg.headAcc
-    
+            # self.headAcc = msg.headAcc
+            if not self.pos_hack:
+                self.nav_pos = self.real_nav_pos
+                # self.hAcc = 0
+                self.hAcc = 10 # msg.hAcc
+                self.pos_test_velocity = 0
+            else:
+                self.nav_pos = [0, 0]
+                self.hAcc = 900
+                self.pos_test_velocity = 30
+            
+            if not self.hdg_hack:
+                self.headAcc = 30000 # msg.headAcc
+                # self.headAcc = 0
+                self.hdg_test_velocity = 0
+            else:
+                self.headAcc = 90000
+                self.hdg_test_velocity = 30
+
+            self.llh = [lat, lon]
+            # change
+            self.pvt_cb = True
+            self.gspeed = msg.gSpeed
+
+            if self.hAcc > 50 and self.corr_can_velocity * 3.6 > 30:
+                self.pos_invalid_cnt += 1
+            else:
+                self.pos_invalid_cnt = 0
+
+            if self.headAcc > 50000 and self.corr_can_velocity * 3.6 > 30:
+                self.hdg_invalid_cnt += 1
+            else:
+                self.hdg_invalid_cnt = 0 
+        
     def imu_cb(self, msg):
         # change
         self.imu_header_last = self.imu_header
@@ -202,7 +233,8 @@ class ROSHandler():
         self.can_steer_last = self.can_steer
 
     def lanedata_cb(self, msg):
-        # self.curr_lane_id = str(msg.currentLane.id.data)
+        # self.curr_lane_id = str(msg.currentLane.id.data)        
+        self.laneNumber = msg.currentLane.laneNumber.data
         if msg.currentLane.id.data in self.curve_list:
             self.curved = True
         else:

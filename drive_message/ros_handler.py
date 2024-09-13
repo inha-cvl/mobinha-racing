@@ -76,20 +76,20 @@ class ROSHandler():
 
         
         # If Synnerex working
-        #rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
-        #rospy.Subscriber('/best/pose', Pose, self.best_callback)
+        # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
+        rospy.Subscriber('/best/pose', Pose, self.best_callback)
 
         # if Synnerex rtk.sh not working
         #rospy.Subscriber('/fix',NavSatFix, self.nav_sat_fix_cb )
         #rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
 
         # If use Novatel
-        rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
+        # rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
 
         # If use SBG
         #rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
-        rospy.Subscriber('/imu/nav_sat_fix', NavSatFix, self.nav_sat_fix_cb)
-        rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
+        # rospy.Subscriber('/imu/nav_sat_fix', NavSatFix, self.nav_sat_fix_cb)
+        # rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
    
 
 

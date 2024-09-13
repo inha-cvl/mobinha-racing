@@ -34,8 +34,8 @@ class Planning():
     def setting_values(self, now_lap):
         self.shutdown_event = threading.Event()
 
-        self.specifiers = ['to_goal_solchan', 'race_solchan']
-        #self.specifiers = ['to_goal_fast', 'race_fast']
+        #self.specifiers = ['to_goal_solchan', 'race_solchan']
+        self.specifiers = ['to_goal_fast', 'race_fast']
         self.race_mode = self.specifiers[0]
         self.prev_race_mode = self.race_mode
 

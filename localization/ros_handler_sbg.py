@@ -1,7 +1,7 @@
 import rospy
 
 from drive_msgs.msg import *
-from sbg_driver.msg import SbgEkfEuler, SbgEkfNav, SbgImuData
+from sbg_driver.msg import SbgEkfEuler, SbgEkfQuat, SbgEkfNav, SbgImuData
 from geometry_msgs.msg import Pose
 from std_msgs.msg import Bool
 from pyproj import Proj, Transformer
@@ -69,8 +69,11 @@ class ROSHandler():
         self.q = None
         self.imu_hdg = None
 
+        self.set = False
+
     def set_protocol(self):
-        rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.sbgeuler_cb)
+        rospy.Subscriber('/sbg/ekf_quat', SbgEkfQuat, self.sbgquat_cb)
+        # rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.sbgeuler_cb)
         rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.sbgnav_cb)
         rospy.Subscriber('/sbg/imu_data', SbgImuData, self.sbgimu_cb)
         rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
@@ -105,10 +108,29 @@ class ROSHandler():
                 proj_wgs84 = Proj(proj='latlong', datum='WGS84') 
                 proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=self.base_lla[0], lon_0=self.base_lla[1], h_0=self.base_lla[2])
                 self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
+                self.set = True
                 break
             else:
                 # print("baseLLA is NONE")
                 pass
+
+    
+    def sbgquat_cb(self, msg):  # gain heading
+        self.nav_hdg_last = self.nav_hdg
+
+        yaw_rad = np.arctan2(2.0 * (msg.quaternion.w * msg.quaternion.z + msg.quaternion.x * msg.quaternion.y), 
+                         1.0 - 2.0 * (msg.quaternion.y * msg.quaternion.y + msg.quaternion.z * msg.quaternion.z))
+        self.real_nav_hdg = -(np.rad2deg(yaw_rad) - 90) % 360
+
+        if not self.hdg_hack:
+            self.nav_hdg = self.real_nav_hdg 
+        else:
+            self.nav_hdg = 0
+        self.nav_roll = np.rad2deg(np.arctan2(2.0 * (msg.quaternion.w * msg.quaternion.x + msg.quaternion.y * msg.quaternion.z), 
+                                          1.0 - 2.0 * (msg.quaternion.x * msg.quaternion.x + msg.quaternion.y * msg.quaternion.y)))
+        self.nav_pitch = np.rad2deg(np.arcsin(2.0 * (msg.quaternion.w * msg.quaternion.y - msg.quaternion.z * msg.quaternion.x)))
+
+        # self.headAcc = msg.accuracy
 
     def sbgeuler_cb(self, msg):  # gain heading
         self.nav_hdg_last = self.nav_hdg
@@ -122,21 +144,22 @@ class ROSHandler():
         self.headAcc = msg.accuracy
 
     def sbgnav_cb(self, msg): # gain position
-        self.nav_pos_last = self.nav_pos
-        lat = msg.latitude
-        lon = msg.longitude
-        x, y, _= self.transformer.transform(lon, lat, 7)
-        self.real_nav_pos = [x, y]
-        if not self.pos_hack:
-            self.nav_pos = self.real_nav_pos
-        else:
-            self.nav_pos = [0, 0]
+        if self.set:
+            self.nav_pos_last = self.nav_pos
+            lat = msg.latitude
+            lon = msg.longitude
+            x, y, _= self.transformer.transform(lon, lat, 7)
+            self.real_nav_pos = [x, y]
+            if not self.pos_hack:
+                self.nav_pos = self.real_nav_pos
+            else:
+                self.nav_pos = [0, 0]
 
-        self.llh = [lat, lon]
-        # change
-        self.nav_cb = True
-        self.gspeed = np.sqrt(msg.velocity.x**2 + msg.velocity.y**2)
-        self.hAcc = np.sqrt(msg.position_accuracy.x**2 + msg.position_accuracy.y**2)
+            self.llh = [lat, lon]
+            # change
+            self.nav_cb = True
+            self.gspeed = np.sqrt(msg.velocity.x**2 + msg.velocity.y**2)
+            self.hAcc = np.sqrt(msg.position_accuracy.x**2 + msg.position_accuracy.y**2)
     
     def sbgimu_cb(self, msg):
         # change
