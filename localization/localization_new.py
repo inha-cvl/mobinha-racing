@@ -33,7 +33,6 @@ class Localization:
 
         self.restart_timer = rospy.Time.now()
 
-
         # Initialize plot
         self.fig, self.ax = plt.subplots()
         self.nav_plot, = self.ax.plot([], [], 'bo-', label='NAV')
@@ -88,8 +87,7 @@ class Localization:
             self.imu_time = time.time()
             self.dr_time = time.time()
             self.initiated = True
-            self.initiate_q()
-            
+            self.initiate_q()     
             # print("initiated")
 
 
@@ -157,59 +155,11 @@ class Localization:
         # print(f"[crv: {self.RH.curved}], at lane {self.RH.laneNumber}, offset: {offset:.2f}")
 
         self.dr_hdg = self.last_hdg + (dt * math.degrees((self.RH.corr_can_velocity_last / 2.72) * math.tan(delta_rad))*offset)
-        # 55km/h lane 3
-        # 0.5 -> -0.16
-        # 0.8 -> 0.00
-        # 1.1 -> 0.17
-        # 1.5 -> 0.40
-        # 2.5 -> 1.00
-
-        # 65km/h lane 3
-        # 0.5 -> -0.17
-        # 0.7 -> 0.00
-        # 0.8 -> 0.09      
-         
-        # 75km/h lane 3
-        # 0.65 -> 0.00
-        # 0.7 ->  0.04
-        
-
-        # 80km/h lane 2
-        # 0.5 -> -0.16
-        # 0.62 -> -0.05
-        # 0.65 -> 0.00
-        # 0.75 -> 0.11
-
-        # 70km/h lane 2
-        # 0.5 -> -0.17
-        # 0.74 -> 0.00
-        # 0.8 -> 0.05
-
-        # 60km/h lane 2
-        # 0.7 -> -0.05
-        # 0.72 -> -0.04
-        # 0.8 -> 0.00
-
-
-        # 60km/h lane 1
-        # 1.47 -> -0.08
-        # 1.52 -> 0.00
-
-        # 70km/h lane 1
-        # 0.8 -> -0.22
-        # 1.0 -> -0.16
-        # 1.47 -> 0.00
-        # 1.5 -> 0.02
-
-        # 85km/h lane 1
-        # 0.5 -> -0.20
-        # 0.65 -> -0.18
-        # 0.85 -> 0.00
-        # 1.0 -> 0.11
         
     
     def calculate_imu_hdg(self):
         pass
+
 
     def localization_sensor_health(self):
         if self.timer(30):
@@ -236,6 +186,7 @@ class Localization:
             result = False
 
         return result, time_to_go
+
 
     def init_all_msgs(self):
         key1, key2, key3, key4 = False, False, False, False
@@ -281,16 +232,16 @@ class Localization:
             nav_pos_valid = True
         elif self.RH.hAcc > 50:
             nav_pos_valid = False
+            # dr_pos_valid = True
+        
+        if None in [self.last_pos, self.dr_pos]:
+            dr_pos_valid = False
+        
+        diff = ((self.dr_pos[0]-self.last_pos[0])**2 + (self.dr_pos[1]-self.last_pos[1])**2)**0.5
+        if diff < 5:
             dr_pos_valid = True
-        
-        # if None in [self.last_pos, self.dr_pos]:
-        #     dr_pos_valid = False
-        
-        # diff = ((self.dr_pos[0]-self.last_pos[0])**2 + (self.dr_pos[1]-self.last_pos[1])**2)**0.5
-        # if diff < 5:
-        #     dr_pos_valid = True
-        # else:
-        #     dr_pos_valid = False
+        else:
+            dr_pos_valid = False
         
         # if source == "NAV":s
         if nav_pos_valid:
@@ -311,16 +262,16 @@ class Localization:
             nav_hdg_valid = True
         elif self.RH.headAcc > 50000:
             nav_hdg_valid = False
-            dr_hdg_valid = True
+            # dr_hdg_valid = True
         
-        # if None in [self.last_hdg, self.dr_hdg]:
-        #     dr_hdg_valid = False
-        # val = abs(self.last_hdg - self.dr_hdg)
-        # diff = min(val, 360 - val)
-        # if diff < 5:
-        #     dr_hdg_valid = True
-        # else:
-        #     dr_hdg_valid = False
+        if None in [self.last_hdg, self.dr_hdg]:
+            dr_hdg_valid = False
+        val = abs(self.last_hdg - self.dr_hdg)
+        diff = min(val, 360 - val)
+        if diff < 5:
+            dr_hdg_valid = True
+        else:
+            dr_hdg_valid = False
         
         # if None in [self.last_hdg, self.RH.imu_hdg]:
         #     imu_hdg_valid = False
@@ -388,7 +339,6 @@ class Localization:
             self.calculate_dr_pos() # estimate current pos from last pos & sensor datas
             self.calculate_dr_hdg() # estimate current hdg from last hdg & sensor datas
             self.calculate_imu_hdg()
-            ### self.accel, gyro_integral = 0
             self.update_last_pos() # update last_pos variable (choose: NAV, DR)
             self.update_last_hdg() # update last_hdg variable (choose: NAV, DR, IMU)
             # self.print_pos_error() # print pos error in terminal

@@ -139,21 +139,16 @@ class ROSHandler():
             # self.headAcc = msg.headAcc
             if not self.pos_hack:
                 self.nav_pos = self.real_nav_pos
-                # self.hAcc = 0
-                self.hAcc = 10 # msg.hAcc
-                self.pos_test_velocity = 0
+                # self.hAcc = 10 # msg.hAcc
             else:
                 self.nav_pos = [0, 0]
                 self.hAcc = 900
-                self.pos_test_velocity = 30
             
             if not self.hdg_hack:
                 self.headAcc = 30000 # msg.headAcc
                 # self.headAcc = 0
-                self.hdg_test_velocity = 0
             else:
                 self.headAcc = 90000
-                self.hdg_test_velocity = 30
 
             self.llh = [lat, lon]
             # change
