@@ -33,7 +33,7 @@ class ObjectSimulator:
        self.object_ready = True
        
     def target_actuator_cb(self, msg):
-        self._steer = msg.steer.data
+        self._steer = 0#msg.steer.data
         self._accel = msg.accel.data
         self._brake = msg.brake.data
 
@@ -44,7 +44,7 @@ class ObjectSimulator:
         dt = 0.05
         while not rospy.is_shutdown():
             if self.object_ready:
-                if time.time()-start_time > 15:
+                if time.time()-start_time > 20:
                     self.object_ready = False
                     vel = 0
                 x,y,yaw,v = self.object.next_state(dt, self.object.yaw, 1, self._brake)

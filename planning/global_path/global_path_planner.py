@@ -12,6 +12,7 @@ from scipy.interpolate import splprep, splev, interp1d
 class GlobalPathPlanner():
     def __init__(self, map_name):
         self.set_maps(map_name)
+        self.global_path = None
     
     def set_maps(self, map_name):
         map = global_path.libs.load_map.MAP(map_name)
@@ -86,3 +87,10 @@ class GlobalPathPlanner():
             return True, path_viz
         else:
             return False, None
+
+    def get_remain_distance(self, local_pose):
+        if self.global_path is None:
+            return 99999
+        min_idx = gput.find_nearest_idx(self.global_path, local_pose)
+        return (len(self.global_path)-min_idx)*4
+    

@@ -59,7 +59,7 @@ for i,f in enumerate(final_path):
     Rk = gput.calc_kappa(f, before_after_pts)
     vx = vel_p[i]
     ax = accel_p[i]
-    final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, Rk, vx, ax])
+    final_tr.append([f[0], f[1], 3.25, 6.5, A, B, 0, s, theta, Rk, vx, ax])
     s += 1
 
 top_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

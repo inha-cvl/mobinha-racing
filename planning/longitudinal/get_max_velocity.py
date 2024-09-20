@@ -102,8 +102,12 @@ class GetMaxVelocity:
         # Adjust velocities based on curvature R
         K = target_velocity * 7
         for i in range(len(smoothed_velocities)):
-            if R_list[i] != 0:  # Prevent division by zero
-                adjusted_velocity = target_velocity - (K / R_list[i]) if target_velocity > 3 else target_velocity
+            if len(R_list) >= i:
+                r = R_list[-1]
+            else:
+                r = R_list[1]
+            if r != 0:  # Prevent division by zero
+                adjusted_velocity = target_velocity - (K / r) if target_velocity > 3 else target_velocity
                 smoothed_velocities[i] = min(smoothed_velocities[i], adjusted_velocity)
 
         # Apply moving average filter to smooth the velocities

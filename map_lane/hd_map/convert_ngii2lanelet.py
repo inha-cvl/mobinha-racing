@@ -27,16 +27,17 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    name = 'Solchan'
+    name = 'KCity'
 
     parser.add_argument('--ngii_path', type=str, default='./%s'%(name))
     parser.add_argument('--precision', type=float, default=1)
-    parser.add_argument('--base_lla', type=tuple, default=(37.36549921,126.64108444,7),help='(lat, lon, alt)')
+    parser.add_argument('--base_lla', type=tuple, default=(37.2292221592864,126.76912499027308,29.18400001525879),help='(lat, lon, alt)')
 
     #Solchan 37.36549921,126.64108444
     #KIAPI: 35.65492524,128.39351431
+    #KCITY: 37.2292221592864,126.76912499027308,29.18400001525879
 
-    parser.add_argument('--is_utm', type=bool, default=False)
+    parser.add_argument('--is_utm', type=bool, default=True)
     args = parser.parse_args()
 
     main(args)

@@ -547,7 +547,12 @@ class OnlineTrajectoryHandler(object):
         planned_once = self.__last_bp_action_set is not None
         valid_solution_last_step = (planned_once and action_id_sel in self.__last_bp_action_set.keys()
                                     and np.size(self.__last_bp_action_set[action_id_sel][idx_sel_traj], axis=0) > 0)
-        valid_solution_this_step = len(list(self.__last_action_set_node_idx.keys())) > 0
+
+        #valid_solution_this_step = len(list(self.__last_action_set_node_idx.keys())) > 0
+        if self.__last_action_set_node_idx is not None:
+            valid_solution_this_step = len(list(self.__last_action_set_node_idx.keys())) > 0
+        else:
+            valid_solution_this_step = False
 
         # --------------------------------------------------------------------------------------------------------------
         # - Get cut index and extract velocity -------------------------------------------------------------------------

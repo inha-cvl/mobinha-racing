@@ -24,7 +24,7 @@ class Morai:
         self.pub_sim_pose = rospy.Publisher('/simulator/pose', Pose2D, queue_size=1)
         self.pub_sim_object = rospy.Publisher('/simulator/objects', PoseArray, queue_size=1)
         self.pub_can_output = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
-        self.ctrl_pub = rospy.Publisher('/ctrl_cmd_0', CtrlCmd, queue_size=1)  # Vehicl Control
+        self.ctrl_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size=1)  # Vehicl Control
         rospy.Subscriber("/gps", GPSMessage, self.gps_cb)
         rospy.Subscriber("/imu", Imu, self.imu_cb)
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.ego_topic_cb)

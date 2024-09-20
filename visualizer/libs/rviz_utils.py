@@ -10,7 +10,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def LocalPathViz(waypoints):
     color =  [241, 76, 152, 1]
-    return Path(waypoints, 999, 0.2, 1.5, (color[0]/255,color[1]/255, color[2]/255, 0.5))
+    return Path(waypoints, 999, 0.2, 1.5, (color[0]/255,color[1]/255, color[2]/255, 0.75))
 
 def KappaPathViz(waypoints):
     return Path(waypoints, 999, 0.2, 1.5, (150/255,59/255, 255/255, 0.5))
@@ -32,13 +32,15 @@ def kappa_viz(kappas):
     
 def Line(ns, id_, scale, color, len):
     marker = Marker()
-    marker.type = Marker.LINE_STRIP
+    marker.type = Marker.SPHERE_LIST
     marker.action = Marker.ADD
     marker.header.frame_id = 'world'
     marker.ns = ns
     marker.id = id_
     marker.lifetime = rospy.Duration(0)
     marker.scale.x = scale
+    marker.scale.y = scale
+    marker.scale.z = scale
     marker.color.r = color[0]
     marker.color.g = color[1]
     marker.color.b = color[2]

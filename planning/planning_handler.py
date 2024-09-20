@@ -121,6 +121,29 @@ def calculate_R_list(points, base_offset=2, step_size=40):
             Rs.append(last_R)
     return Rs
 
+def calculate_R_list2(array, base_offset=2, step_size=40):
+    Rs = []
+    numpoints = len(array)
+    last_R = 99999
+    last_offset = step_size * 2
+
+    # array는 shape이 [n, 2]로 x 좌표는 array[:, 0], y 좌표는 array[:, 1]에 들어가 있다고 가정
+    x_points = array[:, 0]
+    y_points = array[:, 1]
+
+    for i in range(numpoints):
+        if i + base_offset < numpoints - last_offset:
+            epoints = [x_points[i + base_offset], y_points[i + base_offset]]
+            npoints = [[x_points[i + base_offset + step_size], y_points[i + base_offset + step_size]],
+                       [x_points[i + base_offset + 2 * step_size], y_points[i + base_offset + 2 * step_size]]]
+            kappa = calc_kappa(epoints, npoints)
+            R = abs(1 / kappa) if kappa != 0 else 99999
+            last_R = R
+            Rs.append(R)
+        else:
+            Rs.append(last_R)
+    return Rs
+
 #best
 def interpolate_path(final_global_path, min_length=100, sample_rate=3, smoothing_factor=30.0, interp_points=10):
 #def interpolate_path(final_global_path, min_length=100, sample_rate=20, smoothing_factor=3.0, interp_points=20):
