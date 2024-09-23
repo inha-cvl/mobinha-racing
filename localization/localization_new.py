@@ -31,6 +31,9 @@ class Localization:
         self.hdg_mct = 10  # min compensation time
         self.pos_mct = 10
 
+        self.dr_hdg_cnt = 0
+        self.dr_pos_cnt = 0
+
         self.restart_timer = rospy.Time.now()
 
         # Initialize plot
@@ -157,7 +160,7 @@ class Localization:
         self.dr_hdg = self.last_hdg + (dt * math.degrees((self.RH.corr_can_velocity_last / 2.72) * math.tan(delta_rad))*offset)
         
     
-    def calculate_imu_hdg(self):
+    def calculate_imu_hdg(self):  
         pass
 
 
@@ -249,6 +252,8 @@ class Localization:
         # elif source == "DR":
         elif dr_pos_valid:
             self.last_pos = self.dr_pos
+            self.dr_pos_cnt += 1
+            print(f"DR_POS has used during {self.dr_pos_cnt}!")
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
             print("ERROR: ALL Position Dead")
@@ -289,6 +294,8 @@ class Localization:
         # elif source == "DR":
         elif dr_hdg_valid:
             self.last_hdg = self.dr_hdg
+            self.dr_hdg_cnt += 1
+            print(f"DR_HDG has used during {self.dr_hdg_cnt}!")
         # elif source == "IMU":
         # elif imu_hdg_valid:
         #     self.last_hdg = self.RH.imu_hdg
@@ -338,7 +345,7 @@ class Localization:
             self.update_sensor_data() # update CAN, NavATT, NavPVT sensor datas 
             self.calculate_dr_pos() # estimate current pos from last pos & sensor datas
             self.calculate_dr_hdg() # estimate current hdg from last hdg & sensor datas
-            self.calculate_imu_hdg()
+            # self.calculate_imu_hdg()
             self.update_last_pos() # update last_pos variable (choose: NAV, DR)
             self.update_last_hdg() # update last_hdg variable (choose: NAV, DR, IMU)
             # self.print_pos_error() # print pos error in terminal
@@ -363,11 +370,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# if __name__ == "__main__":
-#     rospy.init_node("dr_simul")
-#     dr = Localization()
-#     rate = rospy.Rate(20)
-#     while not rospy.is_shutdown():
-#         dr.run()
-#         rate.sleep()
