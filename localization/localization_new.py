@@ -166,7 +166,7 @@ class Localization:
 
     def localization_sensor_health(self):
         if self.timer(30):
-            if self.RH.hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:
+            if self.RH.hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:  # 20 = hz, 0.8 = safety number
                 self.RH.nav_health_pub.publish(False)
                 print("ERROR: invalid heading")
                 os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
@@ -182,13 +182,13 @@ class Localization:
 
 
     def timer(self, sec):   
-        time_to_go = sec - ((rospy.Time.now() - self.restart_timer).to_sec())
+        #time_to_go = sec - ((rospy.Time.now() - self.restart_timer).to_sec())
         if (rospy.Time.now() - self.restart_timer).to_sec() >= sec:
             result = True
         else:
             result = False
 
-        return result, time_to_go
+        return result
 
 
     def init_all_msgs(self):
@@ -271,6 +271,7 @@ class Localization:
         
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False
+
         val = abs(self.last_hdg - self.dr_hdg)
         diff = min(val, 360 - val)
         if diff < 5:

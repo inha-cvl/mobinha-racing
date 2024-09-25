@@ -26,13 +26,14 @@ class Localization:
 
         self.dr_pos = None
         self.dr_hdg = None
-        # self.imu_hdg = None
 
-        self.nav_hdg_invalid_cnt = 0
-        self.nav_pos_invalid_cnt = 0
+        self.hdg_mct = 10  # min compensation time
+        self.pos_mct = 10
 
-        self.hdg_mct = 5  # min compensation time
-        self.pos_mct = 5
+        self.dr_hdg_cnt = 0
+        self.dr_pos_cnt = 0
+
+        self.restart_timer = rospy.Time.now()
 
         # Initialize plot
         self.fig, self.ax = plt.subplots()
@@ -93,7 +94,7 @@ class Localization:
             # print("initiated")
 
 
-    def update_sensor_data(self): # updates when pvt callbacked
+    def update_sensor_data(self): # updates when nav callbacked
         while self.RH.nav_cb:
             self.RH.can_vel_last = self.RH.can_vel
             self.RH.corr_can_vel_last = self.RH.corr_can_vel
@@ -140,19 +141,53 @@ class Localization:
     def calculate_dr_hdg(self):
         dt = 0.05
         delta_rad = math.radians(self.RH.can_steer_last)
-        self.dr_hdg = self.last_hdg + (dt * math.degrees((self.RH.corr_can_vel_last / 2.72) * math.tan(delta_rad)))
-        
+        speed = self.RH.corr_can_velocity_last*3.6 + 3
+        offset= 1
+
+        if self.RH.curved:
+            if self.RH.laneNumber == 1:
+                speed = min(max(speed, 60), 85)
+                offset = -0.00145 * speed**2 + 0.184 * speed - 4.284
+            if self.RH.laneNumber == 2:
+                speed = min(max(speed, 60), 80)
+                offset = -0.00015 * speed**2 + 0.0135 * speed + 0.53
+            if self.RH.laneNumber == 3:
+                speed = min(max(speed, 50), 75)
+                offset = 0.00025 * speed**2 - 0.04 * speed + 2.244
+        # print(f"[crv: {self.RH.curved}], at lane {self.RH.laneNumber}, offset: {offset:.2f}")
+
+        self.dr_hdg = self.last_hdg + (dt * math.degrees((self.RH.corr_can_velocity_last / 2.72) * math.tan(delta_rad))*offset)
     
+
     def calculate_imu_hdg(self):
         pass
 
+
     def localization_sensor_health(self):
-        if self.nav_hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:
-            self.RH.nav_health_pub.publish(False)
-            os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
-        if self.nav_pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
-            self.RH.nav_health_pub.publish(False)
-            os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+        if self.timer(30):
+            if self.RH.hdg_invalid_cnt >= self.hdg_mct * 25 * 0.8:  # 25 = hz, 0.8 = safety number
+                self.RH.nav_health_pub.publish(False)
+                print("ERROR: invalid heading")
+                os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
+                self.restart_timer = rospy.Time.now()
+                self.RH.hdg_invalid_cnt = 0
+
+            if self.RH.pos_invalid_cnt >= self.pos_mct * 25 * 0.8:
+                self.RH.nav_health_pub.publish(False)
+                print("ERROR: invalid position")
+                os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
+                self.restart_timer = rospy.Time.now()
+                self.RH.pos_invalid_cnt = 0
+    
+
+    def timer(self, sec):   
+        # time_to_go = sec - ((rospy.Time.now() - self.restart_timer).to_sec())
+        if (rospy.Time.now() - self.restart_timer).to_sec() >= sec:
+            result = True
+        else:
+            result = False
+
+        return result
 
 
     def init_all_msgs(self):
@@ -195,12 +230,12 @@ class Localization:
 
 
     def update_last_pos(self):
-        if self.RH.hAcc < 30:    # need to modify
-            nav_pos_valid = True
-        else:
-            nav_pos_valid = False
-            self.nav_pos_invalid_cnt += 1
-        
+        # if self.RH.hAcc < 30:    #TODO need to modify
+        #     nav_pos_valid = True
+        # else:
+        #     nav_pos_valid = False
+        nav_pos_valid = True
+
         if None in [self.last_pos, self.dr_pos]:
             dr_pos_valid = False
         
@@ -216,36 +251,32 @@ class Localization:
         # elif source == "DR":
         elif dr_pos_valid:
             self.last_pos = self.dr_pos
+            self.dr_pos_cnt += 1
+            print(f"DR_POS has used during {self.dr_pos_cnt}!")
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
+            print("ERROR: ALL Position Dead")
             os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+            self.RH.pos_invalid_cnt = 0
+            self.RH.hAcc = 0
 
 
     def update_last_hdg(self):
-        # if self.RH.headAcc < 30000:    # need to modify
+        # if self.RH.headAcc < 30000:    #TODO need to modify
         #     nav_hdg_valid = True
         # else:
         #     nav_hdg_valid = False
-        #     self.nav_hdg_invalid_cnt += 1
         nav_hdg_valid = True
 
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False
+
         val = abs(self.last_hdg - self.dr_hdg)
         diff = min(val, 360 - val)
         if diff < 5:
             dr_hdg_valid = True
         else:
             dr_hdg_valid = False
-        
-        if None in [self.last_hdg, self.RH.imu_hdg]:
-            imu_hdg_valid = False
-        val = abs(self.last_hdg - self.RH.imu_hdg)
-        diff = min(val, 360 - val)
-        if diff < 5:
-            imu_hdg_valid = True
-        else:
-            imu_hdg_valid = False
         
         # if source == "NAV":
         if nav_hdg_valid:
@@ -254,12 +285,14 @@ class Localization:
         # elif source == "DR":
         elif dr_hdg_valid:
             self.last_hdg = self.dr_hdg
-        # elif source == "IMU":
-        elif imu_hdg_valid:
-            self.last_hdg = self.RH.imu_hdg
+            self.dr_hdg_cnt += 1
+            print(f"DR_HDG has used during {self.dr_hdg_cnt}!")
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
+            print("ERROR: ALL Heading Dead")
             os.system('pkill -f "roslaunch sbg_driver sbg_device.launch"')
+            self.RH.hdg_invalid_cnt = 0
+            self.RH.headAcc = 0
 
         
     def update_plot(self, target):
@@ -300,11 +333,9 @@ class Localization:
             self.update_sensor_data() # update CAN, NavATT, NavPVT sensor datas 
             self.calculate_dr_pos() # estimate current pos from last pos & sensor datas
             self.calculate_dr_hdg() # estimate current hdg from last hdg & sensor datas
-            self.calculate_imu_hdg()
-            ### self.accel, gyro_integral = 0
             self.update_last_pos() # update last_pos variable (choose: NAV, DR)
             self.update_last_hdg() # update last_hdg variable (choose: NAV, DR, IMU)
-            print(f"HEADING: {self.RH.nav_hdg}")
+            # print(f"HEADING: {self.RH.nav_hdg}")
             # self.print_pos_error() # print pos error in terminal
             # self.print_hdg_error(target="DR") # print hdg error in terminal
             # self.update_plot(target="HDG_DR") # plot (choose: POS, HDG_DR, HDG_IMU)

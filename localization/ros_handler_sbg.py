@@ -21,14 +21,12 @@ class ROSHandler():
         self.local_pose = [0,0]   
         self.curr_lane_id = None
         
-        self.nav_header = None
         self.nav_pos = [None, None]
         self.llh = [None, None]
         self.nav_hdg = None
         self.nav_roll = None
         self.nav_pitch = None
 
-        self.nav_header_last = None
         self.nav_pos_last = [None, None]
         self.nav_hdg_last = None
 
@@ -48,6 +46,9 @@ class ROSHandler():
         self.hdg_hack = False
         self.pos_hack = False
         self.nav_vel = 0
+
+        self.hdg_invalid_cnt = 0
+        self.pos_invalid_cnt = 0
 
         # change
         self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23', '24', 
@@ -72,8 +73,8 @@ class ROSHandler():
         self.set = False
 
     def set_protocol(self):
-        rospy.Subscriber('/sbg/ekf_quat', SbgEkfQuat, self.sbgquat_cb)
         # rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.sbgeuler_cb)
+        rospy.Subscriber('/sbg/ekf_quat', SbgEkfQuat, self.sbgquat_cb)
         rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.sbgnav_cb)
         rospy.Subscriber('/sbg/imu_data', SbgImuData, self.sbgimu_cb)
         rospy.Subscriber('/CANOutput', CANOutput, self.canoutput_cb)
@@ -114,6 +115,19 @@ class ROSHandler():
                 # print("baseLLA is NONE")
                 pass
 
+
+    def sbgeuler_cb(self, msg):  # gain heading
+        self.nav_hdg_last = self.nav_hdg
+        self.real_nav_hdg = -(np.rad2deg(msg.angle.Yaw) - 90)%360  # NED
+        # self.real_nav_hdg = (np.rad2deg(msg.angle.Yaw))%360  # ENU
+
+        if not self.hdg_hack:
+            self.nav_hdg = self.real_nav_hdg 
+        else:
+            self.nav_hdg = 0
+        self.nav_roll = np.rad2deg(msg.angle.Roll)
+        self.nav_pitch = np.rad2deg(msg.angle.Pitch)
+        self.headAcc = np.rad2deg(msg.accuracy)
     
     def sbgquat_cb(self, msg):  # gain heading
         self.nav_hdg_last = self.nav_hdg
@@ -121,6 +135,7 @@ class ROSHandler():
         yaw_rad = np.arctan2(2.0 * (msg.quaternion.w * msg.quaternion.z + msg.quaternion.x * msg.quaternion.y), 
                          1.0 - 2.0 * (msg.quaternion.y * msg.quaternion.y + msg.quaternion.z * msg.quaternion.z))
         self.real_nav_hdg = -(np.rad2deg(yaw_rad) - 90) % 360
+        # self.real_nav_hdg = (np.rad2deg(msg.angle.Yaw))%360  # ENU
 
         if not self.hdg_hack:
             self.nav_hdg = self.real_nav_hdg 
@@ -130,18 +145,7 @@ class ROSHandler():
                                           1.0 - 2.0 * (msg.quaternion.x * msg.quaternion.x + msg.quaternion.y * msg.quaternion.y)))
         self.nav_pitch = np.rad2deg(np.arcsin(2.0 * (msg.quaternion.w * msg.quaternion.y - msg.quaternion.z * msg.quaternion.x)))
 
-        # self.headAcc = msg.accuracy
-
-    def sbgeuler_cb(self, msg):  # gain heading
-        self.nav_hdg_last = self.nav_hdg
-        self.real_nav_hdg = -(np.rad2deg(msg.angle.Yaw) - 90)%360
-        if not self.hdg_hack:
-            self.nav_hdg = self.real_nav_hdg 
-        else:
-            self.nav_hdg = 0
-        self.nav_roll = np.rad2deg(msg.angle.Roll)
-        self.nav_pitch = np.rad2deg(msg.angle.Pitch)
-        self.headAcc = msg.accuracy
+        self.headAcc = np.rad2deg(msg.accuracy)
 
     def sbgnav_cb(self, msg): # gain position
         if self.set:
@@ -156,10 +160,21 @@ class ROSHandler():
                 self.nav_pos = [0, 0]
 
             self.llh = [lat, lon]
-            # change
+            
             self.nav_cb = True
             self.gspeed = np.sqrt(msg.velocity.x**2 + msg.velocity.y**2)
             self.hAcc = np.sqrt(msg.position_accuracy.x**2 + msg.position_accuracy.y**2)
+
+            #TODO need to modify for sbg
+            # if self.hAcc > 50 and self.corr_can_velocity * 3.6 > 30:
+            #     self.pos_invalid_cnt += 1
+            # else:
+            #     self.pos_invalid_cnt = 0
+
+            # if self.headAcc > 50000 and self.corr_can_velocity * 3.6 > 30:
+            #     self.hdg_invalid_cnt += 1
+            # else:
+            #     self.hdg_invalid_cnt = 0 
     
     def sbgimu_cb(self, msg):
         # change
@@ -190,10 +205,6 @@ class ROSHandler():
                     constant_offset = 0 
 
                 self.imu_hdg = (imu_hdg_tmp + constant_offset)%360
-    
-    def fix_cb(self, msg): # gain header
-        self.nav_header_last = self.nav_header
-        self.nav_header = msg.header
 
     def system_status_cb(self, msg):
         self.base_lla = msg.baseLLA

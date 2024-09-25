@@ -51,8 +51,7 @@ class ROSHandler():
         self.hdg_hack = False
         self.pos_hack = False
         self.nav_velocity = 0
-        self.pos_test_velocity = 0
-        self.hdg_test_velocity = 0
+
         self.hdg_invalid_cnt = 0
         self.pos_invalid_cnt = 0
 
