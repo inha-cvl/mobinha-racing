@@ -231,7 +231,7 @@ class Localization:
 
 
     def update_last_pos(self):
-        if self.RH.hAcc <= 50:
+        if self.RH.hAcc <= 50 or self.RH.corr_can_velocity*3.6 < 10:
             nav_pos_valid = True
         elif self.RH.hAcc > 50:
             nav_pos_valid = False
@@ -263,7 +263,7 @@ class Localization:
 
 
     def update_last_hdg(self):
-        if self.RH.headAcc <= 50000:
+        if self.RH.headAcc <= 50000 or self.RH.corr_can_velocity*3.6 < 10:
             nav_hdg_valid = True
         elif self.RH.headAcc > 50000:
             nav_hdg_valid = False

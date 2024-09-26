@@ -119,7 +119,7 @@ def get_merged_point(idnidx, path_len, to=1):
         return [u_n, u_i]
     
 
-def get_possible_successor(node, prior='Left'):
+def get_possible_successor(node, prior='Right'):
     successor = None
     left_lanes, right_lanes, me = get_whole_neighbor(node)
     if len(lanelets[node]['successor']) <= 0:
@@ -407,25 +407,26 @@ def adjust_velocity_profile(velocity_profile):
     
     final_deceleration_profile = np.linspace(velocity_profile[-1], 0, final_decel_len).tolist()
     
-    adjusted_profile = initial_acceleration_profile
-    i = init_accel_len
+    # adjusted_profile = initial_acceleration_profile
+    # i = init_accel_len
 
-    while i < len(velocity_profile) - final_decel_len:
-        if velocity_profile[i] != velocity_profile[i-1]:
-            if velocity_profile[i] < velocity_profile[i-1]:
-                transition_start = max(i - decel_distance, init_accel_len)
-                transition = np.linspace(velocity_profile[i-1], velocity_profile[i], decel_distance).tolist()
-                adjusted_profile = adjusted_profile[:transition_start] + transition + [velocity_profile[i]]
-                i += 1
-            else:
-                transition = np.linspace(velocity_profile[i-1], velocity_profile[i], accel_distance).tolist()
-                adjusted_profile.extend(transition[1:])
-                i += accel_distance - 1
-        else:
-            adjusted_profile.append(velocity_profile[i])
-            i += 1
+    # while i < len(velocity_profile) - final_decel_len:
+    #     if velocity_profile[i] != velocity_profile[i-1]:
+    #         if velocity_profile[i] < velocity_profile[i-1]:
+    #             transition_start = max(i - decel_distance, init_accel_len)
+    #             transition = np.linspace(velocity_profile[i-1], velocity_profile[i], decel_distance).tolist()
+    #             adjusted_profile = adjusted_profile[:transition_start] + transition + [velocity_profile[i]]
+    #             i += 1
+    #         else:
+    #             transition = np.linspace(velocity_profile[i-1], velocity_profile[i], accel_distance).tolist()
+    #             adjusted_profile.extend(transition[1:])
+    #             i += accel_distance - 1
+    #     else:
+    #         adjusted_profile.append(velocity_profile[i])
+    #         i += 1
 
-    adjusted_profile.extend(final_deceleration_profile)
+    # adjusted_profile.extend(final_deceleration_profile)
+    adjusted_profile = velocity_profile
 
     # Calculate acceleration profile
     acceleration_profile = [0] * len(adjusted_profile)
@@ -436,7 +437,7 @@ def adjust_velocity_profile(velocity_profile):
     
     # Final deceleration
     for i in range(len(adjusted_profile) - final_decel_len, len(adjusted_profile)):
-        acceleration_profile[i] = -3 * (i - (len(adjusted_profile) - final_decel_len)) / final_decel_len
+        acceleration_profile[i] = 2 * (i - (len(adjusted_profile) - final_decel_len)) / final_decel_len
     
     # Middle part
     i = init_accel_len
@@ -452,10 +453,10 @@ def adjust_velocity_profile(velocity_profile):
             elif adjusted_profile[i] < adjusted_profile[i-1]:
                 for j in range(decel_distance):
                     if i + j < len(acceleration_profile):
-                        acceleration_profile[i + j] = -3 * (j + 1) / decel_distance
+                        acceleration_profile[i + j] = 2 * (j + 1) / decel_distance
                 for j in range(decel_distance):
                     if i + decel_distance + j < len(acceleration_profile):
-                        acceleration_profile[i + decel_distance + j] = -3 * (decel_distance - j - 1) / decel_distance
+                        acceleration_profile[i + decel_distance + j] = 2 * (decel_distance - j - 1) / decel_distance
             i += 2 * decel_distance
         else:
             i += 1

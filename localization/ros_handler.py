@@ -128,7 +128,7 @@ class ROSHandler():
         self.nav_pitch = msg.pitch*1e-5
 
     def navpvt_cb(self, msg): # gain position
-        if self.transformer is not None:
+        if self.transformer is not None and (self.corr_can_velocity is not None):
             self.nav_pos_last = self.nav_pos
             lat = msg.lat*1e-7
             lon = msg.lon*1e-7
@@ -138,13 +138,13 @@ class ROSHandler():
             # self.headAcc = msg.headAcc
             if not self.pos_hack:
                 self.nav_pos = self.real_nav_pos
-                # self.hAcc = 10 # msg.hAcc
+                self.hAcc = msg.hAcc
             else:
                 self.nav_pos = [0, 0]
                 self.hAcc = 900
             
             if not self.hdg_hack:
-                self.headAcc = 30000 # msg.headAcc
+                self.headAcc = msg.headAcc
                 # self.headAcc = 0
             else:
                 self.headAcc = 90000
@@ -153,13 +153,12 @@ class ROSHandler():
             # change
             self.pvt_cb = True
             self.gspeed = msg.gSpeed
-
-            if self.hAcc > 50 and self.corr_can_velocity * 3.6 > 30:
+            if self.hAcc > 50 and self.corr_can_velocity * 3.6 > 10:
                 self.pos_invalid_cnt += 1
             else:
                 self.pos_invalid_cnt = 0
 
-            if self.headAcc > 50000 and self.corr_can_velocity * 3.6 > 30:
+            if self.headAcc > 50000 and self.corr_can_velocity * 3.6 > 10:
                 self.hdg_invalid_cnt += 1
             else:
                 self.hdg_invalid_cnt = 0 

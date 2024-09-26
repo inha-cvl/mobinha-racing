@@ -139,3 +139,10 @@ class ROSHandler():
             pose.pose.orientation.w = 1.0
             path.poses.append(pose)
         self.global_path_pub.publish(path)
+    
+    def get_mean_action(self, local_action_set):
+        action_mean = 0
+        for set in local_action_set:
+            action_mean += set[5]
+        return action_mean / 5
+            

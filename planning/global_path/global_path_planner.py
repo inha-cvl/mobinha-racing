@@ -48,7 +48,7 @@ class GlobalPathPlanner():
     
         return interp_path
 
-    def get_shortest_path(self, start, goal, name): 
+    def get_shortest_path(self, start, goal, name, window_size=8): 
         start_ll = gput.lanelet_matching(start)
         goal_ll = gput.lanelet_matching(goal)
 
@@ -66,14 +66,14 @@ class GlobalPathPlanner():
             final_tr = []
             final_path = self.interpolate_path(final_path)
             copy_final_path = copy.deepcopy(final_path)
-            copy_final_path.insert(0, final_path[0])
-            copy_final_path.append(final_path[-1])
+            #copy_final_path.insert(0, final_path[0])
+            #copy_final_path.append(final_path[-1])
 
             vel_p, accel_p, dist_p = gput.adjust_velocity_profile(final_vs)
             s = 0
 
             for i,f in enumerate(final_path):
-                before_after_pts = [copy_final_path[i], copy_final_path[i+2]]
+                before_after_pts = [copy_final_path[max(0,i-window_size)], copy_final_path[min(len(final_path)-1,i+window_size)]]
                 lw_left, lw_right = gput.get_lane_width(final_ids[i])
                 A, B, theta = gput.calc_norm_vec(before_after_pts)
                 Rk = gput.calc_kappa(f, before_after_pts)

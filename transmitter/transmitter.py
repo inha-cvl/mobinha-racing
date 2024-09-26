@@ -18,7 +18,7 @@ def signal_handler(sig, frame):
 class Transmitter():
     def __init__(self):
         self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000) # channel='can0'
-        # self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
+        self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
         self.TH = TransmitterHandler()
         self.RH = ROSHandler(self.TH)
 
@@ -78,7 +78,7 @@ class Transmitter():
         loop = asyncio.get_event_loop()
         read_task1 = loop.create_task(self.read_from_can1())
         send_task1 = loop.create_task(self.send_on_can1())
-        # read_task2 = loop.create_task(self.read_from_can2())
+        read_task2 = loop.create_task(self.read_from_can2())
         pub_task = loop.create_task(self.ros_publisher())
         loop.run_forever()
 

@@ -7,7 +7,7 @@ from geometry_msgs.msg import PoseArray, Pose, Pose2D, QuaternionStamped
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32, Bool
 from sensor_msgs.msg import NavSatFix
-from sbg_driver.msg import SbgEkfNav, SbgEkfEuler
+from sbg_driver.msg import SbgEkfNav, SbgEkfEuler, SbgEkfQuat, SbgGpsHdt
 
 from novatel_oem7_msgs.msg import INSPVA
 
@@ -87,10 +87,11 @@ class ROSHandler():
         # rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
 
         # If use SBG
-        #rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
-        # rospy.Subscriber('/imu/nav_sat_fix', NavSatFix, self.nav_sat_fix_cb)
-        # rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
-   
+        # rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
+        #rospy.Subscriber('/imu/nav_sat_fix', NavSatFix, self.nav_sat_fix_cb)
+        #rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
+        #rospy.Subscriber('/sbg/ekf_quat', SbgEkfQuat, self.ekf_quat_cb)
+        # rospy.Subscriber('/sbg/gps_hdt', SbgGpsHdt, self.gps_hdt_cb)
 
 
     def can_output_cb(self, msg):
@@ -191,6 +192,15 @@ class ROSHandler():
         self.vehicle_state.position.x = msg.latitude
         self.vehicle_state.position.y = msg.longitude
         self.add_enu(msg.latitude, msg.longitude)
+    
+    def ekf_quat_cb(self, msg):
+        yaw_rad = np.arctan2(2.0 * (msg.quaternion.w * msg.quaternion.z + msg.quaternion.x * msg.quaternion.y), 
+                         1.0 - 2.0 * (msg.quaternion.y * msg.quaternion.y + msg.quaternion.z * msg.quaternion.z))
+        self.vehicle_state.heading.data = ( -(np.rad2deg(yaw_rad) - 90) % 360 ) +180
+
+    def gps_hdt_cb(self, msg):
+        yaw = msg.true_heading
+        self.vehicle_state.heading.data = (-(yaw -90 )%360)
     
     def ekf_euler_cb(self, msg):
         yaw = math.degrees(msg.angle.z)

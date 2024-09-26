@@ -145,7 +145,7 @@ class ROSHandler():
                                           1.0 - 2.0 * (msg.quaternion.x * msg.quaternion.x + msg.quaternion.y * msg.quaternion.y)))
         self.nav_pitch = np.rad2deg(np.arcsin(2.0 * (msg.quaternion.w * msg.quaternion.y - msg.quaternion.z * msg.quaternion.x)))
 
-        self.headAcc = np.rad2deg(msg.accuracy)
+        #self.headAcc = np.rad2deg(msg.accuracy)
 
     def sbgnav_cb(self, msg): # gain position
         if self.set:
