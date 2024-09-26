@@ -254,7 +254,7 @@ class Planning():
                     self.RH.set_values()
                     break
                 
-                for sel_action in ["left","right", "straight", "follow"]: 
+                for sel_action in ["left", "right", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
                 

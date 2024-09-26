@@ -48,7 +48,7 @@ class GlobalPathPlanner():
     
         return interp_path
 
-    def get_shortest_path(self, start, goal, name, window_size=8): 
+    def get_shortest_path(self, start, goal, name): 
         start_ll = gput.lanelet_matching(start)
         goal_ll = gput.lanelet_matching(goal)
 
@@ -66,22 +66,28 @@ class GlobalPathPlanner():
             final_tr = []
             final_path = self.interpolate_path(final_path)
             copy_final_path = copy.deepcopy(final_path)
-            #copy_final_path.insert(0, final_path[0])
-            #copy_final_path.append(final_path[-1])
+            copy_final_path.insert(0, final_path[0])
+            copy_final_path.append(final_path[-1])
 
             vel_p, accel_p, dist_p = gput.adjust_velocity_profile(final_vs)
             s = 0
 
             for i,f in enumerate(final_path):
-                before_after_pts = [copy_final_path[max(0,i-window_size)], copy_final_path[min(len(final_path)-1,i+window_size)]]
+                before_after_pts = [copy_final_path[i], copy_final_path[i+2]]
+                #before_after_pts = [copy_final_path[max(0,i-3)], copy_final_path[min(len(final_path)-1,i+3)]]
                 lw_left, lw_right = gput.get_lane_width(final_ids[i])
                 A, B, theta = gput.calc_norm_vec(before_after_pts)
-                Rk = gput.calc_kappa(f, before_after_pts)
+                #Rk = gput.calc_kappa_spline(f, before_after_pts)
                 vx = vel_p[i]
                 ax = accel_p[i]
-                final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, Rk, vx, ax])
+                final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, "", vx, ax])
                 s += 1
-            
+
+            radii = gput.compute_curvature_radius(final_path)
+
+            for i in range(len(final_tr)):
+                final_tr[i][9] = radii[i]  # 9번째 인덱스는 ""로 비워둔 자리
+
             path_viz = gput.PathViz(final_path, (255/255, 196/255, 18/255, 0.5))
             self.to_csv(name, final_tr)
             return True, path_viz

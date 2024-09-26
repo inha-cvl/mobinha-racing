@@ -345,6 +345,8 @@ def calc_norm_vec(points):
     B = -cos(theta)
     return A,B,theta
 
+
+
 def calc_kappa(epoints, npoints):
     if abs(npoints[1][1]-epoints[1]) == 0 or abs(npoints[1][0]-epoints[0]) == 0:
         Rk = 0
@@ -364,6 +366,84 @@ def calc_kappa(epoints, npoints):
             d2xdy2 = 2*(dxdy2-dxdy1)/(npoints[1][1]-npoints[0][1])
             Rk = d2xdy2/((1+(dxdy)**2)**(3/2))
     return Rk
+
+from scipy.interpolate import CubicSpline
+
+import numpy as np
+from scipy.interpolate import CubicSpline
+
+def calc_kappa_spline(epoints, npoints, t=0.5):
+    """
+    3차 스플라인을 사용하여 곡률을 계산하는 함수.
+    
+    :param epoints: 현재 포인트 (x, y 좌표)
+    :param npoints: 이전 포인트와 이후 포인트 (2개의 [x, y] 좌표 리스트)
+    :param t: 현재 포인트에서의 상대적인 위치 값 (0 <= t <= 1 범위)
+    
+    :return: 현재 포인트에서의 곡률 값 Rk
+    """
+    
+    # epoints와 npoints에서 x와 y 좌표 값을 가져옴
+    x_vals = [npoints[0][0], epoints[0], npoints[1][0]]  # 이전, 현재, 이후의 x 좌표들
+    y_vals = [npoints[0][1], epoints[1], npoints[1][1]]  # 이전, 현재, 이후의 y 좌표들
+    
+    # 3차 스플라인을 x와 y 축에 대해 각각 적합
+    spline_x = CubicSpline([0, 1, 2], x_vals)  # t = 1이 현재 포인트
+    spline_y = CubicSpline([0, 1, 2], y_vals)
+
+    # 스플라인의 1차, 2차 미분값 계산
+    x_prime = spline_x(t, 1)  # x의 1차 미분
+    y_prime = spline_y(t, 1)  # y의 1차 미분
+    x_double_prime = spline_x(t, 2)  # x의 2차 미분
+    y_double_prime = spline_y(t, 2)  # y의 2차 미분
+
+    # 곡률 계산 공식
+    numerator = x_prime * y_double_prime - y_prime * x_double_prime
+    denominator = (x_prime**2 + y_prime**2)**(3/2)
+
+    if denominator == 0:
+        return 0.0  # 곡률이 정의되지 않는 경우
+    else:
+        Rk = numerator / denominator
+        return Rk
+
+
+
+def compute_curvature_radius(path, tg_idx=50):
+    curvature_radii = []
+    path_len = len(path)
+    
+    for i in range(path_len):
+        dynamic_idx = min(i, tg_idx, path_len - i - 1)
+
+        x1, y1 = path[i - dynamic_idx]
+        x2, y2 = path[i]
+        x3, y3 = path[i + dynamic_idx]
+        
+        dx1 = x2 - x1
+        dy1 = y2 - y1
+        dx2 = x3 - x2
+        dy2 = y3 - y2
+        
+        ddx = dx2 - dx1
+        ddy = dy2 - dy1
+        
+        numerator = abs(dx1 * ddy - dy1 * ddx)
+        denominator = (dx1**2 + dy1**2)**1.5
+        
+        if denominator != 0:
+            curvature = numerator / denominator
+        else:
+            curvature = 1e-3 
+        
+        if numerator == 0:
+            curvature = 100
+        curvature_radii.append(curvature)
+
+    window_size = tg_idx
+    smoothed_radii = np.convolve(curvature_radii, np.ones(window_size)/window_size, mode='same')
+    smoothed_radii2 = np.convolve(smoothed_radii, np.ones(window_size)/window_size, mode='same')
+    return smoothed_radii2
 
 def get_profiles(vs, sec_to_reach):
     total_time = int((len(vs) / 80))
