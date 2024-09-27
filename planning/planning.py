@@ -38,7 +38,7 @@ class Planning():
         self.gpp = GlobalPathPlanner(self.RH.map_name)
 
         #self.specifiers = ['to_goal_solchan', 'race_solchan']
-        self.specifiers = ['to_goal_fast', 'race_fast']
+        self.specifiers = ['to_goal', 'race']
         #self.specifiers = ['race_kcity', 'race_kcity']
         self.race_mode = self.specifiers[0]
         self.prev_race_mode = self.race_mode
@@ -181,6 +181,7 @@ class Planning():
         # 기본 조건: set_go가 False일 경우
         if not self.RH.set_go:
             return 0
+        
         if len(local_action_set) >= 7:
             action_mean = local_action_set[2][5]
             #action_mean = self.RH.get_mean_action(local_action_set[2:7])
@@ -292,7 +293,7 @@ class Planning():
                     target_velocity = 0
 
                 self.prev_target_vel = target_velocity
-                self.RH.publish(local_action_set, target_velocity)
+                self.RH.publish(local_action_set, target_velocity, self.race_mode)
 
                 rate.sleep()            
 

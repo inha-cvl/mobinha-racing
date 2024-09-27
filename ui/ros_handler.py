@@ -46,7 +46,7 @@ class ROSHandler():
         self.ego_value['gear'] = str(msg.gear.data)
 
     def target_actuator_cb(self, msg):
-        self.target_value['steer'] = -1*msg.steer.data
+        self.target_value['steer'] = (-1*msg.steer.data)+self.ego_value['steer']
         self.target_value['accel'] = msg.accel.data
         self.target_value['brake'] = msg.brake.data
     

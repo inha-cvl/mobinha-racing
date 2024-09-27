@@ -268,6 +268,8 @@ class Localization:
         elif self.RH.headAcc > 50000:
             nav_hdg_valid = False
             # dr_hdg_valid = True
+        # print(f"NAV_HDG: {nav_hdg_valid}")
+        # print(f"NAV_HDG: {self.RH.nav_hdg}")
         
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False

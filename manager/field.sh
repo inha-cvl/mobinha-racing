@@ -5,7 +5,6 @@ cd ../ui/
 python3 ui.py & 
 cd ../localization/
 python3 localization_new.py &
-# python3 localization_sbg.py &
 cd ../visualizer
 python3 visualizer.py &
 cd ../drive_message/

@@ -43,10 +43,16 @@ class APID:
 
         output = self.calculate_output()
 
-        if output < 0:
-            output = (3 / 100) * output #Brake
+        max_accel = 2
+        if self.RH.race_mode in ["stop", "slow_on"]:
+            max_decel = 5
         else:
-            output = (2 / 100) * output #Accel
+            max_decel = 3
+            
+        if output < 0:
+            output = (max_decel / 100) * output #Brake
+        else:
+            output = (max_accel/ 100) * output #Accel
         return output
     
     def update_history(self, ref, cur):

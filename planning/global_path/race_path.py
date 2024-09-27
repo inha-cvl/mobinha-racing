@@ -11,7 +11,7 @@ import global_path
 import global_path.libs.gp_utils as gput
 
 rospy.init_node('GlobalPath', anonymous=False)
-target = 'race_fast'
+target = 'race'
 pub_global_path = rospy.Publisher(f'/{target}_path', Marker, queue_size=1)
 
 diag_len = 25

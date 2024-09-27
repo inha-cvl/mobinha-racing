@@ -81,11 +81,12 @@ class ROSHandler():
             position_list.append([object.position.x, object.position.y])
         self.object_list = object_list
 
-    def publish(self, local_action_set, road_max_vel):
+    def publish(self, local_action_set, target_velocity, race_mode):
         
         if local_action_set is not None and len(local_action_set) > 0:
             self.navigation_data = NavigationData()
-            self.navigation_data.targetVelocity.data = road_max_vel
+            self.navigation_data.targetVelocity.data = target_velocity
+            self.navigation_data.raceMode.data = str(race_mode)
             for set in local_action_set:
                 point = Point()
                 point.x = set[1]

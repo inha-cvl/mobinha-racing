@@ -16,6 +16,7 @@ class ROSHandler():
     def set_values(self):
         self.system_mode = 0
         self.planned_velocity = 0
+        self.race_mode = 'race'
         self.current_location = []
         self.current_velocity = 0
         self.current_heading = 0
@@ -36,6 +37,7 @@ class ROSHandler():
     
     def navigation_data_cb(self, msg):
         self.planned_velocity = msg.targetVelocity.data
+        self.race_mode = msg.raceMode.data
         self.planned_route = []
         for point in msg.plannedRoute:
             self.planned_route.append(Point(x=point.x, y=point.y))

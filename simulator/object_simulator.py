@@ -29,7 +29,7 @@ class ObjectSimulator:
     def goal_cb(self, msg):
        quaternion = (msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
        _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
-       self.object = Vehicle(msg.pose.position.x, msg.pose.position.y, yaw, 0, 2.97)
+       self.object = Vehicle(msg.pose.position.x, msg.pose.position.y,0, 0, 2.97)
        self.object_ready = True
        
     def target_actuator_cb(self, msg):
@@ -40,7 +40,7 @@ class ObjectSimulator:
     def publish_object(self):
         rate = rospy.Rate(20)
         start_time = time.time()
-        vel = 0
+        vel = 25
         dt = 0.05
         while not rospy.is_shutdown():
             if self.object_ready:

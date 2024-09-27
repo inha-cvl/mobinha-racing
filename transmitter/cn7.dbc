@@ -69,7 +69,7 @@ BO_ 342 EAIT_Control_01: 8 USER
 
 BO_ 343 EAIT_Control_02: 8 USER
  SG_ EPS_Cmd : 0|16@1- (0.1,0) [-500|500] "deg" Vector__XXX
- SG_ ACC_Cmd : 24|16@1+ (0.01,-10.23) [-3|2] "m/s^2" Vector__XXX
+ SG_ ACC_Cmd : 24|16@1+ (0.01,-10.23) [-5|2] "m/s^2" Vector__XXX
 
 BO_ 1808 EAIT_INFO_EPS: 8 EAIT
  SG_ EPS_En_Status : 0|1@1+ (1,0) [0|1] "" Vector__XXX
