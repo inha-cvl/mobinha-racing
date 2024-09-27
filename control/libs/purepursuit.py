@@ -30,7 +30,7 @@ class PurePursuit(object):
             return 0
         
         lfd = self.lfd_gain * self.RH.current_velocity * MPS_TO_KPH
-        lfd = np.clip(lfd, self.min_lfd, self.max_lfd)
+        lfd = np.clip(lfd, self.min_lfd/3, self.max_lfd/3)
         point = self.RH.current_location
         route = self.RH.planned_route
         heading = math.radians(self.RH.current_heading)

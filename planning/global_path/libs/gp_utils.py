@@ -438,7 +438,7 @@ def compute_curvature_radius(path, tg_idx=50):
         
         if numerator == 0:
             curvature = 100
-        curvature_radii.append(0)#curvature)
+        curvature_radii.append(curvature)
 
     window_size = tg_idx
     smoothed_radii = np.convolve(curvature_radii, np.ones(window_size)/window_size, mode='same')
