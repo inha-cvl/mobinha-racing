@@ -438,7 +438,7 @@ def compute_curvature_radius(path, tg_idx=50):
         
         if numerator == 0:
             curvature = 100
-        curvature_radii.append(curvature)
+        curvature_radii.append(0)#curvature)
 
     window_size = tg_idx
     smoothed_radii = np.convolve(curvature_radii, np.ones(window_size)/window_size, mode='same')
@@ -562,17 +562,17 @@ def get_lane_width(id):
         lane_num = lanelets[id]['laneNo']
         if lane_num == 1:
             l_w = h_w
-            r_w = (1.5*lane_width)+h_w
+            r_w = (2*lane_width)+h_w
         elif lane_num == 2:
             l_w = r_w = lane_width+h_w
         elif lane_num == 3:
-            l_w = (1/5*lane_width)+h_w
+            l_w = (2*lane_width)+h_w
             r_w = h_w
         elif lane_num == 4:
-            l_w = (2*lane_width)+h_w
+            l_w = (3*lane_width)+h_w
             r_w = h_w
         elif lane_num == 5:
-            l_w = (2*lane_width)+h_w
+            l_w = (3*lane_width)+h_w
             r_w = h_w
         else:
             l_w = r_w = h_w

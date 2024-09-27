@@ -59,12 +59,12 @@ for i,f in enumerate(final_path):
     #Rk = gput.calc_kappa(f, before_after_pts)
     vx = vel_p[i]
     ax = accel_p[i]
-    final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, "", vx, ax])
+    final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, 1, vx, ax])
     s += 1
 
-radii = gput.compute_curvature_radius(final_path)
-for i in range(len(final_tr)):
-    final_tr[i][9] = radii[i]  # 9번째 인덱스는 ""로 비워둔 자리
+# radii = gput.compute_curvature_radius(final_path)
+# for i in range(len(final_tr)):
+#     final_tr[i][9] = radii[i]  # 9번째 인덱스는 ""로 비워둔 자리
 
 
 top_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

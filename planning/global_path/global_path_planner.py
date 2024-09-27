@@ -80,13 +80,13 @@ class GlobalPathPlanner():
                 #Rk = gput.calc_kappa_spline(f, before_after_pts)
                 vx = vel_p[i]
                 ax = accel_p[i]
-                final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, "", vx, ax])
+                final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, 1, vx, ax])
                 s += 1
 
-            radii = gput.compute_curvature_radius(final_path)
+            # radii = gput.compute_curvature_radius(final_path)
 
-            for i in range(len(final_tr)):
-                final_tr[i][9] = radii[i]  # 9번째 인덱스는 ""로 비워둔 자리
+            # for i in range(len(final_tr)):
+            #     final_tr[i][9] = radii[i]  # 9번째 인덱스는 ""로 비워둔 자리
 
             path_viz = gput.PathViz(final_path, (255/255, 196/255, 18/255, 0.5))
             self.to_csv(name, final_tr)
@@ -98,5 +98,5 @@ class GlobalPathPlanner():
         if self.global_path is None:
             return 99999
         min_idx = gput.find_nearest_idx(self.global_path, local_pose)
-        return (len(self.global_path)-min_idx)*4
+        return (len(self.global_path)-min_idx)
     

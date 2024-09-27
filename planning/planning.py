@@ -185,7 +185,7 @@ class Planning():
             action_mean = local_action_set[2][5]
             #action_mean = self.RH.get_mean_action(local_action_set[2:7])
         # 'stop' 모드 처리
-        if self.race_mode == 'stop':
+        if self.race_mode == 'stop' :
             if not self.check_bank():
                 return -1
             if len(local_action_set) >= 7:
@@ -254,7 +254,7 @@ class Planning():
                     self.RH.set_values()
                     break
                 
-                for sel_action in ["left", "right", "straight", "follow"]: 
+                for sel_action in [ "left", "right", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
                 
