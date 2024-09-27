@@ -229,10 +229,13 @@ class ROSHandler():
         if len(self.local_pose) > 0:
             self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
-
         self.can_input_pub.publish(self.can_input)
         self.sensor_data_pub.publish(self.sensor_data)
         self.system_status_pub.publish(self.system_status)
+
+        if len(self.local_pose) < 1 :
+            return
+        
         self.vehicle_state_pub.publish(self.vehicle_state)
         self.detection_data_pub.publish(self.detection_data)
         self.ego_actuator_pub.publish(self.ego_actuator)

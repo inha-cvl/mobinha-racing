@@ -45,9 +45,9 @@ class APID:
 
         max_accel = 2
         if self.RH.race_mode in ["stop", "slow_on"]:
-            max_decel = 5
+            max_decel = 6
         else:
-            max_decel = 3
+            max_decel = 4
             
         if output < 0:
             output = (max_decel / 100) * output #Brake

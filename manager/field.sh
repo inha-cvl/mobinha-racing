@@ -12,6 +12,8 @@ python3 drive_message.py KIAPI_Racing &
 sleep 2 
 cd ../map_lane
 python3 map_lane.py &
+cd ../simulator
+python3 object_simulator.py &
 cd ../transmitter/
 python3 transmitter.py & 
 cd ../control/  

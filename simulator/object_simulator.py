@@ -29,7 +29,7 @@ class ObjectSimulator:
     def goal_cb(self, msg):
        quaternion = (msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
        _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
-       self.object = Vehicle(msg.pose.position.x, msg.pose.position.y,0, 0, 2.97)
+       self.object = Vehicle(msg.pose.position.x, msg.pose.position.y, yaw, 5, 2.97)
        self.object_ready = True
        
     def target_actuator_cb(self, msg):
@@ -44,16 +44,16 @@ class ObjectSimulator:
         dt = 0.05
         while not rospy.is_shutdown():
             if self.object_ready:
-                if time.time()-start_time > 20:
+                if time.time()-start_time > 100:
                     self.object_ready = False
                     vel = 0
-                x,y,yaw,v = self.object.next_state(dt, self.object.yaw, 1, self._brake)
+                #x,y,yaw,v = self.object.next_state(dt, self.object.yaw, 0, 0)
                 v =+ vel
-                yaw = math.degrees(yaw)
+                yaw = math.degrees(self.object.yaw)
                 pose_array = PoseArray()
                 pose = Pose()
-                pose.position.x = x
-                pose.position.y = y
+                pose.position.x = self.object.x
+                pose.position.y = self.object.y
                 pose.position.z = 1
                 pose.orientation.x = vel 
                 pose.orientation.y = yaw

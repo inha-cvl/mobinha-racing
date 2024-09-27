@@ -31,8 +31,9 @@ class Planning():
         self.setting_values(rospy.get_param("/now_lap"))
 
     def setting_values(self, now_lap):
-        while self.RH.map_name is None:
+        while self.RH.map_name is None or self.RH.local_pos is None:
             pass
+
 
         self.shutdown_event = threading.Event()
         self.gpp = GlobalPathPlanner(self.RH.map_name)
@@ -47,16 +48,16 @@ class Planning():
         # to_goal_path_dict = self.get_path_dict(self.specifiers[0])
         # self.to_goal_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=to_goal_path_dict,visual_mode=False,log_to_file=False)
         # self.to_goal_obj.graph_init()
-
-        gpp_result = self.gpp.get_shortest_path(self.RH.local_pos, [437.763, -342.904], self.specifiers[0])
+        gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0])
         if gpp_result:
             to_goal_path_dict = self.get_path_dict(self.specifiers[0])
             self.to_goal_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=to_goal_path_dict,visual_mode=False,log_to_file=False)
-            self.to_goal_obj.graph_init()
+            gpath = self.to_goal_obj.graph_init()
+            self.RH.publish_global_path(gpath)
 
         race_path_dict = self.get_path_dict(self.specifiers[1])
         self.race_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=race_path_dict,visual_mode=False,log_to_file=False)
-        self.race_obj.graph_init()
+        gpath = self.race_obj.graph_init()
         
         self.ltpl_obj = None
         self.global_path = None
@@ -145,7 +146,7 @@ class Planning():
             self.first_initialized = True
             self.ltpl_obj = ltpl_obj
             self.gpp.global_path = g_path
-            self.RH.publish_global_path(g_path)
+            self.RH.publish_global_path(self.gpp.global_path)
             rospy.loginfo(f'[Planning] {race_mode} Start position set took {round(time.time()-start_time, 4)} sec')
     
     def planning_pit_stop(self):
@@ -154,7 +155,7 @@ class Planning():
         if gpp_result:
             pit_stop_path_dict = self.get_path_dict('pit_stop')
             self.pit_stop_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=pit_stop_path_dict,visual_mode=False,log_to_file=False)
-            self.pit_stop_obj.graph_init()
+            self.gpp.global_path = self.pit_stop_obj.graph_init()
             self.start_pose_initialized = False
             rospy.loginfo(f'[Planning] pit_stop Global Path set took {round(time.time()-start_time, 4)} sec')
         
@@ -164,7 +165,7 @@ class Planning():
         else:
             return False
     
-    def get_stop_distance(self, decel_factor=8):
+    def get_stop_distance(self, decel_factor=2.7):
         react_distance = self.RH.current_velocity * 2
         brake_distance = (self.RH.current_velocity)**2/(2*decel_factor)
         return react_distance + brake_distance
@@ -182,15 +183,15 @@ class Planning():
         if not self.RH.set_go:
             return 0
         
-        if len(local_action_set) >= 7:
-            action_mean = local_action_set[2][5]
-            #action_mean = self.RH.get_mean_action(local_action_set[2:7])
+        if len(local_action_set) >= 2:
+            action_third = local_action_set[1][5]
+            #action_third = self.RH.get_mean_action(local_action_set[2:3])
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :
             if not self.check_bank():
                 return -1
-            if len(local_action_set) >= 7:
-                return action_mean
+            if len(local_action_set) >= 2:
+                return action_third
             return self.prev_target_vel - stop_vel_decrement
 
         # 'slow_on' 모드 처리
@@ -202,24 +203,26 @@ class Planning():
                 return road_max_vel
             if self.slow_mode == 'ON':
                 return slow_vel
-            if len(local_action_set) >= 7:
-                return action_mean
+            if len(local_action_set) >= 2:
+                return action_third
             return self.prev_target_vel - stop_vel_decrement
 
         # 'pit_stop' 모드 처리
         elif self.race_mode == 'pit_stop':
-            if self.pit_stop_decel == 'OFF' and self.get_stop_distance() > self.gpp.get_remain_distance(self.RH.local_pos):
-                self.pit_stop_decel = 'ON'
-            if self.pit_stop_decel == 'ON':
-                interval = self.RH.current_velocity / (self.gpp.get_remain_distance(self.RH.local_pos)/ (interval_divisor_base + (self.RH.current_velocity / interval_factor)))
-                return max(self.RH.current_velocity - interval, 0)
-            else:
-                pass
+            if self.gpp.get_remain_distance(self.RH.local_pos) < 700:
+                remain_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], self.pit_point[0], self.pit_point[1])
+                if self.pit_stop_decel == 'OFF' and self.get_stop_distance() > remain_dist:
+                    self.pit_stop_decel = 'ON'
+                if self.pit_stop_decel == 'ON':
+                    interval = self.RH.current_velocity / (remain_dist/ (interval_divisor_base + (self.RH.current_velocity / interval_factor)))
+                    return max(self.RH.current_velocity - interval, 0)
+                else:
+                    pass
         # 일반적인 경우 처리
-        if len(local_action_set) < 7:
+        if len(local_action_set) < 2:
             return max(self.prev_target_vel - stop_vel_decrement, 0)
         
-        return action_mean
+        return action_third
 
     def check_lane_deaprture(self, action_set, localpos):
         if action_set is not None and len(action_set) > 0:
@@ -266,7 +269,7 @@ class Planning():
                     if self.traj_set[sel_action] is not None:
                         local_action_set = self.traj_set[sel_action][0][:, :]
                     try:
-                        self.traj_set = self.ltpl_obj.calc_vel_profile(pos_est=self.RH.local_pos,vel_est=self.RH.current_velocity,vel_max=self.max_vel,safety_d=30)[0]
+                        self.traj_set = self.ltpl_obj.calc_vel_profile(pos_est=self.RH.local_pos,vel_est=self.RH.current_velocity,vel_max=self.max_vel,safety_d=25)[0]
                     except Exception as e:
                         local_action_set = []
                         rospy.logerr(f"[Planning] {e}")

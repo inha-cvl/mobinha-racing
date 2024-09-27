@@ -25,7 +25,7 @@ class ROSHandler():
         self.current_signal = 0
         self.current_position_lat = 0
         self.current_position_long = 0
-        self.local_pos = [0,0]
+        self.local_pos = None
         self.prev_start_pos = [0,0]
         self.object_list = []
         self.transformer = None

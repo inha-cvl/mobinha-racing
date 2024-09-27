@@ -18,7 +18,12 @@ def signal_handler(sig, frame):
 class Transmitter():
     def __init__(self):
         self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000) # channel='can0'
-        self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
+        try:
+            self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
+        except Exception as e:
+            self.bus2 = None
+            print("[Trasmitter] No CAN2")
+            pass
         self.TH = TransmitterHandler()
         self.RH = ROSHandler(self.TH)
 
@@ -48,18 +53,19 @@ class Transmitter():
             rospy.logerr(f"Error in send_on_can1: {e}")
     
     async def read_from_can2(self):
-        try:
-            while not rospy.is_shutdown():
-                message = await asyncio.get_event_loop().run_in_executor(None, self.bus2.recv, 0.2)     
-                if message:
-                    type, message_dict = self.TH.decode_message2(message)
-                    if message_dict is not None:
-                        self.RH.update_radar_output(type, message_dict)
-                # await asyncio.sleep(0.002)  # 500Hz, 2ms 간격
-        except Exception as e:
-            rospy.logerr(f"Error in read_from_can2: {e}")
-        finally:
-            self.bus2.shutdown()
+        if self.bus2 is not None:
+            try:
+                while not rospy.is_shutdown():
+                    message = await asyncio.get_event_loop().run_in_executor(None, self.bus2.recv, 0.2)     
+                    if message:
+                        type, message_dict = self.TH.decode_message2(message)
+                        if message_dict is not None:
+                            self.RH.update_radar_output(type, message_dict)
+                    # await asyncio.sleep(0.002)  # 500Hz, 2ms 간격
+            except Exception as e:
+                rospy.logerr(f"Error in read_from_can2: {e}")
+            finally:
+                self.bus2.shutdown()
     
     async def ros_publisher(self):
         try:

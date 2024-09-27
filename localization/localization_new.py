@@ -263,13 +263,13 @@ class Localization:
 
 
     def update_last_hdg(self):
+
         if self.RH.headAcc <= 50000 or self.RH.corr_can_velocity*3.6 < 10:
             nav_hdg_valid = True
         elif self.RH.headAcc > 50000:
             nav_hdg_valid = False
             # dr_hdg_valid = True
-        # print(f"NAV_HDG: {nav_hdg_valid}")
-        # print(f"NAV_HDG: {self.RH.nav_hdg}")
+        
         
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False
@@ -290,6 +290,9 @@ class Localization:
         # else:
         #     imu_hdg_valid = False
         
+        #print(f"NAV_HDG: {nav_hdg_valid}")
+        #print(f"DR_HDG: {dr_hdg_valid}")
+
         # if source == "NAV":
         if nav_hdg_valid:
             self.last_hdg = self.RH.nav_hdg

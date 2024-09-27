@@ -256,7 +256,8 @@ class Graph_LTPL(object):
             self.__graph_log_handler = graph_ltpl.helper_funcs.src.Logging. \
                 Logging(graph_id=self.__graph_base.graph_id,
                         log_path=self.__path_dict['graph_log_data_path'])
-
+        
+        return self.__graph_base.refline
     # ------------------------------------------------------------------------------------------------------------------
 
     def set_startpos(self,

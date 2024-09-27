@@ -5,4 +5,4 @@ pit_stop_zone_coordinate: [204.972, -83.837]
 goal_coordinate: [494.785, -407.950]
 goal_coordinate2: [471.586, -379.573]
 now_lap: 0
-max_velocity: 90
+max_velocity: 100
