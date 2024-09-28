@@ -48,8 +48,10 @@ class PurePursuit(object):
                     break
         
         steering_angle = math.degrees(steering_angle)
+
+        offset = min(max(self.RH.current_velocity * MPS_TO_KPH * 0.02 + 0.1, 1), 2.2)
         if self.RH.current_velocity * MPS_TO_KPH > 30:
-            steering_angle = steering_angle * 1.43
+            steering_angle = steering_angle * offset
 
         #saturated_angle = self.saturate_steering_angle(steering_angle)
 

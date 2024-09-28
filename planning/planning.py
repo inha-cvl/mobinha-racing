@@ -50,8 +50,8 @@ class Planning():
         # self.to_goal_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=to_goal_path_dict,visual_mode=False,log_to_file=False)
         # self.to_goal_obj.graph_init()
 
-        #gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) 
-        gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [427.079, -337.119], self.specifiers[0])
+        gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) 
+        #gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [427.079, -337.119], self.specifiers[0])
 
         if gpp_result:
             to_goal_path_dict = self.get_path_dict(self.specifiers[0])
@@ -83,9 +83,6 @@ class Planning():
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
         self.bank_list = ['1', '10', '11', '12', '13', '14', '37', '40', '41', '42', '43', '44', '45', '46', '47', '54', '59', '60']
         self.lane3_list = ['1', '54']
-
-
-        
         
     def get_path_dict(self,  specifier):
         toppath = os.path.dirname(os.path.realpath(__file__))
