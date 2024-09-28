@@ -151,7 +151,7 @@ class NGII2LANELET:
             lanelets[new_id] = {}
 
             waypoints = []
-            
+            print(ori_id)
             for tx, ty, alt in a2_link.geometry.coords:
                 x, y, z = self.to_cartesian(tx, ty, alt)
                 waypoints.append((x, y))

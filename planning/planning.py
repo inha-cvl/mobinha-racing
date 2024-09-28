@@ -45,10 +45,14 @@ class Planning():
         self.prev_race_mode = self.race_mode
 
         start_time = time.time()
+        
         # to_goal_path_dict = self.get_path_dict(self.specifiers[0])
         # self.to_goal_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=to_goal_path_dict,visual_mode=False,log_to_file=False)
         # self.to_goal_obj.graph_init()
-        gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0])
+
+        #gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) 
+        gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [427.079, -337.119], self.specifiers[0])
+
         if gpp_result:
             to_goal_path_dict = self.get_path_dict(self.specifiers[0])
             self.to_goal_obj = graph_ltpl.Graph_LTPL.Graph_LTPL(path_dict=to_goal_path_dict,visual_mode=False,log_to_file=False)
@@ -77,9 +81,8 @@ class Planning():
         self.prev_lap = now_lap
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
-        self.bank_list = ['37','43','44','80','79','78','63','62','61','54','59','60',
-                          '40','41','42','45','46','47','2','5','4','50','49','48',
-                          '14', '13', '12','1','10','11']
+        self.bank_list = ['1', '10', '11', '12', '13', '14', '37', '40', '41', '42', '43', '44', '45', '46', '47', '54', '59', '60']
+        self.lane3_list = ['1', '54']
 
 
         
@@ -173,6 +176,7 @@ class Planning():
     def calculate_road_max_vel(
         self, 
         local_action_set,
+        sel_action,
         stop_vel_decrement=0.1,               # 기본값 0.1
         slow_vel=10/3.6,                      # 기본값 10/3.6 (약 2.78 m/s)
         slow_mode_threshold=0.1,              # 기본값 0.1
@@ -182,16 +186,17 @@ class Planning():
         # 기본 조건: set_go가 False일 경우
         if not self.RH.set_go:
             return 0
-        
         if len(local_action_set) >= 2:
-            action_third = local_action_set[1][5]
-            #action_third = self.RH.get_mean_action(local_action_set[2:3])
+            action_velocity = local_action_set[1][5]
+            if sel_action == 'straight' and self.RH.current_lane_id in self.lane3_list:
+                action_velocity = action_velocity + self.max_vel * 0.2
+            #action_velocity = self.RH.get_mean_action(local_action_set[2:3])
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :
             if not self.check_bank():
                 return -1
             if len(local_action_set) >= 2:
-                return action_third
+                return action_velocity
             return self.prev_target_vel - stop_vel_decrement
 
         # 'slow_on' 모드 처리
@@ -204,7 +209,7 @@ class Planning():
             if self.slow_mode == 'ON':
                 return slow_vel
             if len(local_action_set) >= 2:
-                return action_third
+                return action_velocity
             return self.prev_target_vel - stop_vel_decrement
 
         # 'pit_stop' 모드 처리
@@ -222,7 +227,7 @@ class Planning():
         if len(local_action_set) < 2:
             return max(self.prev_target_vel - stop_vel_decrement, 0)
         
-        return action_third
+        return action_velocity
 
     def check_lane_deaprture(self, action_set, localpos):
         if action_set is not None and len(action_set) > 0:
@@ -258,7 +263,7 @@ class Planning():
                     self.RH.set_values()
                     break
                 
-                for sel_action in [ "left", "right", "straight", "follow"]: 
+                for sel_action in ["right",  "left", "straight", "follow"]: 
                     if sel_action in self.traj_set.keys():
                         break
                 
@@ -276,15 +281,9 @@ class Planning():
                 except KeyError as e:
                     rospy.logerr(f"[Planning] {e}")
                     
-                road_max_vel = self.calculate_road_max_vel(local_action_set)                
-                # if len(local_action_set) > 0 and len(local_action_set[:]) > 5:
-                #     # TUM version
-                #     target_velocity = self.gmv.smooth_velocity_plan(local_action_set[:][5], self.prev_target_vel,road_max_vel)[1]
-                #     # mobinha version
-                #     #R_list = ph.calculate_R_list2(local_action_set)
-                #     #target_velocity = self.gmv.smooth_velocity_plan2(local_action_set[:][5], self.prev_target_vel, road_max_vel, R_list)[1]
-                # else:
-                #     
+                road_max_vel = self.calculate_road_max_vel(local_action_set, sel_action)                
+                 
+
                 target_velocity = road_max_vel
                 if self.race_mode == 'pit_stop' and len(local_action_set) < 7:
                     target_velocity = -1
