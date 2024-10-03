@@ -19,7 +19,7 @@ python3 transmitter.py &
 cd ../control/  
 python3 control.py &
 cd ../planning/
-python3 planning.py &
+python3 planning2.py &
 
 cd ~/bag/
 # rosbag record /ADAS_DRV /CANInput /CANOutput /DetectionData /EgoActuator /LaneData /LaneLet /NavigationData /RadarObjectArray /SensorData /SystemStatus /UserInput /VehicleState /camera/image_color/compressed /control/target_actuator /global_path /lmap /map_lane/refine_obstacles /mobinha/perception/lidar/track_box /novatel/oem7/bestpos /novatel/oem7/inspva /sbg/ekf_nav /imu/nav_sat_fix /sbg/ekf_euler /planning/local_path /planning/target_object /rosout /rosout_agg /tf /tf_static
