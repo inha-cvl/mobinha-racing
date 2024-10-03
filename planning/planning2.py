@@ -203,7 +203,7 @@ class Planning():
                 do_evasive = False
                 for obj in front_object:
                     #d_evade = self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel)
-                    print(int(obj['v']*3.6 ),"<", int(self.RH.current_velocity*3.6))
+                    print(obj['v'],"<", int(self.RH.current_velocity*3.6))
                     if obj['v'] < self.RH.current_velocity:
                         do_evasive = True
                         obj_x, obj_y = float(obj['X']), float(obj['Y'])

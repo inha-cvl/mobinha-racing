@@ -125,7 +125,7 @@ class ROSHandler():
                 return
             else:
                 nx,ny = conv
-                v =  (abs(obj.value) if obj.value != 0 else 0 ) + self.current_velocity
+                v =  (obj.value if obj.value != 0 else 0 ) + self.current_velocity
                 obstacles.append([0, nx, ny, v])
         self.lid_obstacles = obstacles 
 
