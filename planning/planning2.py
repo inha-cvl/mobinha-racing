@@ -170,14 +170,16 @@ class Planning():
         updated_path = []
         check_object = []
         check_object_distances = []
+        acc_object_distances = []
         for obj in object_list:
-            s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
+            s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])]) # s로 거리
             if -1 < d < 1:
                 check_object.append(obj)
                 obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                 check_object_distances.append(obj_dist)
+                acc_object_distances.append(obj_dist, float(obj['v']))
 
-        self.RH.publish_target_object(check_object, check_object_distances)
+        self.RH.publish_target_object(check_object, acc_object_distances)
 
         self.object_detected = False
         if self.avoid_on:
@@ -223,11 +225,42 @@ class Planning():
                     if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
                         final_global_path[i] = updated_path[i]
 
-        return final_global_path
+        return final_global_path, acc_object_distances
     
+    def calculate_acc_vel(
+        self,
+        acc_object_distances
+    ):
+        min_s = 200
+        obj_v = 200
+        for s, v in acc_object_distances:
+            if min_s > s:
+                min_s = s
+                obj_v = v
+        safety_distance = 40
+
+        
+        if min_s < safety_distance*0.9:
+            target_v_ACC = 10/3.6/21*(min_s - 9)
+
+        elif safety_distance*0.9 < min_s < safety_distance*1.4:
+            target_v_ACC = obj_v * min_s / safety_distance
+
+        elif safety_distance*1.4 < min_s:
+            target_v_ACC = 999
+            
+        else:
+            print("zone_error")
+        
+        print("ACC target v: ", target_v_ACC)
+
+        return target_v_ACC
+    
+
     def calculate_road_max_vel(
         self, 
-        velocity_list,
+        acc_vel, 
+        path_len,
         stop_vel_decrement=0.1,               # 기본값 0.1
         slow_vel=10/3.6,                      # 기본값 10/3.6 (약 2.78 m/s)
         slow_mode_threshold=0.1,              # 기본값 0.1
@@ -237,8 +270,8 @@ class Planning():
         # 기본 조건: set_go가 False일 경우
         if not self.RH.set_go:
             return 0
-        if len(velocity_list) >= 3:
-            action_velocity = velocity_list[2]
+        if path_len >= 3:
+            action_velocity = acc_vel
             if self.RH.current_lane_id in self.lane3_list:
                 action_velocity = action_velocity + self.max_vel * 0.2
             #action_velocity = self.RH.get_mean_action(velocity_list[2:3])
@@ -259,7 +292,7 @@ class Planning():
                 return road_max_vel
             if self.slow_mode == 'ON':
                 return slow_vel
-            if len(velocity_list) >= 2:
+            if path_len >= 2:
                 return action_velocity
             return self.prev_target_vel - stop_vel_decrement
 
@@ -274,8 +307,9 @@ class Planning():
                     return max(self.RH.current_velocity - interval, 0)
                 else:
                     pass
+
         # 일반적인 경우 처리
-        if len(velocity_list) < 2:
+        if path_len < 2:
             return max(self.prev_target_vel - stop_vel_decrement, 0)
         
         return action_velocity
@@ -318,13 +352,15 @@ class Planning():
                 trimmed_path, self.global_path = ph.trim_and_update_global_path(self.global_path,self.RH.local_pos,LOCAL_PATH_LENGTH)
 
                 #path update for obstacle
-                updated_path = self.path_update(trimmed_path)
+                updated_path, check_object_distances = self.path_update(trimmed_path) # return 바꿈
 
                 #path spline
                 interped_path,R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
                 
-                    
-                target_velocity = self.calculate_road_max_vel(interped_vel)                
+                #ACC
+                acc_vel = self.calculate_acc_vel(check_object_distances) # 맹글어야댐
+
+                target_velocity = self.calculate_road_max_vel(acc_vel, len(interped_path))                
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
