@@ -14,7 +14,7 @@ import time
 import copy
 import json
 import numpy as np
-
+from shapely.geometry import Point, Polygon
 
 from ros_handler import ROSHandler
 from longitudinal.get_max_velocity import GetMaxVelocity
@@ -157,6 +157,23 @@ class Planning():
         brake_distance = (self.RH.current_velocity)**2/(2*decel_factor)
         return react_distance + brake_distance
 
+    def find_nearby_objects(self, x_obj, y_objs, l_width, r_width, radius=7):
+        polygon = Polygon([
+            (x_obj['X'] - radius, x_obj['Y'] - l_width),  # 왼쪽 뒤
+            (x_obj['X'] - radius, x_obj['Y'] + r_width),  # 오른쪽 뒤
+            (x_obj['X'] + radius, x_obj['Y'] + r_width),  # 오른쪽 앞
+            (x_obj['X'] + radius, x_obj['Y'] - l_width)   # 왼쪽 앞
+        ])
+        nearby_objects = []
+        for y_obj in y_objs:
+            
+            if x_obj['id'] == y_obj['id']:
+                continue
+            y_point = Point((y_obj['X'], y_obj['Y']))
+            if polygon.contains(y_point):
+                nearby_objects.append(y_obj)
+        return nearby_objects
+    
     def path_update(self, trim_global_path):
         if len(trim_global_path) < 5:
             return trim_global_path
@@ -182,9 +199,9 @@ class Planning():
                     check_object.append(obj)
                     check_object_distances.append(obj_dist)
                     
-                    if -1 < d < 1 :
+                    if -1.25 < d < 1.25 :
                         front_object.append(obj)
-
+                    
 
         self.RH.publish_target_object(check_object, check_object_distances)
 
@@ -200,35 +217,34 @@ class Planning():
                 updated_point = point.copy()
                 lat_accel = 9.23
 
-                do_evasive = False
                 for obj in front_object:
-                    #d_evade = self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel)
-                    print(obj['v'],"<", int(self.RH.current_velocity*3.6))
+                    d_evade = self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel)
+                    #if obj['dist'] < d_evade:
                     if obj['v'] < self.RH.current_velocity:
-                        do_evasive = True
-                        obj_x, obj_y = float(obj['X']), float(obj['Y'])
-                
-                if do_evasive:
-                    # Check the relative position of the object
-                    if obj_y > y:
-                        obj_radius = obj_radius_front
-                    else:
-                        obj_radius = obj_radius_rear
+                        nearby_objects = self.find_nearby_objects(obj,check_object, w_left, w_right)
+                        print(nearby_objects)
+                        if len(nearby_objects) == 0:
+                            obj_x, obj_y = float(obj['X']), float(obj['Y'])
                     
-                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
-                        self.object_detected = True
-                        if w_left >= w_right:
-                            points = np.arange(3.95, w_left, 1.2)
-                        else:
-                            points = np.arange(-3.95, -w_right, -1.2 )
+                            if obj_y > y:
+                                obj_radius = obj_radius_front
+                            else:
+                                obj_radius = obj_radius_rear
+                            
+                            if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
+                                self.object_detected = True
+                                if w_left >= w_right:
+                                    points = np.arange(4, w_left, 1.2)
+                                else:
+                                    points = np.arange(-4, -w_right, -1.2 )
 
-                        # 생성된 점들
-                        generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
+                                # 생성된 점들
+                                generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
 
-                        # 가장 가까운 점은 첫 번째 점
-                        closest_point = generated_points[0]
-                        updated_point[0] = closest_point[0]
-                        updated_point[1] = closest_point[1]
+                                # 가장 가까운 점은 첫 번째 점
+                                closest_point = generated_points[0]
+                                updated_point[0] = closest_point[0]
+                                updated_point[1] = closest_point[1]
                     
                 updated_path.append(updated_point)
 
@@ -315,9 +331,7 @@ class Planning():
             return 0
         if path_len >= 3:
             action_velocity = acc_vel
-            # if self.RH.current_lane_id in self.lane3_list:
-            #     action_velocity = action_velocity + self.max_vel * 0.2
-            #action_velocity = self.RH.get_mean_action(velocity_list[2:3])
+
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :
             if not self.check_bank():
@@ -341,7 +355,7 @@ class Planning():
 
         # 'pit_stop' 모드 처리
         elif self.race_mode == 'pit_stop':
-            if self.gpp.get_remain_distance(self.RH.local_pos) < 700:
+            if self.gpp.get_remain_distance(self.RH.local_pos) < LOCAL_PATH_LENGTH:
                 remain_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], self.pit_point[0], self.pit_point[1])
                 if self.pit_stop_decel == 'OFF' and self.get_stop_distance() > remain_dist:
                     self.pit_stop_decel = 'ON'
@@ -406,12 +420,13 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel, len(interped_path))     
 
-                target_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)[1]
+                planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)[1]
+                target_velocity = min(self.max_vel, planned_velocity)
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
 
-                res = self.check_lane_deaprture(interped_path, self.RH.local_pos)
+                res = ''#self.check_lane_deaprture(interped_path, self.RH.local_pos)
                 if res == 'Warning':
                     target_velocity = self.prev_target_vel - 0.5 if self.prev_target_vel - 0.5 >= 0 else 0
                 elif res == 'Danger':

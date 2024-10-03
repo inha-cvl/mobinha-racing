@@ -98,5 +98,5 @@ class GlobalPathPlanner():
         if self.global_path is None:
             return 99999
         min_idx = gput.find_nearest_idx(self.global_path, local_pose)
-        return (len(self.global_path)-min_idx)*50
+        return (len(self.global_path)-min_idx)
     

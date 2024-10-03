@@ -40,8 +40,9 @@ class ObjectSimulator:
     def publish_object(self):
         rate = rospy.Rate(20)
         start_time = time.time()
-        vel = 25
+        vel = 30/3.6
         dt = 0.05
+        pose_array = PoseArray()
         while not rospy.is_shutdown():
             if self.object_ready:
                 if time.time()-start_time > 100:
@@ -50,7 +51,7 @@ class ObjectSimulator:
                 #x,y,yaw,v = self.object.next_state(dt, self.object.yaw, 0, 0)
                 v =+ vel
                 yaw = math.degrees(self.object.yaw)
-                pose_array = PoseArray()
+                
                 pose = Pose()
                 pose.position.x = self.object.x
                 pose.position.y = self.object.y
@@ -58,7 +59,7 @@ class ObjectSimulator:
                 pose.orientation.x = vel 
                 pose.orientation.y = yaw
                 pose_array.poses.append(pose)
-                vel += 0.05
+                #vel += 0.05
             else:
                 pose_array = PoseArray()
                 start_time = time.time()
