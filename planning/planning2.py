@@ -170,16 +170,14 @@ class Planning():
         updated_path = []
         check_object = []
         check_object_distances = []
-        acc_object_distances = []
         for obj in object_list:
-            s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])]) # s로 거리
+            s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
             if -1 < d < 1:
                 check_object.append(obj)
                 obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                 check_object_distances.append(obj_dist)
-                acc_object_distances.append(obj_dist, float(obj['v']))
 
-        self.RH.publish_target_object(check_object, acc_object_distances)
+        self.RH.publish_target_object(check_object, check_object_distances)
 
         self.object_detected = False
         if self.avoid_on:
@@ -225,36 +223,57 @@ class Planning():
                     if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
                         final_global_path[i] = updated_path[i]
 
-        return final_global_path, acc_object_distances
+        return final_global_path
     
     def calculate_acc_vel(
         self,
-        acc_object_distances,
+        updated_path,
         interped_vel
     ):
+        object_list = self.RH.object_list 
+        acc_object_d_v = []
+        for obj in object_list:
+            s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
+            if -1 < d < 1:
+                obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                acc_object_d_v.append([obj_dist, float(obj['v'])])
         min_s = 200
         obj_v = 200
-        for s, v in acc_object_distances:
+        for s, v in acc_object_d_v:
             if min_s > s:
                 min_s = s
-                obj_v = v
+                obj_v = v/3.6
         safety_distance = 40
 
-        
-        if min_s < safety_distance*0.9:
-            target_v_ACC = 10/3.6/21*(min_s - 9)
+        print("s, v:", min_s, obj_v)
 
-        elif safety_distance*0.9 < min_s < safety_distance*1.4:
+        
+        # if min_s < safety_distance*0.9:
+        if min_s < 10:
+            status = "danger"
+            target_v_ACC = -1
+
+        if 10 < min_s < 40:
+            status = "close"
+            target_v_ACC = obj_v*0.7
+
+        # elif safety_distance*0.9 < min_s < safety_distance*1.4:
+        elif 40 < min_s < 100:
+            status = "middle"
             target_v_ACC = obj_v * min_s / safety_distance
 
-        elif safety_distance*1.4 < min_s:
-            target_v_ACC = 999
-            # target_v_ACC = interped_vel[2]
+        # elif safety_distance*1.4 < min_s:
+        elif 100 < min_s:
+            status = "far or none"
+            # target_v_ACC = 999
+            target_v_ACC = interped_vel[2]
             
         else:
             print("zone_error")
         
         print("ACC target v: ", target_v_ACC)
+        print("Status: ", status)
+        print()
 
         return target_v_ACC
     
@@ -274,14 +293,14 @@ class Planning():
             return 0
         if path_len >= 3:
             action_velocity = acc_vel
-            if self.RH.current_lane_id in self.lane3_list:
-                action_velocity = action_velocity + self.max_vel * 0.2
+            # if self.RH.current_lane_id in self.lane3_list:
+            #     action_velocity = action_velocity + self.max_vel * 0.2
             #action_velocity = self.RH.get_mean_action(velocity_list[2:3])
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :
             if not self.check_bank():
                 return -1
-            if len(velocity_list) >= 2:
+            if path_len >= 2:
                 return action_velocity
             return self.prev_target_vel - stop_vel_decrement
 
@@ -314,6 +333,7 @@ class Planning():
         if path_len < 2:
             return max(self.prev_target_vel - stop_vel_decrement, 0)
         
+        print("final vel: ", action_velocity)
         return action_velocity
 
     def check_lane_deaprture(self, local_path, localpos):
@@ -354,13 +374,13 @@ class Planning():
                 trimmed_path, self.global_path = ph.trim_and_update_global_path(self.global_path,self.RH.local_pos,LOCAL_PATH_LENGTH)
 
                 #path update for obstacle
-                updated_path, check_object_distances = self.path_update(trimmed_path) # return 바꿈
+                updated_path = self.path_update(trimmed_path) 
 
                 #path spline
                 interped_path,R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
                 
                 #ACC
-                acc_vel = self.calculate_acc_vel(check_object_distances, interped_vel) # 맹글어야댐
+                acc_vel = self.calculate_acc_vel(updated_path, interped_vel) # 맹글어야댐
 
                 target_velocity = self.calculate_road_max_vel(acc_vel, len(interped_path))                
 
