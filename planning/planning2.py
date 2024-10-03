@@ -45,7 +45,7 @@ class Planning():
         self.specifiers = ['to_goal', 'race']
         self.race_mode = self.specifiers[0]
         self.prev_race_mode = self.race_mode
-        self.avoid_on = True
+        self.avoid_on = False
         self.object_detected = False
 
         start_time = time.time()
@@ -266,22 +266,23 @@ class Planning():
         #print("s, v:", min_s, obj_v)
 
         
-        # if min_s < safety_distance*0.9:
-        if min_s < 10:
+        if min_s < 15:
+        # if min_s < 10:
             status = "danger"
             target_v_ACC = -1
 
-        if 10 < min_s < 40:
+        elif min_s < safety_distance:
+        # if 10 < min_s < 40:
             status = "close"
-            target_v_ACC = obj_v*0.7
+            target_v_ACC = obj_v*3.6 * 0.8
 
-        # elif safety_distance*0.9 < min_s < safety_distance*1.4:
-        elif 40 < min_s < 100:
+        elif safety_distance < min_s < safety_distance*1.4:
+        # elif 40 < min_s < 80:
             status = "middle"
-            target_v_ACC = obj_v * min_s / safety_distance
+            target_v_ACC = obj_v*3.6 * min_s / safety_distance
 
-        # elif safety_distance*1.4 < min_s:
-        elif 100 < min_s:
+        elif safety_distance*1.4 < min_s:
+        # elif 80 < min_s:
             status = "far or none"
             # target_v_ACC = 999
             target_v_ACC = interped_vel[2]
