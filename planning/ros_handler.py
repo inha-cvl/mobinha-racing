@@ -97,10 +97,11 @@ class ROSHandler():
 
             
     
-    def publish2(self, local_path, R_list, velocity_list, target_velocity):
+    def publish2(self, local_path, R_list, velocity_list, target_velocity, race_mode):
         if local_path is not None and len(local_path) > 0:
             self.navigation_data = NavigationData()
             self.navigation_data.targetVelocity.data = target_velocity
+            self.navigation_data.raceMode.data = str(race_mode)
             for i, set in enumerate(local_path):
                 point = Point()
                 point.x = set[0]
