@@ -229,7 +229,8 @@ class Planning():
     
     def calculate_acc_vel(
         self,
-        acc_object_distances
+        acc_object_distances,
+        interped_vel
     ):
         min_s = 200
         obj_v = 200
@@ -248,6 +249,7 @@ class Planning():
 
         elif safety_distance*1.4 < min_s:
             target_v_ACC = 999
+            # target_v_ACC = interped_vel[2]
             
         else:
             print("zone_error")
@@ -358,7 +360,7 @@ class Planning():
                 interped_path,R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
                 
                 #ACC
-                acc_vel = self.calculate_acc_vel(check_object_distances) # 맹글어야댐
+                acc_vel = self.calculate_acc_vel(check_object_distances, interped_vel) # 맹글어야댐
 
                 target_velocity = self.calculate_road_max_vel(acc_vel, len(interped_path))                
 
