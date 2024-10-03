@@ -45,7 +45,7 @@ class Planning():
         self.specifiers = ['to_goal', 'race']
         self.race_mode = self.specifiers[0]
         self.prev_race_mode = self.race_mode
-        self.avoid_on = False
+        self.avoid_on = True
         self.object_detected = False
 
         start_time = time.time()
@@ -178,8 +178,10 @@ class Planning():
                     obj['s'] = s
                     obj['d'] = d 
                     obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                    obj['dist'] = obj_dist
                     check_object.append(obj)
                     check_object_distances.append(obj_dist)
+                    
                     if -1 < d < 1 :
                         front_object.append(obj)
 
@@ -200,8 +202,9 @@ class Planning():
 
                 do_evasive = False
                 for obj in front_object:
-                    d_evade = abs(self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel))
-                    if obj['s'] < d_evade:
+                    #d_evade = self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel)
+                    print(int(obj['v']*3.6 ),"<", int(self.RH.current_velocity*3.6))
+                    if obj['v'] < self.RH.current_velocity:
                         do_evasive = True
                         obj_x, obj_y = float(obj['X']), float(obj['Y'])
                 
@@ -215,9 +218,9 @@ class Planning():
                     if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
                         self.object_detected = True
                         if w_left >= w_right:
-                            points = np.arange(3.75, w_left, 1.2)
+                            points = np.arange(3.95, w_left, 1.2)
                         else:
-                            points = np.arange(-3.75, -w_right, -1.2 )
+                            points = np.arange(-3.95, -w_right, -1.2 )
 
                         # 생성된 점들
                         generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
@@ -379,7 +382,7 @@ class Planning():
             rate.sleep()
 
     def executed(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             while self.first_initialized:
 
