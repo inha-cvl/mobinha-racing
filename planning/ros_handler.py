@@ -64,7 +64,7 @@ class ROSHandler():
     def vehicle_state_cb(self, msg):
         self.current_velocity = msg.velocity.data
         self.current_heading = msg.heading.data
-        self.current_position_lat = msg.position.x
+        self.current_positdion_lat = msg.position.x
         self.current_position_long = msg.position.y
         self.local_pos = (msg.enu.x, msg.enu.y)
     

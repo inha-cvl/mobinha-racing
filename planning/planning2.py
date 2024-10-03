@@ -164,20 +164,30 @@ class Planning():
         
         object_list = self.RH.object_list  # List of objects
 
-        obj_radius_front = 25 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 25 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
+        obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_rear = 30 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
         check_object = []
+        front_object = []
         check_object_distances = []
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if -1 < d < 1:
-                check_object.append(obj)
-                obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                check_object_distances.append(obj_dist)
+            if s > -2 :
+                if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
+                    obj['s'] = s
+                    obj['d'] = d 
+                    obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                    check_object.append(obj)
+                    check_object_distances.append(obj_dist)
+                    if -1 < d < 1 :
+                        front_object.append(obj)
+
 
         self.RH.publish_target_object(check_object, check_object_distances)
+
+        front_object = sorted(front_object, key=lambda x: x['s'])
+
 
         self.object_detected = False
         if self.avoid_on:
@@ -186,8 +196,16 @@ class Planning():
                 w_right, w_left = point[2], point[3]
                 x_normvec, y_normvec = point[4], point[5]
                 updated_point = point.copy()
-                for obj in check_object:
-                    obj_x, obj_y = float(obj['X']), float(obj['Y'])
+                lat_accel = 9.23
+
+                do_evasive = False
+                for obj in front_object:
+                    d_evade = abs(self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel))
+                    if obj['s'] < d_evade:
+                        do_evasive = True
+                        obj_x, obj_y = float(obj['X']), float(obj['Y'])
+                
+                if do_evasive:
                     # Check the relative position of the object
                     if obj_y > y:
                         obj_radius = obj_radius_front
@@ -196,10 +214,10 @@ class Planning():
                     
                     if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
                         self.object_detected = True
-                        if w_left < 4:
-                            points = np.arange(0, w_left, 1.2)
+                        if w_left >= w_right:
+                            points = np.arange(3.75, w_left, 1.2)
                         else:
-                            points = np.arange(3.8, w_left, 0.6 )
+                            points = np.arange(-3.75, -w_right, -1.2 )
 
                         # 생성된 점들
                         generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
@@ -245,7 +263,7 @@ class Planning():
                 obj_v = v/3.6
         safety_distance = 40
 
-        print("s, v:", min_s, obj_v)
+        #print("s, v:", min_s, obj_v)
 
         
         # if min_s < safety_distance*0.9:
@@ -271,9 +289,9 @@ class Planning():
         else:
             print("zone_error")
         
-        print("ACC target v: ", target_v_ACC)
-        print("Status: ", status)
-        print()
+        # print("ACC target v: ", target_v_ACC)
+        # print("Status: ", status)
+        # print()
 
         return target_v_ACC
     
@@ -333,7 +351,7 @@ class Planning():
         if path_len < 2:
             return max(self.prev_target_vel - stop_vel_decrement, 0)
         
-        print("final vel: ", action_velocity)
+        #print("final vel: ", action_velocity)
         return action_velocity
 
     def check_lane_deaprture(self, local_path, localpos):
@@ -382,7 +400,9 @@ class Planning():
                 #ACC
                 acc_vel = self.calculate_acc_vel(updated_path, interped_vel) # 맹글어야댐
 
-                target_velocity = self.calculate_road_max_vel(acc_vel, len(interped_path))                
+                road_max_vel = self.calculate_road_max_vel(acc_vel, len(interped_path))     
+
+                target_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)[1]
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
