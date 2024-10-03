@@ -4,4 +4,4 @@ start_coordinate3: [10.947, 1.986]
 pit_stop_zone_coordinate: [211.853, -96.251] # [204.972, -83.837] #3 lane
 goal_coordinate: [494.785, -407.950] # [492.737, -408.727] #2 lane 
 now_lap: 0
-max_velocity: 80
+max_velocity: 70

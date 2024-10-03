@@ -77,7 +77,7 @@ class ROSHandler():
         object_list = []
         position_list = []
         for i, object in enumerate(msg.objects):
-            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 9.0, 'v': object.velocity.data})
+            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 4.0, 'v': object.velocity.data})
             position_list.append([object.position.x, object.position.y])
         self.object_list = object_list
 
