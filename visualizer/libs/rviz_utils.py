@@ -174,7 +174,7 @@ def ObjectsViz(objects):
 def TargetObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color = [0, 214, 0, 1]
+    color = [255, 85, 33, 1]
     for n, obj in enumerate(objects):
         marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)

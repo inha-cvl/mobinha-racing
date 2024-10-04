@@ -286,9 +286,6 @@ class Planning():
                     obj_v = v/3.6
             safety_distance = 40
 
-            #print("s, v:", min_s, obj_v)
-
-            
             if min_s < 15:
             # if min_s < 10:
                 status = "danger"
@@ -313,10 +310,7 @@ class Planning():
             
             else:
                 print("zone_error")
-            
-        # print("ACC target v: ", target_v_ACC)
-        # print("Status: ", status)
-        # print()
+   
         else:
             target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, 0)
 
@@ -343,9 +337,6 @@ class Planning():
                 return -1
             else:
                 return acc_vel
-            # if path_len >= 3:
-            #     return acc_vel
-            # return self.prev_target_vel - stop_vel_decrement
 
         # 'slow_on' 모드 처리
         elif self.race_mode == 'slow_on':
@@ -358,9 +349,6 @@ class Planning():
                 return slow_vel
             else:
                 return acc_vel
-            # if path_len >= 3:
-            #     return acc_vel
-            # return self.prev_target_vel - stop_vel_decrement
 
         # 'pit_stop' 모드 처리
         elif self.race_mode == 'pit_stop':
@@ -374,12 +362,7 @@ class Planning():
                 else:
                     pass
 
-        # # 일반적인 경우 처리
-        # if path_len < 2:
-        #     return max(self.prev_target_vel - stop_vel_decrement, 0)
-        
-        # #print("final vel: ", action_velocity)
-        return acc_vel #action_velocity
+        return acc_vel 
 
     def check_lane_deaprture(self, local_path, localpos):
         if local_path is not None and len(local_path) > 0:
