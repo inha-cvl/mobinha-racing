@@ -3,6 +3,8 @@ from visualization_msgs.msg import MarkerArray, Marker
 from std_msgs.msg import Float32MultiArray
 from drive_msgs.msg import *
 import math
+import numpy as np
+
 import tf
 
 
@@ -16,6 +18,45 @@ class ROSHandler():
         self.radar_objects = []
         self.est_veh_spd = 0
 
+    def distance(self, x1, y1, x2, y2):
+        return np.sqrt((x2-x1)**2+(y2-y1)**2)
+
+    def calculate_radar_heading_velocity(self, rel_vel_x, rel_vel_y):
+        heading_radians = math.atan2(rel_vel_x, -rel_vel_y)
+        heading_degrees = (math.degrees(heading_radians)+90)
+        relative_speed = math.sqrt(rel_vel_x**2 + rel_vel_y**2)
+        return heading_degrees, relative_speed
+
+    def cluster_radar_obstacles(self, data, distance_threshold=0.7):
+        clusters = []  
+        visited = [False] * len(data)  
+        for i in range(len(data)):
+            if visited[i]:
+                continue
+            
+            x1 = data[i][0]
+            y1 = data[i][1]
+            cluster = [data[i]]  
+
+            for j in range(i+1, len(data)):
+                if visited[j]:
+                    continue
+
+                x2 = data[j][0]
+                y2 = data[j][1]
+
+                if self.distance(x1, y1, x2, y2) <= distance_threshold:
+                    cluster.append(data[j])
+                    visited[j] = True
+            
+            if len(cluster) > 1:
+                max_age_point = max(cluster, key=lambda x: x[4])
+                heading,velocity = self.calculate_radar_heading_velocity(max_age_point[2], max_age_point[3])
+                clusters.append([x1, y1,  heading, velocity, float(max_age_point[4])])
+            else:
+                heading,velocity = self.calculate_radar_heading_velocity(data[i][2], data[i][3])
+                clusters.append([data[i][0], data[i][1], heading, velocity, float(data[i][4])])  
+        return clusters
 
     def set_protocol(self):
         rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
@@ -31,7 +72,8 @@ class ROSHandler():
             if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
                 obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
                 radar_objects.append(obj)
-        self.radar_objects = radar_objects
+        clustered_objects = self.cluster_radar_obstacles(radar_objects)
+        self.radar_objects = clustered_objects
 
     def publish(self, positions):
         

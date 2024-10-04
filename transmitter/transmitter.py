@@ -56,9 +56,10 @@ class Transmitter():
         if self.bus2 is not None:
             try:
                 while not rospy.is_shutdown():
-                    message = await asyncio.get_event_loop().run_in_executor(None, self.bus2.recv, 0.2)     
+                    message = await asyncio.get_event_loop().run_in_executor(None, self.bus2.recv, 0.2)   
                     if message:
                         type, message_dict = self.TH.decode_message2(message)
+                        
                         if message_dict is not None:
                             self.RH.update_radar_output(type, message_dict)
                     # await asyncio.sleep(0.002)  # 500Hz, 2ms 간격

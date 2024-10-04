@@ -129,10 +129,10 @@ class ObstacleHandler:
         
         return psi
 
-    def calculate_radar_heading_velocity(self, rel_vel_x, rel_vel_y):
+    def calculate_radar_heading_velocity(self, rel_pos_x, rel_pos_y, rel_vel_x, rel_vel_y):
         heading_radians = math.atan2(rel_vel_x, -rel_vel_y)
         heading_degrees = (math.degrees(heading_radians)+90)
-        relative_speed = math.sqrt(rel_vel_x**2 + rel_vel_y**2)
+        relative_speed = ((rel_vel_x*rel_pos_x)+(rel_vel_y*rel_pos_y))/math.sqrt(rel_pos_x**2 + rel_pos_y**2)
         return heading_degrees, relative_speed
 
     def cluster_radar_obstacles(self, data, distance_threshold=0.7):
@@ -159,9 +159,9 @@ class ObstacleHandler:
             
             if len(cluster) > 1:
                 max_age_point = max(cluster, key=lambda x: x[4])
-                heading,velocity = self.calculate_radar_heading_velocity(max_age_point[2], max_age_point[3])
+                heading,velocity = self.calculate_radar_heading_velocity(x1, y1, max_age_point[2], max_age_point[3])
                 clusters.append([x1, y1,  heading, velocity, float(max_age_point[4])])
             else:
-                heading,velocity = self.calculate_radar_heading_velocity(data[i][2], data[i][3])
+                heading,velocity = self.calculate_radar_heading_velocity(x1, y1, data[i][2], data[i][3])
                 clusters.append([data[i][0], data[i][1], heading, velocity, float(data[i][4])])  
         return clusters

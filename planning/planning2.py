@@ -89,11 +89,13 @@ class Planning():
             race_mode = 'to_goal'
             planning_state = 'INIT'
             self.first_lap = self.RH.lap_count
-        elif self.prev_lap != self.RH.lap_count and self.RH.lap_count < 10 and self.race_mode != 'pit_stop': #If pass the goal point, 
+        elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': #If pass the goal point, 
             self.start_pose_initialized = False
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
+            elif self.RH.lap_count >= 5 :
+                race_mode = 'pit_stop'
             else:
                 race_mode = 'race'
             planning_state = 'INIT'
@@ -222,7 +224,6 @@ class Planning():
                     #if obj['dist'] < d_evade:
                     if obj['v'] < self.RH.current_velocity:
                         nearby_objects = self.find_nearby_objects(obj,check_object, w_left, w_right)
-                        print(nearby_objects)
                         if len(nearby_objects) == 0:
                             obj_x, obj_y = float(obj['X']), float(obj['Y'])
                     
@@ -242,10 +243,11 @@ class Planning():
                                 generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
 
                                 # 가장 가까운 점은 첫 번째 점
-                                closest_point = generated_points[0]
-                                updated_point[0] = closest_point[0]
-                                updated_point[1] = closest_point[1]
-                    
+                                if len(generated_points) > 0 :
+                                    closest_point = generated_points[0]
+                                    updated_point[0] = closest_point[0]
+                                    updated_point[1] = closest_point[1]
+                        
                 updated_path.append(updated_point)
 
             # Replace only the points in the path that need to be updated
@@ -265,53 +267,58 @@ class Planning():
     def calculate_acc_vel(
         self,
         updated_path,
-        interped_vel
+        interped_vel,
+        stop_vel_decrement=0.1               # 기본값 0.1
     ):
-        object_list = self.RH.object_list 
-        acc_object_d_v = []
-        for obj in object_list:
-            s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
-            if -1 < d < 1:
-                obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                acc_object_d_v.append([obj_dist, float(obj['v'])])
-        min_s = 200
-        obj_v = 200
-        for s, v in acc_object_d_v:
-            if min_s > s:
-                min_s = s
-                obj_v = v/3.6
-        safety_distance = 40
+        if len(interped_vel) > 3:
+            object_list = self.RH.object_list 
+            acc_object_d_v = []
+            for obj in object_list:
+                s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
+                if -1 < d < 1:
+                    obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                    acc_object_d_v.append([obj_dist, float(obj['v'])])
+            min_s = 200
+            obj_v = 200
+            for s, v in acc_object_d_v:
+                if min_s > s:
+                    min_s = s
+                    obj_v = v/3.6
+            safety_distance = 40
 
-        #print("s, v:", min_s, obj_v)
+            #print("s, v:", min_s, obj_v)
 
-        
-        if min_s < 15:
-        # if min_s < 10:
-            status = "danger"
-            target_v_ACC = -1
-
-        elif min_s < safety_distance:
-        # if 10 < min_s < 40:
-            status = "close"
-            target_v_ACC = obj_v*3.6 * 0.8
-
-        elif safety_distance < min_s < safety_distance*1.4:
-        # elif 40 < min_s < 80:
-            status = "middle"
-            target_v_ACC = obj_v*3.6 * min_s / safety_distance
-
-        elif safety_distance*1.4 < min_s:
-        # elif 80 < min_s:
-            status = "far or none"
-            # target_v_ACC = 999
-            target_v_ACC = interped_vel[2]
             
-        else:
-            print("zone_error")
-        
+            if min_s < 15:
+            # if min_s < 10:
+                status = "danger"
+                target_v_ACC = -1
+
+            elif min_s < safety_distance:
+            # if 10 < min_s < 40:
+                status = "close"
+                target_v_ACC = obj_v*3.6 * 0.8
+
+            elif safety_distance < min_s < safety_distance*1.4:
+            # elif 40 < min_s < 80:
+                status = "middle"
+                target_v_ACC = obj_v*3.6 * min_s / safety_distance
+
+            elif safety_distance*1.4 < min_s:
+            # elif 80 < min_s:
+                status = "far or none"
+                # target_v_ACC = 999
+            
+                target_v_ACC = interped_vel[2]
+            
+            else:
+                print("zone_error")
+            
         # print("ACC target v: ", target_v_ACC)
         # print("Status: ", status)
         # print()
+        else:
+            target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, 0)
 
         return target_v_ACC
     
@@ -329,16 +336,16 @@ class Planning():
         # 기본 조건: set_go가 False일 경우
         if not self.RH.set_go:
             return 0
-        if path_len >= 3:
-            action_velocity = acc_vel
 
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :
             if not self.check_bank():
                 return -1
-            if path_len >= 2:
-                return action_velocity
-            return self.prev_target_vel - stop_vel_decrement
+            else:
+                return acc_vel
+            # if path_len >= 3:
+            #     return acc_vel
+            # return self.prev_target_vel - stop_vel_decrement
 
         # 'slow_on' 모드 처리
         elif self.race_mode == 'slow_on':
@@ -349,9 +356,11 @@ class Planning():
                 return road_max_vel
             if self.slow_mode == 'ON':
                 return slow_vel
-            if path_len >= 2:
-                return action_velocity
-            return self.prev_target_vel - stop_vel_decrement
+            else:
+                return acc_vel
+            # if path_len >= 3:
+            #     return acc_vel
+            # return self.prev_target_vel - stop_vel_decrement
 
         # 'pit_stop' 모드 처리
         elif self.race_mode == 'pit_stop':
@@ -365,12 +374,12 @@ class Planning():
                 else:
                     pass
 
-        # 일반적인 경우 처리
-        if path_len < 2:
-            return max(self.prev_target_vel - stop_vel_decrement, 0)
+        # # 일반적인 경우 처리
+        # if path_len < 2:
+        #     return max(self.prev_target_vel - stop_vel_decrement, 0)
         
-        #print("final vel: ", action_velocity)
-        return action_velocity
+        # #print("final vel: ", action_velocity)
+        return acc_vel #action_velocity
 
     def check_lane_deaprture(self, local_path, localpos):
         if local_path is not None and len(local_path) > 0:
@@ -396,7 +405,7 @@ class Planning():
             rate.sleep()
 
     def executed(self):
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             while self.first_initialized:
 
@@ -420,7 +429,12 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel, len(interped_path))     
 
-                planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)[1]
+
+                planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)
+                if len(planned_velocity) > 2:
+                    planned_velocity = planned_velocity[1]
+                else:
+                    planned_velocity = self.prev_target_vel
                 target_velocity = min(self.max_vel, planned_velocity)
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:

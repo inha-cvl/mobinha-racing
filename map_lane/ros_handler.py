@@ -87,6 +87,7 @@ class ROSHandler():
                 obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
                 rad_obstacles.append(obj)
         clustered_obstacles = self.oh.cluster_radar_obstacles(rad_obstacles)
+        
         obstacles = []
         for co in clustered_obstacles:
             conv = self.oh.object2enu([co[0],co[1]])
