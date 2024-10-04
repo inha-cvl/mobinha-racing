@@ -94,7 +94,7 @@ class Planning():
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
-            elif self.RH.lap_count >= 5 :
+            elif self.RH.lap_count >= 3 :
                 race_mode = 'pit_stop'
             else:
                 race_mode = 'race'
@@ -192,7 +192,7 @@ class Planning():
         check_object_distances = []
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if s > -2 :
+            if s > 0 :
                 if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
                     obj['s'] = s
                     obj['d'] = d 
@@ -275,7 +275,7 @@ class Planning():
             acc_object_d_v = []
             for obj in object_list:
                 s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
-                if -1 < d < 1:
+                if s> 0 and -1 < d < 1:
                     obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                     acc_object_d_v.append([obj_dist, float(obj['v'])])
             min_s = 200
@@ -329,7 +329,7 @@ class Planning():
     ):
         # 기본 조건: set_go가 False일 경우
         if not self.RH.set_go:
-            return 0
+            return -1
 
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :

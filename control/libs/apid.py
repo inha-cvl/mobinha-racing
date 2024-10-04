@@ -32,7 +32,7 @@ class APID:
         self.lr = float(pid_config['lr'])
 
     def execute(self):
-        if self.RH.system_mode < 1:
+        if self.RH.system_mode < 1 and (self.RH.kiapi_signal == 0):
             return -3
                 
         self.update_history(self.RH.planned_velocity, self.RH.current_velocity)

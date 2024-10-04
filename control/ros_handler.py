@@ -17,6 +17,7 @@ class ROSHandler():
         self.system_mode = 0
         self.planned_velocity = 0
         self.race_mode = 'race'
+        self.kiapi_signal = 0
         self.current_location = []
         self.current_velocity = 0
         self.current_heading = 0
@@ -34,6 +35,7 @@ class ROSHandler():
     
     def system_status_cb(self, msg):
         self.system_mode = msg.systemMode.data 
+        self.kiapi_signal = msg.kiapiSignal.data
     
     def navigation_data_cb(self, msg):
         self.planned_velocity = msg.targetVelocity.data
