@@ -94,8 +94,8 @@ class Planning():
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
-            elif self.RH.lap_count >= 3 :
-                race_mode = 'pit_stop'
+            # elif self.RH.lap_count >= 3 :
+            #     race_mode = 'pit_stop'
             else:
                 race_mode = 'race'
             planning_state = 'INIT'

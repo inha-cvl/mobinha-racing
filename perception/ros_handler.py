@@ -1,9 +1,15 @@
 import rospy
+
+from sensor_msgs.msg import Image
 from visualization_msgs.msg import MarkerArray, Marker
+from vision_msgs.msg import Detection2DArray
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+
 from std_msgs.msg import Float32MultiArray
 from drive_msgs.msg import *
 import math
-import numpy as np
+
 
 import tf
 
@@ -17,63 +23,46 @@ class ROSHandler():
     def set_values(self):
         self.radar_objects = []
         self.est_veh_spd = 0
+        self.img = None
+        self.bounding_boxes = []
+        self.bridge = CvBridge()
 
-    def distance(self, x1, y1, x2, y2):
-        return np.sqrt((x2-x1)**2+(y2-y1)**2)
-
-    def calculate_radar_heading_velocity(self, rel_vel_x, rel_vel_y):
-        heading_radians = math.atan2(rel_vel_x, -rel_vel_y)
-        heading_degrees = (math.degrees(heading_radians)+90)
-        relative_speed = math.sqrt(rel_vel_x**2 + rel_vel_y**2)
-        return heading_degrees, relative_speed
-
-    def cluster_radar_obstacles(self, data, distance_threshold=0.7):
-        clusters = []  
-        visited = [False] * len(data)  
-        for i in range(len(data)):
-            if visited[i]:
-                continue
-            
-            x1 = data[i][0]
-            y1 = data[i][1]
-            cluster = [data[i]]  
-
-            for j in range(i+1, len(data)):
-                if visited[j]:
-                    continue
-
-                x2 = data[j][0]
-                y2 = data[j][1]
-
-                if self.distance(x1, y1, x2, y2) <= distance_threshold:
-                    cluster.append(data[j])
-                    visited[j] = True
-            
-            if len(cluster) > 1:
-                max_age_point = max(cluster, key=lambda x: x[4])
-                heading,velocity = self.calculate_radar_heading_velocity(max_age_point[2], max_age_point[3])
-                clusters.append([x1, y1,  heading, velocity, float(max_age_point[4])])
-            else:
-                heading,velocity = self.calculate_radar_heading_velocity(data[i][2], data[i][3])
-                clusters.append([data[i][0], data[i][1], heading, velocity, float(data[i][4])])  
-        return clusters
 
     def set_protocol(self):
         rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
         rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb )
+        rospy.Subscriber('/camera/image_color', Image, self.image_cb)
+        rospy.Subscriber('/detection_results', Detection2DArray, self.detection_cb)
+        
         self.radar_objects_marker_pub = rospy.Publisher('/RadarObjects', MarkerArray, queue_size=1)
-    
+        self.processed_image_pub = rospy.Publisher('/camera/processed_image', Image, queue_size=10)
+
     def adas_drv_cb(self, msg):
         self.est_veh_spd = msg.data[5]
 
     def radar_object_array_cb(self, msg):
         radar_objects = []
         for ro in msg.radarObjects:
-            if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
-                obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
-                radar_objects.append(obj)
-        clustered_objects = self.cluster_radar_obstacles(radar_objects)
-        self.radar_objects = clustered_objects
+            # if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
+            obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
+            radar_objects.append(obj)
+        self.radar_objects = radar_objects
+
+    def image_cb(self, msg):
+        bridge = CvBridge()
+        self.img = bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+
+    def detection_cb(self, detection_array):
+        self.bounding_boxes = []
+        for detection in detection_array.detections:
+            bbox = detection.bbox
+            xmin = int(bbox.center.x - bbox.size_x / 2)
+            ymin = int(bbox.center.y - bbox.size_y / 2)
+            xmax = int(bbox.center.x + bbox.size_x / 2)
+            ymax = int(bbox.center.y + bbox.size_y / 2)
+            self.bounding_boxes.append((xmin, ymin, xmax, ymax))
+
+
 
     def publish(self, positions):
         
@@ -126,3 +115,12 @@ class ROSHandler():
             marker_array.markers.append(marker)
 
         self.radar_objects_marker_pub.publish(marker_array)
+
+    def publish_result_img(self, frame):
+        try:
+            # Convert OpenCV image to ROS Image message
+            image_message = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+            # Publish the Image message
+            self.processed_image_pub.publish(image_message)
+        except CvBridgeError as e:
+            rospy.logerr(f"Failed to convert and publish image: {e}")
