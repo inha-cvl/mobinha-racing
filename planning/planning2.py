@@ -49,6 +49,7 @@ class Planning():
         self.object_detected = False
 
         start_time = time.time()
+        #gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITsY
 
         gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) #[427.079, -337.119]
         self.to_goal_path = self.get_ref_path(self.specifiers[0])
@@ -183,7 +184,7 @@ class Planning():
         
         object_list = self.RH.object_list  # List of objects
 
-        obj_radius_front = 30 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
+        obj_radius_front = 40 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
         obj_radius_rear = 30 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
         updated_path = []
@@ -192,7 +193,7 @@ class Planning():
         check_object_distances = []
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if s > 0 :
+            if s > -1 :
                 if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
                     obj['s'] = s
                     obj['d'] = d 

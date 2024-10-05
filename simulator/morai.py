@@ -14,7 +14,7 @@ from geometry_msgs.msg import Pose, PoseArray
 
 class Morai:
     def __init__(self):
-        # self.base_lla = [35.64750540757964, 128.40264207604886, 7]
+        #self.base_lla = [35.64750540757964, 128.40264207604886, 7]
         self.base_lla = [37.2292221592864,126.76912499027308, 7]
         self.pose = Pose2D()
         self.ctrl_msg = CtrlCmd()

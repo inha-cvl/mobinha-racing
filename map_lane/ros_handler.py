@@ -105,6 +105,7 @@ class ROSHandler():
         for obj in msg.poses:
             obstacles.append([int(obj.position.z),obj.position.x,obj.position.y,float(obj.orientation.x)])
         self.sim_obstacles = obstacles
+        
     
     def fusion_objects_cb(self, msg):
         obstacles = []

@@ -14,4 +14,4 @@ python3 morai.py &
 cd ../control/
 python3 control.py &
 cd ../planning/
-python3 planning.py
+python3 planning2.py
