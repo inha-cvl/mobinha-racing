@@ -3,6 +3,8 @@ import rospy
 from sensor_msgs.msg import Image
 from visualization_msgs.msg import MarkerArray, Marker
 from vision_msgs.msg import Detection2DArray
+from geometry_msgs.msg import PoseStamped, Pose, PoseArray
+
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -36,6 +38,7 @@ class ROSHandler():
         
         self.radar_objects_marker_pub = rospy.Publisher('/RadarObjects', MarkerArray, queue_size=1)
         self.processed_image_pub = rospy.Publisher('/camera/processed_image', Image, queue_size=10)
+        self.fusion_objects_pub = rospy.Publisher('/perception/fusion_objects', PoseArray, queue_size=1)
 
     def adas_drv_cb(self, msg):
         self.est_veh_spd = msg.data[5]
@@ -124,3 +127,16 @@ class ROSHandler():
             self.processed_image_pub.publish(image_message)
         except CvBridgeError as e:
             rospy.logerr(f"Failed to convert and publish image: {e}")
+
+    def publish_object_array(self, list):
+        pose_array = PoseArray()
+        for obj in list:
+            pose = Pose()
+            pose.position.x = obj[0]
+            pose.position.y = obj[1]
+            pose.position.z = 1
+            pose.orientation.x = obj[3]
+            pose.orientation.y = obj[2]
+            pose_array.poses.append(pose)
+        self.fusion_objects_pub.publish(pose_array)
+

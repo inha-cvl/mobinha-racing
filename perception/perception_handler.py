@@ -11,7 +11,7 @@ def calculate_radar_heading_velocity(rel_pos_x, rel_pos_y, rel_vel_x, rel_vel_y)
         relative_speed = ((rel_vel_x*rel_pos_x)+(rel_vel_y*rel_pos_y))/math.sqrt(rel_pos_x**2 + rel_pos_y**2)
         return heading_degrees, relative_speed
 
-def cluster_radar_obstacles( data, distance_threshold=0.5):
+def cluster_radar_obstacles( data, distance_threshold=0.7):
     clusters = []  
     visited = [False] * len(data)  
     for i in range(len(data)):
@@ -43,8 +43,8 @@ def cluster_radar_obstacles( data, distance_threshold=0.5):
             x = x/len(cluster)
             y = y/len(cluster)
 
-            heading,velocity = calculate_radar_heading_velocity(x1, y1, max_age_point[2], max_age_point[3])
-            clusters.append([x1, y1,  heading, velocity, float(max_age_point[4])])
+            heading,velocity = calculate_radar_heading_velocity(x, y, max_age_point[2], max_age_point[3])
+            clusters.append([x, y,  heading, velocity, float(max_age_point[4])])
 
         else:
             heading,velocity = calculate_radar_heading_velocity(x1, y1, data[i][2], data[i][3])
@@ -77,41 +77,42 @@ def rectify_corners(objects_3d, P, intrinsic):
     for i , object_3d in enumerate(objects_3d):
         projected_corners = project_to_image(object_3d[0].T, P, intrinsic)
         pos_x, pos_y, pos_z = object_3d[1][:]
+        heading, velocity = object_3d[2]
         x_min = int(np.min(projected_corners[0, :]))
         x_max = int(np.max(projected_corners[0, :]))
         y_min = int(np.min(projected_corners[1, :]))
         y_max = int(np.max(projected_corners[1, :]))
         
-        object_2d.append((x_min, y_min,x_max, y_max, pos_x, pos_y, pos_z))
+        object_2d.append((x_min, y_min,x_max, y_max, pos_x, pos_y, pos_z, heading, velocity))
     return object_2d
 
 
 def find_corners(clustered_list): 
     corners_list = []
     # # for car
-    # center_z = 0.4
-    # size_x = 4.65
-    # size_y = 1.82
-    # size_z = 1.4
+    center_z = 0.4
+    size_x = 4.65
+    size_y = 1.82
+    size_z = 1.4
     
     # human
-    center_z = 0.55
-    size_x = 0.3
-    size_y = 0.9
-    size_z = 1.8
+    # center_z = 0.55
+    # size_x = 0.3
+    # size_y = 0.9
+    # size_z = 1.8
     
 
-    for (center_x,center_y, _, _, _) in clustered_list:
-        corners = np.array([[(center_x+0.8) + size_x/2, center_y + size_y/2, center_z + size_z/2],
-                            [(center_x+0.8) + size_x/2, center_y + size_y/2, center_z - size_z/2],
-                            [(center_x+0.8) + size_x/2, center_y - size_y/2, center_z + size_z/2],
-                            [(center_x+0.8) + size_x/2, center_y - size_y/2, center_z - size_z/2],
-                            [(center_x+0.8) - size_x/2, center_y + size_y/2, center_z + size_z/2],
-                            [(center_x+0.8) - size_x/2, center_y + size_y/2, center_z - size_z/2],
-                            [(center_x+0.8) - size_x/2, center_y - size_y/2, center_z + size_z/2],
-                            [(center_x+0.8) - size_x/2, center_y - size_y/2, center_z - size_z/2]])
-        position = np.array([(center_x+0.8) , center_y, center_z]).T
-        corners_list.append([corners, position])
+    for (center_x,center_y, heading, velocity, _) in clustered_list:
+        corners = np.array([[(center_x) + size_x/2, center_y + size_y/2, center_z + size_z/2],
+                            [(center_x) + size_x/2, center_y + size_y/2, center_z - size_z/2],
+                            [(center_x) + size_x/2, center_y - size_y/2, center_z + size_z/2],
+                            [(center_x) + size_x/2, center_y - size_y/2, center_z - size_z/2],
+                            [(center_x) - size_x/2, center_y + size_y/2, center_z + size_z/2],
+                            [(center_x) - size_x/2, center_y + size_y/2, center_z - size_z/2],
+                            [(center_x) - size_x/2, center_y - size_y/2, center_z + size_z/2],
+                            [(center_x) - size_x/2, center_y - size_y/2, center_z - size_z/2]])
+        position = np.array([(center_x) , center_y, center_z]).T
+        corners_list.append([corners, position, (heading, velocity)])
 
     return corners_list
 

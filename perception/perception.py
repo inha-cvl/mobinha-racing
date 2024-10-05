@@ -31,7 +31,7 @@ class Perception():
         self.dist_coeffs = np.array([-0.13287, 0.08114, 0.00005, 0.00026, 0.00000])
 
         self.roll, self.pitch, self.yaw = 90.4, 1.2, 90.0
-        self.tx, self.ty, self.tz = -0.005, 1.2, 1.97
+        self.tx, self.ty, self.tz = -0.005, 1.2, 1.6
         self.increment = 0.1
 
     def transformation(self):
@@ -57,12 +57,12 @@ class Perception():
             
             start = time.time()
             img_undistorted = self.RH.img.copy()
-            # img_undistorted = cv2.undistort(self.img, self.intrinsic, self.dist_coeffs)
+            # img_undistorted = cv2.undistort(self.RH.img, self.intrinsic, self.dist_coeffs)
             
             #radar clustering
-            clustered_list = ph.cluster_radar_obstacles(self.RH.radar_objects)            
+            # clustered_list = ph.cluster_radar_obstacles(self.RH.radar_objects)            
             #find corners
-            points = ph.find_corners(clustered_list)
+            points = ph.find_corners(self.RH.radar_objects)
 
             R = self.transformation()
             T = np.array([self.tx, self.ty, self.tz]).reshape(3, 1)
@@ -73,19 +73,23 @@ class Perception():
             for (xmin, ymin, xmax, ymax) in self.RH.bounding_boxes:
                 cv2.rectangle(img_undistorted, (xmin, ymin), (xmax, ymax), (255, 0, 0), 2)
                 
-            for (xmin, ymin, xmax, ymax, *rest) in points_2d:
-                cv2.rectangle(img_undistorted, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+            # for (xmin, ymin, xmax, ymax, *rest) in points_2d:
+            #     cv2.rectangle(img_undistorted, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
 
-            for bbox, pos in matched_boxes:
+            matched_list = []
+            for bbox, info in matched_boxes:
                 xmin, ymin, xmax, ymax = bbox
-                posx, posy, posz = pos
+                posx, posy, posz = info[0:3]
+                heading, velocity = info[3:5]
+                matched_list.append((posx, posy, heading, velocity))
                 cv2.rectangle(img_undistorted, (xmin, ymin), (xmax, ymax), (255, 255, 255), 2)
                 cv2.putText(img_undistorted, f"x={posx:.2f} y={posy:.2f}", (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
             
-            print("Radar + Camera Fusion time: ", time.time() - start)
+            #print("Radar + Camera Fusion time: ", time.time() - start)
             
             self.RH.publish_result_img(img_undistorted)
-            self.RH.publish(clustered_list)
+            self.RH.publish(self.RH.radar_objects)
+            self.RH.publish_object_array(matched_list)
             rate.sleep()
 
 def main():

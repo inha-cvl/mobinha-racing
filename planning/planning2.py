@@ -312,7 +312,7 @@ class Planning():
                 print("zone_error")
    
         else:
-            target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, 0)
+            target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, -1)
 
         return target_v_ACC
     
@@ -358,11 +358,11 @@ class Planning():
                     self.pit_stop_decel = 'ON'
                 if self.pit_stop_decel == 'ON':
                     interval = self.RH.current_velocity / (remain_dist/ (interval_divisor_base + (self.RH.current_velocity / interval_factor)))
-                    return max(self.RH.current_velocity - interval, 0)
+                    return max(self.RH.current_velocity - interval, -1)
                 else:
                     pass
 
-        return acc_vel 
+        return acc_vel
 
     def check_lane_deaprture(self, local_path, localpos):
         if local_path is not None and len(local_path) > 0:

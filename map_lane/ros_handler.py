@@ -36,6 +36,7 @@ class ROSHandler():
         self.cam_obstacles = []
         self.lid_obstacles = []
         self.rad_obstacles = []
+        self.fus_obstacles = []
 
     def set_publisher_protocol(self):
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
@@ -51,11 +52,12 @@ class ROSHandler():
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
 
-        rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
         rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
+        #rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
+        #rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
+        rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
 
-        rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
         rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb)
     
     def system_status_cb(self, msg):
@@ -103,6 +105,17 @@ class ROSHandler():
         for obj in msg.poses:
             obstacles.append([int(obj.position.z),obj.position.x,obj.position.y,float(obj.orientation.x)])
         self.sim_obstacles = obstacles
+    
+    def fusion_objects_cb(self, msg):
+        obstacles = []
+        for obj in msg.poses:
+            conv = self.oh.object2enu([obj.position.x,obj.position.y])
+            if conv is None:
+                continue
+            else:
+                nx, ny = conv
+                obstacles.append([int(obj.position.z),nx, ny,float(obj.orientation.x)+self.current_velocity])
+        self.fus_obstacles = obstacles
 
     
     def cam_objects_cb(self,msg):

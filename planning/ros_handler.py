@@ -54,6 +54,7 @@ class ROSHandler():
         self.current_signal = msg.systemSignal.data
         self.lap_count = msg.lapCount.data
         self.kiapi_signal = msg.kiapiSignal.data
+        #selff
         #0:None, 1:Go, 2:Stop, 3:Slow On, 4:Slow Off, 5:Pit Stop
         if not self.set_go and self.kiapi_signal == 1:
             self.set_go = True

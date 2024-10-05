@@ -152,7 +152,7 @@ def CarViz(frame_id, name_space, position, color):
 def ObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color1 = [255, 114, 48, 1] 
+    color1 = [255, 114, 48, 1] #orange: simulator
     color2 = [69,255,48,1] #green: LiDAR
     color3 = [48,255,255,1] #cyan: Radar
     for n, obj in enumerate(objects):
@@ -174,7 +174,7 @@ def ObjectsViz(objects):
 def TargetObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color = [255, 85, 33, 1]
+    color = [255, 0, 0, 1]
     for n, obj in enumerate(objects):
         marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)
