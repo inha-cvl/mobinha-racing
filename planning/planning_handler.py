@@ -8,7 +8,7 @@ def distance(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 def find_closest_index(global_path, local_pos, threshold=20):
-    min_dist = float('inf')
+    min_dist = 120#float('inf')
     closest_index = None
     decreasing = True
 
