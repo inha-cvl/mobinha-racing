@@ -26,6 +26,7 @@ add_message_files(
   SystemStatus.msg
   RadarObject.msg
   RadarObjectArray.msg
+  CCANOutput.msg
 )
 
 generate_messages(

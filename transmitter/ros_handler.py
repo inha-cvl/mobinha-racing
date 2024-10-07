@@ -9,6 +9,7 @@ class ROSHandler():
     def __init__(self, TH):
         
         rospy.init_node('transmitter', anonymous=False)
+        self.decode_handler0 = TH.decode_handler0
         self.decode_handler1 = TH.decode_handler1
         self.decode_handler2 = TH.decode_handler2
         self.encode_handler = TH.encode_handler
@@ -21,13 +22,14 @@ class ROSHandler():
     def set_protocol(self):
         self.can_output_pub = rospy.Publisher('/CANOutput', CANOutput, queue_size=1)
         rospy.Subscriber('/CANInput', CANInput, self.can_input_cb)
+        self.ccan_output_pub = rospy.Publisher('/CCANOutput', CCANOutput, queue_size=1)
         self.radar_object_array_pub = rospy.Publisher('/RadarObjectArray',RadarObjectArray, queue_size=1)
         self.adas_drv_pub = rospy.Publisher('/ADAS_DRV', Float32MultiArray,queue_size=1)
 
 
     def set_messages(self):
         self.can_output = CANOutput()
-        for values in self.decode_handler1.values():
+        for values in self.decode_handler0.values():
             for key, value in values.items():
                 getattr(self.can_output, key).data = value
 
@@ -36,11 +38,20 @@ class ROSHandler():
             for key, value in values.items():
                 getattr(self.can_input, key).data = value
         
+        self.ccan_output = CCANOutput()
+        for values in self.decode_handler1.values():
+            for key, value in values.items():
+                getattr(self.ccan_output, key).data = value
+        
         self.radar_object_array = RadarObjectArray()
         
     def update_can_output(self, message_dict):
         for key, value in message_dict.items():
             getattr(self.can_output, key).data = str(value)
+    
+    def update_ccan_output(self, message_dict):
+        for key, value in message_dict.items():
+            getattr(self.ccan_output, key).data = str(value)
     
     def update_radar_output(self, type, message_dict):
         if type == 0:
@@ -94,6 +105,9 @@ class ROSHandler():
         self.can_output.header = Header()
         self.can_output.header.stamp = rospy.Time.now()
         self.can_output_pub.publish(self.can_output)
+    
+    def send_ccan_output(self):
+        self.ccan_output_pub.publish(self.ccan_output)
     
     def send_radar_output(self, cnt):
         self.radar_object_array.header = Header()

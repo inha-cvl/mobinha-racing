@@ -5,7 +5,8 @@ import cantools.database
 
 class TransmitterHandler:
     def __init__(self):
-        self.dbc1 = cantools.database.load_file('./cn7.dbc')
+        self.dbc0 = cantools.database.load_file('./cn7.dbc')
+        self.dbc1 = cantools.database.load_file('./hyundai_ccan.dbc')
         self.dbc2 = cantools.database.load_file('./RDR_Obj.dbc')
         self.setup_message_dicts()
         self.setup_decode_handlers()
@@ -24,12 +25,17 @@ class TransmitterHandler:
         }
 
     def setup_decode_handlers(self):
-        self.decode_handler1 = {
+        self.decode_handler0 = {
             0x710: self.EAIT_INFO_EPS,
             0x711: self.EAIT_INFO_ACC,
             0x712: self.EAIT_INFO_SPD,
             0x713: self.EAIT_INFO_IMU,
             0x124: self.KIAPI_1
+        }
+
+        self.decode_handler1 = {
+            1419: self.LCA11,
+            832: self.LKAS11
         }
 
         self.decode_handler2 = {
@@ -54,6 +60,22 @@ class TransmitterHandler:
 
 
     
+    def decode_message0(self, message):
+        _id = message.arbitration_id
+        if _id in self.decode_handler0.keys():
+            getter_dict = self.decode_handler0.get(_id)
+            decoded_message = self.dbc0.decode_message(_id, message.data)
+            getter_dict.update({key: decoded_message.get(key) for key in getter_dict.keys()})
+            return getter_dict
+    
+    def encode_message(self, dicts):
+        can_messages = []
+        for i, (key,value) in enumerate(self.encode_dbc.items()):
+            message = self.dbc0.encode_message(value, dicts[i])
+            can_message = can.Message(arbitration_id=key, data=message, is_extended_id=False)
+            can_messages.append(can_message)
+        return can_messages
+
     def decode_message1(self, message):
         _id = message.arbitration_id
         if _id in self.decode_handler1.keys():
@@ -61,14 +83,6 @@ class TransmitterHandler:
             decoded_message = self.dbc1.decode_message(_id, message.data)
             getter_dict.update({key: decoded_message.get(key) for key in getter_dict.keys()})
             return getter_dict
-    
-    def encode_message(self, dicts):
-        can_messages = []
-        for i, (key,value) in enumerate(self.encode_dbc.items()):
-            message = self.dbc1.encode_message(value, dicts[i])
-            can_message = can.Message(arbitration_id=key, data=message, is_extended_id=False)
-            can_messages.append(can_message)
-        return can_messages
 
     def decode_message2(self, message):
         _id = message.arbitration_id
@@ -105,7 +119,7 @@ class TransmitterHandler:
             'EPS_Speed': 10,  # 1.0 * (value) [0,250]
             'ACC_En': 0x00,  # 0x00: Disabled, 0x01: Enabled
             'AEB_En': 0x00,  # 0x00: Disabled, 0x01: Enabled
-            'Turn_Signal': 0x00,  # 0x00: Off, 0x01: Emergency, 0x02: Right, 0x03: Left
+            'Turn_Signal': 0x00,  # 0x00: Off, 0x01: Emergency, 0x02: Left, 0x03: Right
             'AEB_decel_value': 0,  # 0.01 * (value) [0.0,1.0]
             'Aliv_Cnt': 0  # 1.0 * (value) [0,255]
         }
@@ -172,6 +186,21 @@ class TransmitterHandler:
 
         self.KIAPI_3 = { # temporary naming due to lack of dbc
             'SIG_REPAIR': 0xFF # 0xFF: Repair Enable, 0xFF > Value: Repair Disable
+        }
+
+        self.LCA11 = {
+            'CF_Lca_Stat': "",
+            'CF_Rcta_Stat':"",
+            'CF_Lca_IndLeft' : "",
+            'CF_Lca_IndRight': "",
+            'CF_RCTA_IndLeft' : "",
+            'CF_RCTA_IndRight' :"",
+
+        }
+
+        self.SCC12 = {
+            'aReqMax': "",
+            'aReqMin':"",
         }
 
         self.ADAS_DRV = {

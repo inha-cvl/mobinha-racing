@@ -177,6 +177,19 @@ class Planning():
                 nearby_objects.append(y_obj)
         return nearby_objects
     
+    def check_bsd(self, left_bsd, right_bsd, l_width, r_width):
+        if l_width >= r_width:
+            if left_bsd == 1:
+                return True
+            else:
+                return False
+        else:
+            if right_bsd == 1:
+                return True
+            else:
+                return False
+
+
     def path_update(self, trim_global_path):
         if len(trim_global_path) < 5:
             return trim_global_path
@@ -225,7 +238,9 @@ class Planning():
                     #if obj['dist'] < d_evade:
                     if obj['v'] < self.RH.current_velocity:
                         nearby_objects = self.find_nearby_objects(obj,check_object, w_left, w_right)
-                        if len(nearby_objects) == 0:
+                        bsd_detected = self.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, w_left, w_right)
+                        
+                        if len(nearby_objects) == 0 and not bsd_detected:
                             obj_x, obj_y = float(obj['X']), float(obj['Y'])
                     
                             if obj_y > y:
@@ -236,9 +251,9 @@ class Planning():
                             if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
                                 self.object_detected = True
                                 if w_left >= w_right:
-                                    points = np.arange(4, w_left, 1.2)
+                                    points = np.arange(4.25, w_left, 1.2)
                                 else:
-                                    points = np.arange(-4, -w_right, -1.2 )
+                                    points = np.arange(-4.25, -w_right, -1.2 )
 
                                 # 생성된 점들
                                 generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]

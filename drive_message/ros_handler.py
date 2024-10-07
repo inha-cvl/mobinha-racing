@@ -105,7 +105,7 @@ class ROSHandler():
         #TODO: KIAPI Signal Parsing
         self.system_status.kiapiSignal.data = get_kiapi_signal(msg.SIG_GO.data, msg.SIG_STOP.data,  msg.SIG_SLOW_ON.data, msg.SIG_SLOW_OFF.data,msg.SIG_PIT_STOP.data,)
     
-    def system_to_can(self, mode):
+    def system_to_can(self, mode, signal):
         if self.vehicle_state.mode.data == 0:
             self.can_input.EPS_En.data = 1 if mode in (1, 2) else 0
             self.can_input.ACC_En.data = 1 if mode in (1, 3) else 0
@@ -113,6 +113,10 @@ class ROSHandler():
         elif mode == 0 and self.vehicle_state.mode.data >= 1:
             self.can_input.EPS_En.data = 0
             self.can_input.ACC_En.data = 0
+        print(signal)
+        self.can_input.Turn_Signal.data = signal
+        
+
             
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.laneNumber.data != 0:
@@ -126,9 +130,10 @@ class ROSHandler():
     
     def user_input_cb(self, msg): #mode, signal, state, health
         mode = int(msg.user_mode.data)
-        self.system_to_can(mode)
+        signal = int(msg.user_signal.data)
+        self.system_to_can(mode, signal)
         self.system_status.systemMode.data = mode
-        self.system_status.systemSignal.data = int(msg.user_signal.data)
+        self.system_status.systemSignal.data = signal
         self.system_status.kiapiSignal.data = int(msg.kiapi_signal.data)
 
     def target_actuator_cb(self, msg):

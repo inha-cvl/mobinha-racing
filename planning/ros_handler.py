@@ -25,6 +25,8 @@ class ROSHandler():
         self.current_signal = 0
         self.current_position_lat = 0
         self.current_position_long = 0
+        self.left_bsd_detect = 0
+        self.right_bsd_detect = 0
         self.local_pos = None
         self.prev_start_pos = [0,0]
         self.object_list = []
@@ -46,7 +48,7 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
-        rospy.Subscriber('/CANOutput', CANOutput, self.can_output_cb)
+        rospy.Subscriber('/CCANOutput', CCANOutput, self.ccan_output_cb)
 
     def system_status_cb(self, msg):
         self.map_name = msg.mapName.data   
@@ -69,10 +71,9 @@ class ROSHandler():
         self.current_position_long = msg.position.y
         self.local_pos = (msg.enu.x, msg.enu.y)
     
-    def can_output_cb(self, msg):
-        pass
-        # self.current_long_accel = float(msg.Long_ACCEL.data)
-        # self.current_lat_accel = float(msg.LAT_ACCEL.data)
+    def ccan_output_cb(self, msg: CCANOutput):
+        self.left_bsd_detect = int(CCANOutput.CF_Lca_IndLeft.data) # 0 : none, 1 : detect
+        self.right_bsd_detect = int(CCANOutput.CF_Lca_IndRight.data) 
     
     def detection_data_cb(self, msg):
         object_list = []

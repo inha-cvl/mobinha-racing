@@ -16,11 +16,11 @@ from transmitter_handler import TransmitterHandler
 def signal_handler(sig, frame):
     sys.exit(0)
 
-class CAN2Test():
+class CANTest():
     def __init__(self):
-        self.bus = can.ThreadSafeBus(interface='socketcan',fd=True, channel='can2', bitrate=500000)
+        self.bus = can.ThreadSafeBus(interface='socketcan', channel='can1', bitrate=500000)
         self.TH = TransmitterHandler()
-        self.dbc = cantools.database.load_file('./RDR_Obj.dbc')
+        self.dbc = cantools.database.load_file('./hyundai_ccan.dbc')
 
     async def read_from_can(self):
         try:
@@ -28,8 +28,11 @@ class CAN2Test():
                 message = await asyncio.get_event_loop().run_in_executor(None, self.bus.recv, 0.2)               
                 if message:
                     try:
-                        print(self.dbc.decode_message(message.arbitration_id, message.data))
-                        print('\n')
+                       
+                        if message.arbitration_id == 1419:
+                            print(hex(message.arbitration_id))
+                            print(self.dbc.decode_message(message.arbitration_id, message.data))
+                            print('\n')
                     except Exception as E:
                         pass
         except Exception as e:
@@ -44,7 +47,7 @@ class CAN2Test():
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
-    can2_test = CAN2Test()
+    can2_test = CANTest()
     can2_test.run()
 
 if __name__ == "__main__":

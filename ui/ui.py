@@ -169,7 +169,7 @@ class MyApp(QMainWindow, form_class):
         top_buttons1 = [self.buttonOff, self.buttonOn, self.buttonACCOnly, self.buttonEPSOnly]
         for i, button in enumerate(top_buttons1):
             button.clicked.connect(partial(self.click_mode, int(i)))
-        top_buttons2 = [None,self.buttonLeft, self.buttonRight, self.buttonLeftRight]
+        top_buttons2 = [None, self.buttonLeftRight, self.buttonLeft, self.buttonRight ]
         for i in range(1,4):
             top_buttons2[i].clicked.connect(partial(self.click_signal, int(i)))
         for i in range(1,6):
