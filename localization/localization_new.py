@@ -253,7 +253,7 @@ class Localization:
         elif dr_pos_valid:
             self.last_pos = self.dr_pos
             self.dr_pos_cnt += 1
-            print(f"DR_POS has used during {self.dr_pos_cnt}!")
+            print(f"DR_POS has used during {self.dr_pos_cnt * 0.05} sec!")
         else:
             self.RH.nav_health_pub.publish(False)  # emergency stop
             print("ERROR: ALL Position Dead")
@@ -301,7 +301,7 @@ class Localization:
         elif dr_hdg_valid:
             self.last_hdg = self.dr_hdg
             self.dr_hdg_cnt += 1
-            print(f"DR_HDG has used during {self.dr_hdg_cnt}!")
+            print(f"DR_HDG has used during {self.dr_hdg_cnt * 0.05} sec!")
         # elif source == "IMU":
         # elif imu_hdg_valid:
         #     self.last_hdg = self.RH.imu_hdg
