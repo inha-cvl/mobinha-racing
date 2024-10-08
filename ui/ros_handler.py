@@ -22,6 +22,7 @@ class ROSHandler():
         self.user_input = UserInput()
         self.user_value = {'user_mode': 0, 'user_signal': 0, 'kiapi_signal':0}
         self.lane_number = 0
+        self.planning_mode = 'straight'
 
     def set_publisher_protocol(self):
         self.pub_user_input = rospy.Publisher('/UserInput',UserInput, queue_size=1)
@@ -52,6 +53,7 @@ class ROSHandler():
     
     def navigation_data_cb(self, msg):
         self.target_value['velocity'] = int(msg.targetVelocity.data*MPS_TO_KPH)
+        self.planning_mode = str(msg.planningMode.data)
     
     def system_status_cb(self, msg):
         self.system_status['mode'] = int(msg.systemMode.data)
@@ -63,6 +65,7 @@ class ROSHandler():
     def lane_data_cb(self, msg):
         if msg.currentLane.laneNumber.data != 0:
             self.lane_number = int(msg.currentLane.laneNumber.data)
+        
     
     def publish(self):
         self.user_input.user_mode.data = self.user_value['user_mode']

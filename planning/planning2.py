@@ -8,13 +8,8 @@ import rospy
 import threading
 import signal
 import csv
-import datetime
-import math
 import time
 import copy
-import json
-import numpy as np
-from shapely.geometry import Point, Polygon
 
 from ros_handler import ROSHandler
 from longitudinal.get_max_velocity import GetMaxVelocity
@@ -43,15 +38,15 @@ class Planning():
         
 
         self.specifiers = ['to_goal', 'race']
+        #self.specifiers = ['race_kcity', 'race_kcity']
         self.race_mode = self.specifiers[0]
         self.prev_race_mode = self.race_mode
-        self.avoid_on = True
-        self.object_detected = False
+        self.lane_change_state = False
 
-        start_time = time.time()
-        #gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITsY
+        #kcity = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITY
 
-        gpp_result = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) #[427.079, -337.119]
+        kiapi = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) #[427.079, -337.119]
+
         self.to_goal_path = self.get_ref_path(self.specifiers[0])
         self.race_path = self.get_ref_path(self.specifiers[1])
 
@@ -90,7 +85,7 @@ class Planning():
             race_mode = 'to_goal'
             planning_state = 'INIT'
             self.first_lap = self.RH.lap_count
-        elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': #If pass the goal point, 
+        elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
@@ -155,129 +150,97 @@ class Planning():
         else:
             return False
     
-    def get_stop_distance(self, decel_factor=2.7):
-        react_distance = self.RH.current_velocity * 2
-        brake_distance = (self.RH.current_velocity)**2/(2*decel_factor)
-        return react_distance + brake_distance
-
-    def find_nearby_objects(self, x_obj, y_objs, l_width, r_width, radius=7):
-        polygon = Polygon([
-            (x_obj['X'] - radius, x_obj['Y'] - l_width),  # 왼쪽 뒤
-            (x_obj['X'] - radius, x_obj['Y'] + r_width),  # 오른쪽 뒤
-            (x_obj['X'] + radius, x_obj['Y'] + r_width),  # 오른쪽 앞
-            (x_obj['X'] + radius, x_obj['Y'] - l_width)   # 왼쪽 앞
-        ])
-        nearby_objects = []
-        for y_obj in y_objs:
-            
-            if x_obj['id'] == y_obj['id']:
-                continue
-            y_point = Point((y_obj['X'], y_obj['Y']))
-            if polygon.contains(y_point):
-                nearby_objects.append(y_obj)
-        return nearby_objects
-    
-    def check_bsd(self, left_bsd, right_bsd, l_width, r_width):
-        if l_width >= r_width:
-            if left_bsd == 1:
-                return True
-            else:
-                return False
-        else:
-            if right_bsd == 1:
-                return True
-            else:
-                return False
-
 
     def path_update(self, trim_global_path):
         if len(trim_global_path) < 5:
             return trim_global_path
+        
         final_global_path = trim_global_path.copy()  # Make a copy of the global path to modify
         
         object_list = self.RH.object_list  # List of objects
-
-        obj_radius_front = 40 + (self.RH.current_velocity / 5)  # Radius for obstacle avoidance (front)
-        obj_radius_rear = 30 + (self.RH.current_velocity / 10)  # Radius for obstacle avoidance (rear)
         
-        updated_path = []
+        
         check_object = []
         front_object = []
-        check_object_distances = []
+        self.lane_change_state = 'straight'
+
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if s > -1 :
+            if s > -50:
                 if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
                     obj['s'] = s
                     obj['d'] = d 
                     obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                     obj['dist'] = obj_dist
                     check_object.append(obj)
-                    check_object_distances.append(obj_dist)
                     
                     if -1.25 < d < 1.25 :
                         front_object.append(obj)
-                    
+                        if s < 5:
+                            self.lane_change_state = 'follow'
 
-        self.RH.publish_target_object(check_object, check_object_distances)
+        self.RH.publish_target_object(check_object)
 
         front_object = sorted(front_object, key=lambda x: x['s'])
 
 
-        self.object_detected = False
-        if self.avoid_on:
-            for point in trim_global_path:
-                x, y = point[0], point[1]
-                w_right, w_left = point[2], point[3]
-                x_normvec, y_normvec = point[4], point[5]
-                updated_point = point.copy()
-                lat_accel = 9.23
+        overtaking_required = False
+        for obj in front_object:
+            overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
+            
+            if overtakng:
+                overtaking_required = True
+                closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
+                closest_info = trim_global_path[closest_obj_idx_on_path]
+                lc_state_list = ph.get_lane_change_state(closest_info[3],closest_info[2])
+                break  # overtaking이 필요하면 바로 종료
+        
+        path_updated = False
+        lc_state_idx = 9
+        if overtaking_required:
+            for i, lc_state in enumerate(lc_state_list):
+                if not path_updated:
+                    updated_path = []
+                    for point in trim_global_path:
+                        x, y = point[0], point[1]
+                        w_right, w_left = point[2], point[3]
+                        x_normvec, y_normvec = point[4], point[5]
+                        updated_point = point.copy()
 
-                for obj in front_object:
-                    d_evade = self.RH.current_velocity+(self.RH.current_velocity**2-obj['v']**2)/(2*lat_accel)
-                    #if obj['dist'] < d_evade:
-                    if obj['v'] < self.RH.current_velocity:
-                        nearby_objects = self.find_nearby_objects(obj,check_object, w_left, w_right)
-                        bsd_detected = self.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, w_left, w_right)
-                        
-                        if len(nearby_objects) == 0 and not bsd_detected:
-                            obj_x, obj_y = float(obj['X']), float(obj['Y'])
-                    
-                            if obj_y > y:
-                                obj_radius = obj_radius_front
-                            else:
-                                obj_radius = obj_radius_rear
+                        for obj in front_object:
                             
-                            if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
-                                self.object_detected = True
-                                if w_left >= w_right:
-                                    points = np.arange(4.25, w_left, 1.2)
-                                else:
-                                    points = np.arange(-4.25, -w_right, -1.2 )
+                            overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
+                            
+                            if overtakng:
+                                around_detected = ph.check_around(obj,check_object, lc_state)
+                                bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+                                if not around_detected and not bsd_detected:
+                                    path_updated = True
+                                    lc_state_idx = i
+                                    obj_x, obj_y = float(obj['X']), float(obj['Y'])
 
-                                # 생성된 점들
-                                generated_points = [(x + (-1 * x_normvec) * i, y + (-1 * y_normvec) * i) for i in points]
+                                    obj_radius = 40 + (obj['v'] / 5)
 
-                                # 가장 가까운 점은 첫 번째 점
-                                if len(generated_points) > 0 :
-                                    closest_point = generated_points[0]
-                                    updated_point[0] = closest_point[0]
-                                    updated_point[1] = closest_point[1]
+                                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
+                                        
+                                        shift_value = 4.0 if lc_state == 'left' else -4.0
+                                        generated_point = (x + (-1 * x_normvec) * shift_value, y + (-1 * y_normvec) * shift_value)
+
+                                        updated_point[0] = generated_point[0]
+                                        updated_point[1] = generated_point[1]
+                                
                         
-                updated_path.append(updated_point)
+                        updated_path.append(updated_point)
 
-            # Replace only the points in the path that need to be updated
+        # Replace only the points in the path that need to be updated
+        if path_updated:
+            self.lane_change_state = lc_state_list[lc_state_idx]
             for i, point in enumerate(trim_global_path):
                 for obj in object_list:
-                    obj_x, obj_y = obj['X'], obj['Y']
-                    if obj_y > point[1]:
-                        obj_radius = obj_radius_front
-                    else:
-                        obj_radius = obj_radius_rear
-                    
+                    obj_radius = 40 + (obj['v'] / 5)
                     if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
                         final_global_path[i] = updated_path[i]
-
+            
         return final_global_path
     
     def calculate_acc_vel(
@@ -287,45 +250,43 @@ class Planning():
         stop_vel_decrement=0.1               # 기본값 0.1
     ):
         if len(interped_vel) > 3:
-            object_list = self.RH.object_list 
-            acc_object_d_v = []
-            for obj in object_list:
-                s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
-                if s> 0 and -1 < d < 1:
-                    obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                    acc_object_d_v.append([obj_dist, float(obj['v'])])
-            min_s = 200
-            obj_v = 200
-            for s, v in acc_object_d_v:
-                if min_s > s:
-                    min_s = s
-                    obj_v = v/3.6
-            safety_distance = 40
+            if self.lane_change_state == 'follow':
+                object_list = self.RH.object_list 
+                acc_object_d_v = []
+                for obj in object_list:
+                    s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
+                    if s> 0 and -1 < d < 1:
+                        obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                        acc_object_d_v.append([obj_dist, float(obj['v'])])
+                min_s = 200
+                obj_v = 200
+                for s, v in acc_object_d_v:
+                    if min_s > s:
+                        min_s = s
+                        obj_v = v/3.6
+                safety_distance = 40
 
-            if min_s < 15:
-            # if min_s < 10:
-                status = "danger"
-                target_v_ACC = -1
-
-            elif min_s < safety_distance:
-            # if 10 < min_s < 40:
-                status = "close"
-                target_v_ACC = obj_v*3.6 * 0.8
-
-            elif safety_distance < min_s < safety_distance*1.4:
-            # elif 40 < min_s < 80:
-                status = "middle"
-                target_v_ACC = obj_v*3.6 * min_s / safety_distance
-
-            elif safety_distance*1.4 < min_s:
-            # elif 80 < min_s:
-                status = "far or none"
-                # target_v_ACC = 999
-            
-                target_v_ACC = interped_vel[2]
-            
+                if min_s < 15:
+                # if min_s < 10:
+                    status = "danger"
+                    target_v_ACC = -1
+                elif min_s < safety_distance:
+                # if 10 < min_s < 40:
+                    status = "close"
+                    target_v_ACC = obj_v*3.6 * 0.8
+                elif safety_distance < min_s < safety_distance*1.4:
+                # elif 40 < min_s < 80:
+                    status = "middle"
+                    target_v_ACC = obj_v*3.6 * min_s / safety_distance
+                elif safety_distance*1.4 < min_s:
+                # elif 80 < min_s:
+                    status = "far or none"
+                    target_v_ACC = interped_vel[2]
+                
+                else:
+                    print("zone_error")
             else:
-                print("zone_error")
+                target_v_ACC = interped_vel[2]
    
         else:
             target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, -1)
@@ -336,8 +297,6 @@ class Planning():
     def calculate_road_max_vel(
         self, 
         acc_vel, 
-        path_len,
-        stop_vel_decrement=0.1,               # 기본값 0.1
         slow_vel=10/3.6,                      # 기본값 10/3.6 (약 2.78 m/s)
         slow_mode_threshold=0.1,              # 기본값 0.1
         interval_divisor_base=4.6,              # 기본값 5
@@ -370,7 +329,7 @@ class Planning():
         elif self.race_mode == 'pit_stop':
             if self.gpp.get_remain_distance(self.RH.local_pos) < LOCAL_PATH_LENGTH:
                 remain_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], self.pit_point[0], self.pit_point[1])
-                if self.pit_stop_decel == 'OFF' and self.get_stop_distance() > remain_dist:
+                if self.pit_stop_decel == 'OFF' and ph.get_stop_distance(self.RH.current_velocity) > remain_dist:
                     self.pit_stop_decel = 'ON'
                 if self.pit_stop_decel == 'ON':
                     interval = self.RH.current_velocity / (remain_dist/ (interval_divisor_base + (self.RH.current_velocity / interval_factor)))
@@ -380,15 +339,7 @@ class Planning():
 
         return acc_vel
 
-    def check_lane_deaprture(self, local_path, localpos):
-        if local_path is not None and len(local_path) > 0:
-            dist = ph.distance(local_path[0][0], local_path[0][1], localpos[0], localpos[1])
-            if dist <= 5:
-                return 'Normal'
-            elif 5 < dist < 10:
-                return 'Warning'
-            else:
-                return 'Danger'
+
     
     def initd(self):
         rate = rospy.Rate(20)
@@ -423,30 +374,32 @@ class Planning():
                 #path spline
                 interped_path,R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
                 
-                #ACC
-                acc_vel = self.calculate_acc_vel(updated_path, interped_vel) # 맹글어야댐
-
-                road_max_vel = self.calculate_road_max_vel(acc_vel, len(interped_path))     
-
+                acc_vel = self.calculate_acc_vel(updated_path, interped_vel) 
+                road_max_vel = self.calculate_road_max_vel(acc_vel)     
 
                 planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)
                 if len(planned_velocity) > 2:
                     planned_velocity = planned_velocity[1]
                 else:
                     planned_velocity = self.prev_target_vel
-                target_velocity = min(self.max_vel, planned_velocity)
+                
+                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
+                    limit_vel = 29/3.6 
+                else:
+                    limit_vel = self.max_vel
+                target_velocity = min(limit_vel, planned_velocity)
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
 
-                res = ''#self.check_lane_deaprture(interped_path, self.RH.local_pos)
+                res = ''#ph.check_lane_deaprture(interped_path, self.RH.local_pos)
                 if res == 'Warning':
                     target_velocity = self.prev_target_vel - 0.5 if self.prev_target_vel - 0.5 >= 0 else 0
                 elif res == 'Danger':
                     target_velocity = 0
 
                 self.prev_target_vel = target_velocity
-                self.RH.publish2(interped_path, R_list, interped_vel, target_velocity, self.race_mode)
+                self.RH.publish2(interped_path, R_list, interped_vel, target_velocity, self.race_mode, self.lane_change_state)
 
                 rate.sleep()            
 

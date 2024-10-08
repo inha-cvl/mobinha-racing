@@ -65,12 +65,12 @@ class MyApp(QMainWindow, form_class):
         self.gear_widget.set_gear(self.RH.ego_value['gear'])
 
         self.system_label_update(self.RH.system_status['mode'], self.RH.system_status['kiapi_signal'],              
-                                 self.RH.lane_number, self.RH.system_status['lap_count'])
+                                 self.RH.lane_number, self.RH.system_status['lap_count'], self.RH.planning_mode)
 
         self.can_table_update(self.RH.can_inform)
         self.kiapi_signal_update(self.RH.system_status['kiapi_signal'])
         
-    def system_label_update(self, mode, signal, lane_number, lap_count):
+    def system_label_update(self, mode, signal, lane_number, lap_count, planning_mode):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
         
         if self.prev_system_mode != int(mode):
@@ -92,8 +92,12 @@ class MyApp(QMainWindow, form_class):
                 self.systemLabel2.setStyleSheet("""QLabel {background-color:  rgb(246, 126, 82); border-radius: 5px; color: black;}""")
             else:
                 self.systemLabel2.setStyleSheet("""QLabel {background-color: rgb(252,203,28); border-radius: 5px; color: black;}""")
-            
+        
+        if lane_number >= 4:
+            lane_number = lane_number - 3
+       
         self.laneNumberLabel.setText(f"Lane: {lane_number}")
+        self.planningModeLabel.setText(f"{planning_mode}")
         self.lapCountLabel.setText(f"Lap: {lap_count}")
     
     def can_table_update(self, can_inform):

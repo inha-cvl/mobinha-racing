@@ -53,7 +53,7 @@ class ObjectSimulator:
         pose_array = PoseArray()
         while not rospy.is_shutdown():
             if self.object_ready:
-                if time.time()-start_time > 100:
+                if time.time()-start_time > 30:
                     self.object_ready = False
                 x,y,yaw,v = self.object.next_state(dt, self._steer, self._accel, 0)
                 yaw = math.degrees(yaw)

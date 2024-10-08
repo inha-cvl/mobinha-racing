@@ -99,11 +99,12 @@ class ROSHandler():
 
             
     
-    def publish2(self, local_path, R_list, velocity_list, target_velocity, race_mode):
+    def publish2(self, local_path, R_list, velocity_list, target_velocity, race_mode, planning_mode):
         if local_path is not None and len(local_path) > 0:
             self.navigation_data = NavigationData()
             self.navigation_data.targetVelocity.data = target_velocity
             self.navigation_data.raceMode.data = str(race_mode)
+            self.navigation_data.planningMode.data = str(planning_mode)
             for i, set in enumerate(local_path):
                 point = Point()
                 point.x = set[0]
@@ -114,7 +115,7 @@ class ROSHandler():
             self.navigation_data_pub.publish(self.navigation_data)
     
     
-    def publish_target_object(self, object_list, distance_list):
+    def publish_target_object(self, object_list):
         detection_data = DetectionData()
         for i, obj in enumerate(object_list):
             object_info = ObjectInfo()
@@ -122,8 +123,8 @@ class ROSHandler():
             object_info.position.x = obj['X']
             object_info.position.y = obj['Y']
             object_info.heading.data = math.degrees(obj['theta'])
-            object_info.velocity.data = 1
-            object_info.distance.data = distance_list[i]
+            object_info.velocity.data = obj['d']
+            object_info.distance.data = obj['s']
             detection_data.objects.append(object_info)
         
         self.target_object_pub.publish(detection_data)

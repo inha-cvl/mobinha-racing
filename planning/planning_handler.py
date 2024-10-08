@@ -3,12 +3,14 @@ import math
 import copy
 
 from scipy.interpolate import splprep, splev, interp1d
+from shapely.geometry import Point, Polygon
+
 
 def distance(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 def find_closest_index(global_path, local_pos, threshold=20):
-    min_dist = 120#float('inf')
+    min_dist = float('inf')
     closest_index = None
     decreasing = True
 
@@ -69,9 +71,16 @@ def object2frenet(trim_path, obs_pose):
     
     vector_to_point = point - closest_point
     d = np.dot(vector_to_point, normal)
+
+    # 경로 상의 거리를 계산 (경로 시작부터 closest_index까지의 거리)
     s = np.sum(np.linalg.norm(np.diff(centerline[:closest_index + 1], axis=0), axis=0))
+
+    vector_from_start = point - centerline[0]  
+    if np.dot(tangents[0], vector_from_start) < 0:  
+        s = -np.linalg.norm(vector_from_start)  
     
     return s, d
+
 
 def calc_kappa(epoints, npoints):
     if abs(npoints[1][1]-epoints[1]) == 0 or abs(npoints[1][0]-epoints[0]) == 0:
@@ -173,3 +182,61 @@ def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing
         vel_interp = local_vel
 
     return path_interp_list, R_list, vel_interp
+
+def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,ttc_threshold = 13):
+    rel_vel = ego_vel-obj_vel
+    if rel_vel > 0:
+        ttc = obj_dist/rel_vel
+    else:
+        ttc = float('inf')
+    if ttc < ttc_threshold or obj_vel < 3:
+        return True
+    else:
+        return False
+
+def check_bsd(left_bsd, right_bsd, lc_state):
+    if lc_state == 'left':
+        if left_bsd == 1:
+            return True
+        else:
+            return False
+    else:
+        if right_bsd == 1:
+            return True
+        else:
+            return False
+
+def get_lane_change_state(l_width, r_width):
+    if l_width > r_width:
+        lane_change_state = ['left', 'right']
+    else:
+        lane_change_state = ['right', 'left']
+    return lane_change_state
+
+def check_around(xobj, yobjs, lc_state, radius = 7):
+    around = False
+    for yobj in yobjs:
+        if xobj['s'] - radius < yobj['s'] < xobj['s'] + radius:
+
+            if lc_state == 'left':
+                if yobj['d'] > xobj['d']:
+                    around = True
+            else:
+                if yobj['d'] < xobj['d']:
+                    around = True
+    return around
+
+def get_stop_distance(current_velocity, decel_factor=2.7):
+    react_distance = current_velocity * 2
+    brake_distance = (current_velocity)**2/(2*decel_factor)
+    return react_distance + brake_distance
+
+def check_lane_deaprture(local_path, localpos):
+    if local_path is not None and len(local_path) > 0:
+        dist = distance(local_path[0][0], local_path[0][1], localpos[0], localpos[1])
+        if dist <= 5:
+            return 'Normal'
+        elif 5 < dist < 10:
+            return 'Warning'
+        else:
+            return 'Danger'

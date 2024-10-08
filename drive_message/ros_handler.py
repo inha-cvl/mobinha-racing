@@ -113,7 +113,6 @@ class ROSHandler():
         elif mode == 0 and self.vehicle_state.mode.data >= 1:
             self.can_input.EPS_En.data = 0
             self.can_input.ACC_En.data = 0
-        print(signal)
         self.can_input.Turn_Signal.data = signal
         
 

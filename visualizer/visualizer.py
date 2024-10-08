@@ -77,7 +77,7 @@ class Visualizer:
     def detection_data_cb(self, msg):
         objs = []
         for obj in msg.objects:
-            objs.append([obj.type.data, obj.position.x, obj.position.y, obj.heading.data, obj.velocity.data])
+            objs.append([obj.type.data, obj.position.x, obj.position.y, obj.heading.data, obj.velocity.data, obj.distance.data])
         
         filtered_objs = self.filter_duplicates(objs)
         viz_objects = ObjectsViz(filtered_objs)
@@ -106,7 +106,7 @@ class Visualizer:
     def target_object_cb(self, msg):
         objs = []
         for obj in msg.objects:
-            objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.velocity.data])
+            objs.append([obj.position.x, obj.position.y, obj.heading.data, obj.velocity.data, obj.distance.data])
         
         filtered_objs = self.filter_duplicates(objs)
 
