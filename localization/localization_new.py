@@ -231,17 +231,18 @@ class Localization:
 
 
     def update_last_pos(self):
-        if self.RH.hAcc <= 50 or self.RH.corr_can_velocity*3.6 < 10:
+        nav_diff = ((self.RH.nav_pos[0]-self.dr_pos[0])**2 + (self.RH.nav_pos[1]-self.dr_pos[1])**2)**0.5
+        if (nav_diff < 5 and self.RH.hAcc < 50) or self.RH.corr_can_velocity*3.6 < 10:
             nav_pos_valid = True
-        elif self.RH.hAcc > 50:
+        elif nav_diff >= 5 or self.RH.hAcc >= 50:
             nav_pos_valid = False
             # dr_pos_valid = True
         
         if None in [self.last_pos, self.dr_pos]:
             dr_pos_valid = False
         
-        diff = ((self.dr_pos[0]-self.last_pos[0])**2 + (self.dr_pos[1]-self.last_pos[1])**2)**0.5
-        if diff < 5:
+        dr_diff = ((self.dr_pos[0]-self.last_pos[0])**2 + (self.dr_pos[1]-self.last_pos[1])**2)**0.5
+        if dr_diff < 5:
             dr_pos_valid = True
         else:
             dr_pos_valid = False
@@ -263,20 +264,20 @@ class Localization:
 
 
     def update_last_hdg(self):
-
-        if self.RH.headAcc <= 50000 or self.RH.corr_can_velocity*3.6 < 10:
+        nav_val = abs(self.dr_hdg - self.RH.nav_hdg)
+        nav_diff = min(nav_val, 360 - nav_val)
+        if (nav_diff < 5 and self.RH.headAcc < 50000) or self.RH.corr_can_velocity*3.6 < 10:
             nav_hdg_valid = True
-        elif self.RH.headAcc > 50000:
+        elif nav_diff >= 5 or self.RH.headAcc >= 50000:
             nav_hdg_valid = False
             # dr_hdg_valid = True
-        
         
         if None in [self.last_hdg, self.dr_hdg]:
             dr_hdg_valid = False
 
-        val = abs(self.last_hdg - self.dr_hdg)
-        diff = min(val, 360 - val)
-        if diff < 5:
+        dr_val = abs(self.last_hdg - self.dr_hdg)
+        dr_diff = min(dr_val, 360 - dr_val)
+        if dr_diff < 5:
             dr_hdg_valid = True
         else:
             dr_hdg_valid = False
