@@ -67,8 +67,8 @@ class CarSimulator:
         elif map == 'Harbor':
             self.ego = Vehicle(559.144, -112.223, 3.074, 0, wheelbase)
         elif map == 'KIAPI_Racing' or map == 'KIAPI_Racing_Fast':
-            #self.ego = Vehicle(10.759, 2.147, -2.99, 0, wheelbase) #3 lane first
-            self.ego = Vehicle(6.593, -6.417,-2.969, 0, wheelbase ) #1 lane firstv
+            self.ego = Vehicle(10.759, 2.147, -2.99, 0, wheelbase) #3 lane first
+            #self.ego = Vehicle(6.593, -6.417,-2.969, 0, wheelbase ) #1 lane firstv
             #self.ego = Vehicle(66.799, 81.714,-0.681, 0, wheelbase ) #2 lane
             
         elif map == 'KCity':

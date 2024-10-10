@@ -26,7 +26,7 @@ class MAP:
                 data = json.load(file)
 
             self.base_lla = data['base_lla']
-            cut_dist = 30
+            cut_dist = 50
 
             self.lmap = LaneletMap(file_path)
             tmap = TileMap(self.lmap.lanelets, self.tile_size)

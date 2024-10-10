@@ -64,6 +64,9 @@ class GlobalPathPlanner():
         if shortest_path_id is not None:
             shortest_path_id = shortest_path_id[0]
             final_path, final_ids, final_vs = gput.node_to_waypoints(shortest_path_id, start_ll, goal_ll)
+            final_path = final_path[0:-20]
+            final_ids = final_ids[0:-20]
+            final_vs = final_vs[0:-20]
             if name != 'pit_stop':
                 more_path, _, more_ids, more_vs = gput.get_straight_path(goal_ll, 800, '', 'Right')
                 final_path.extend(more_path)
