@@ -30,7 +30,26 @@ class PurePursuit(object):
             return 0
         
         lfd = self.lfd_gain * self.RH.current_velocity * MPS_TO_KPH
-        lfd = np.clip(lfd, self.min_lfd, self.max_lfd)
+        print("original lfd:, ", lfd)
+        # lfd = np.clip(lfd, self.min_lfd, self.max_lfd)
+        # lfd = 40
+
+        # 1st lane, roll: 19~20
+        # lfd = 15 # optimal at 30kph
+        # lfd = 30 # optimal at 80kph
+        # lfd = 36 # optimal at 100kph
+
+        # 2nd lane, # roll: 5~6
+        # lfd = 20 # optimal at 30kph
+        # lfd = 35 # optimal at 80kph  
+        # lfd = 41 # optimal at 100kph
+
+        # 3rd lane, # roll 0
+        # lfd = 20 # optimal at 30kph
+        # lfd = 24 # optimal at 50kph
+        lfd = 36 # optimal at 75pkh
+
+
         point = self.RH.current_location
         route = self.RH.planned_route
         heading = math.radians(self.RH.current_heading)

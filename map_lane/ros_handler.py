@@ -85,9 +85,10 @@ class ROSHandler():
     def radar_object_array_cb(self, msg):
         rad_obstacles = []
         for ro in msg.radarObjects:
-            if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
+            if ro.mvngFlag.data > 0 and ro.qualLvl.data > 32  and ro.coastAge.data < 1 and ro.alvAge.data > 2:
                 obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
                 rad_obstacles.append(obj)
+
         clustered_obstacles = self.oh.cluster_radar_obstacles(rad_obstacles)
         
         obstacles = []

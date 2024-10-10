@@ -53,7 +53,7 @@ class Planning():
         self.local_action_set = []
         self.prev_lap = now_lap
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
-        self.selected_lane = 3
+        self.selected_lane = 1
         self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
 
         
@@ -160,17 +160,18 @@ class Planning():
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
             if s > -50:
-                if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
-                    obj['s'] = s
-                    obj['d'] = d 
-                    # obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                    # obj['dist'] = obj_dist
-                    check_object.append(obj)
-                    
-                    if -1.25 < d < 1.25 :
-                        front_object.append(obj)
-                        if s < 20:
-                            self.lane_change_state = 'follow'
+                if int(s) < len(trim_global_path)-1 and (len(trim_global_path[-1])>4):
+                    if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
+                        obj['s'] = s
+                        obj['d'] = d 
+                        # obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                        # obj['dist'] = obj_dist
+                        check_object.append(obj)
+                        
+                        if -1.25 < d < 1.25 :
+                            front_object.append(obj)
+                            if s < 20:
+                                self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
 
@@ -267,7 +268,6 @@ class Planning():
                 else:
                     print("zone_error")
             else:
-                print("else")
                 target_v_ACC = interped_vel[2]
    
         else:
@@ -308,6 +308,7 @@ class Planning():
 
         # 'pit_stop' 모드 처리
         elif self.race_mode == 'pit_stop':
+            self.max_vel = 60/3.6 if self.max_vel > 60/3.6 else self.max_vel
             if self.gpp.get_remain_distance(self.RH.local_pos) < LOCAL_PATH_LENGTH:
                 remain_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], self.pit_point[0], self.pit_point[1])
                 if self.pit_stop_decel == 'OFF' and ph.get_stop_distance(self.RH.current_velocity) > remain_dist:
@@ -356,27 +357,21 @@ class Planning():
 
                 #path spline
                 interped_path, R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
-                print(interped_vel)
-                print("prev target vel: ", self.prev_target_vel)
+                
                 acc_vel = self.calculate_acc_vel(updated_path, interped_vel)
-                print("acc_vel: ", acc_vel)
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
-                print("road max vel: ", road_max_vel)
 
                 # planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)
                 # if len(planned_velocity) > 2:
                 #     planned_velocity = planned_velocity[1]
                 # else:
                 #     planned_velocity = self.prev_target_vel
-                
-                print("planned vel: ",road_max_vel)
-                
-                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
-                    limit_vel = 29/3.6 
+                                
+                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                    limit_vel = 75/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)
-                print("target vel: ", target_velocity)
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
