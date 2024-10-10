@@ -331,7 +331,7 @@ def node_to_waypoints(shortest_path, sidnidx, gidnidx):
             _id = id
             alpha_path = lanelets[_id]['waypoints']
 
-        v = lanelets[_id]['speedLimit']-1
+        v = lanelets[_id]['speedLimit']
         lls_len = len(alpha_path)
         final_vs.extend([v]*lls_len)
         final_ids.extend([_id]*lls_len)

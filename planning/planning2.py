@@ -36,19 +36,11 @@ class Planning():
         self.shutdown_event = threading.Event()
         self.gpp = GlobalPathPlanner(self.RH.map_name)
         
-
-        self.specifiers = ['to_goal', 'race']
-        #self.specifiers = ['race_kcity', 'race_kcity']
-        self.race_mode = self.specifiers[0]
+        self.race_mode = 'to_goal'
         self.prev_race_mode = self.race_mode
         self.lane_change_state = False
 
         #kcity = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITY
-
-        kiapi = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [437.763, -342.904], self.specifiers[0]) #[427.079, -337.119]
-
-        self.to_goal_path = self.get_ref_path(self.specifiers[0])
-        self.race_path = self.get_ref_path(self.specifiers[1])
 
         self.start_pose_initialized = False
         self.first_initialized = False
@@ -61,21 +53,13 @@ class Planning():
         self.local_action_set = []
         self.prev_lap = now_lap
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
+        self.selected_lane = 3
+        self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
+
+        
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
         self.bank_list = ['1', '10', '11', '12', '13', '14', '37', '40', '41', '42', '43', '44', '45', '46', '47', '54', '59', '60']
         self.lane3_list = ['1', '54']
-    
-    def get_ref_path(self, specifier):
-        toppath = os.path.dirname(os.path.realpath(__file__))
-        globtraj_input_path =  toppath + "/inputs/traj_ltpl_cl/traj_ltpl_cl_" + specifier + ".csv"
-        ref_path = []
-        with open(globtraj_input_path, mode='r') as file:
-            csv_reader = csv.DictReader(file, delimiter=';')
-            for row in csv_reader:
-                float_row = [float(value) for value in row.values()]
-                ref_path.append(float_row)      
-        return ref_path
-    
     
     def check_planning_state(self):
         planning_state = 'NONE'
@@ -93,7 +77,7 @@ class Planning():
             # elif self.RH.lap_count >= 3 :
             #     race_mode = 'pit_stop'
             else:
-                race_mode = 'race'
+                race_mode = 'to_goal'
             planning_state = 'INIT'
         elif self.RH.kiapi_signal == 5 and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
@@ -117,8 +101,6 @@ class Planning():
         start_time = time.time()
         if race_mode == 'to_goal':
             global_path = copy.deepcopy(self.to_goal_path)
-        elif race_mode == 'race':
-            global_path = copy.deepcopy(self.race_path)
         elif race_mode == 'pit_stop':
             global_path = copy.deepcopy(self.pit_stop_path)
         
@@ -138,11 +120,21 @@ class Planning():
     
     def planning_pit_stop(self):
         start_time = time.time()
-        gpp_result = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
+        gpp_result, gp, gp_rviz = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
         if gpp_result:
-            self.pit_stop_path = self.get_ref_path('pit_stop')
+            self.pit_stop_path = gp
             self.start_pose_initialized = False
             rospy.loginfo(f'[Planning] pit_stop Global Path set took {round(time.time()-start_time, 4)} sec')
+    
+    def planning_to_goal(self):
+        start_time = time.time()
+        point = self.goal_points[self.selected_lane-1]
+        name = f'to_goal{self.selected_lane}'
+        gpp_result, gp, gp_rviz = self.gpp.get_shortest_path(self.RH.local_pos, point, name)
+        if gpp_result:
+            self.to_goal_path = gp
+            self.start_pose_initialized = False
+            rospy.loginfo(f'[Planning] to_goal Global Path set took {round(time.time()-start_time, 4)} sec')
         
     def check_bank(self):
         if self.RH.current_lane_id in self.bank_list:
@@ -150,7 +142,6 @@ class Planning():
         else:
             return False
     
-
     def path_update(self, trim_global_path):
         if len(trim_global_path) < 5:
             return trim_global_path
@@ -159,10 +150,12 @@ class Planning():
         
         object_list = self.RH.object_list  # List of objects
         
-        
         check_object = []
         front_object = []
         self.lane_change_state = 'straight'
+
+        long_avoidance_gap = 40
+        lat_avoidance_gap = 4
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -176,13 +169,12 @@ class Planning():
                     
                     if -1.25 < d < 1.25 :
                         front_object.append(obj)
-                        if s < 5:
+                        if s < 20:
                             self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
 
         front_object = sorted(front_object, key=lambda x: x['s'])
-
 
         overtaking_required = False
         for obj in front_object:
@@ -203,14 +195,10 @@ class Planning():
                     updated_path = []
                     for point in trim_global_path:
                         x, y = point[0], point[1]
-                        w_right, w_left = point[2], point[3]
                         x_normvec, y_normvec = point[4], point[5]
                         updated_point = point.copy()
-
                         for obj in front_object:
-                            
                             overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
-                            
                             if overtakng:
                                 around_detected = ph.check_around(obj,check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
@@ -218,26 +206,19 @@ class Planning():
                                     path_updated = True
                                     lc_state_idx = i
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
-
-                                    obj_radius = 40 + (obj['v'] / 5)
-
+                                    obj_radius = long_avoidance_gap + (obj['v'] / 5)
                                     if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
-                                        
-                                        shift_value = 4.0 if lc_state == 'left' else -4.0
+                                        shift_value = lat_avoidance_gap if lc_state == 'left' else -lat_avoidance_gap
                                         generated_point = (x + (-1 * x_normvec) * shift_value, y + (-1 * y_normvec) * shift_value)
-
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
-                                
-                        
                         updated_path.append(updated_point)
 
-        # Replace only the points in the path that need to be updated
         if path_updated:
             self.lane_change_state = lc_state_list[lc_state_idx]
             for i, point in enumerate(trim_global_path):
                 for obj in object_list:
-                    obj_radius = 40 + (obj['v'] / 5)
+                    obj_radius = long_avoidance_gap + (obj['v'] / 5)
                     if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
                         final_global_path[i] = updated_path[i]
             
@@ -292,7 +273,6 @@ class Planning():
             target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, -1)
 
         return target_v_ACC
-    
 
     def calculate_road_max_vel(
         self, 
@@ -348,6 +328,8 @@ class Planning():
             if planning_state == 'INIT':
                 if self.race_mode == 'pit_stop':
                     self.planning_pit_stop()
+                else:
+                    self.planning_to_goal()
                 while not self.start_pose_initialized:            
                     if self.RH.local_pos is not None:
                         self.set_start_pos(self.race_mode)
