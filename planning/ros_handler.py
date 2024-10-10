@@ -123,8 +123,8 @@ class ROSHandler():
             object_info.position.x = obj['X']
             object_info.position.y = obj['Y']
             object_info.heading.data = math.degrees(obj['theta'])
-            object_info.velocity.data = obj['d']
-            object_info.distance.data = obj['s']
+            object_info.velocity.data = obj['v']
+            object_info.distance.data = obj['dist']
             detection_data.objects.append(object_info)
         
         self.target_object_pub.publish(detection_data)

@@ -118,7 +118,7 @@ def CarInfoViz(frame_id, name_space, info, position):
     marker.color.a = 1.0
     marker.pose.position.x = position[0]
     marker.pose.position.y = position[1]
-    marker.pose.position.z = 3.0
+    marker.pose.position.z = position[2]
     marker.text = info
     return marker
 
@@ -166,7 +166,7 @@ def ObjectsViz(objects):
         marker = ObjectViz(n, (round(obj[1],1), round(obj[2],1)), obj[3], color)
         marker_array.markers.append(marker)
         dist = f"{round(obj[5])}m, {round(obj[4]*3.6)}km/h"
-        marker = CarInfoViz('world',str(n+1), dist,(round(obj[1],1), round(obj[2],1)) )
+        marker = CarInfoViz('world',str(n+1), dist,(round(obj[1],1), round(obj[2],1), 3.0) )
         marker_array.markers.append(marker)
     return marker_array
 
@@ -178,8 +178,8 @@ def TargetObjectsViz(objects):
     for n, obj in enumerate(objects):
         marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)
-        dist = f"{round(obj[4])}m, {round(obj[3]*3.6)}km/h"
-        marker = CarInfoViz('world',str(n+1), dist,(round(obj[0],1), round(obj[1],1)) )
+        dist = f"s = {obj[3]}, d = {(obj[4])}"
+        marker = CarInfoViz('world',str(n+1), dist,(round(obj[0],1), round(obj[1],1), 4.5) )
         marker_array.markers.append(marker)
     return marker_array
 
