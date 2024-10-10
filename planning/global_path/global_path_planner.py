@@ -80,12 +80,12 @@ class GlobalPathPlanner():
                 lw_left, lw_right = gput.get_lane_width(final_ids[i])
                 A, B, theta = gput.calc_norm_vec(before_after_pts)
                 Rk = gput.calc_kappa(f, before_after_pts)
-                vx = vel_p[i]
-                ax = accel_p[i]
+                vx = final_vs[i]/3.6
+                ax = 1.5
                 final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, Rk, vx, ax])
                 s += 1            
             #path_viz = gput.PathViz(final_path, (255/255, 196/255, 18/255, 0.5))
-            #self.to_csv(name, final_tr)
+            self.to_csv(name, final_tr)
             return True, final_tr, None
         else:
             return False, [], None

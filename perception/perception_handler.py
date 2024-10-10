@@ -6,10 +6,10 @@ def distance( x1, y1, x2, y2):
     return np.sqrt((x2-x1)**2+(y2-y1)**2)
 
 def calculate_radar_heading_velocity(rel_pos_x, rel_pos_y, rel_vel_x, rel_vel_y):
-        heading_radians = math.atan2(rel_vel_x, -rel_vel_y)
-        heading_degrees = (math.degrees(heading_radians)+90)
-        relative_speed = ((rel_vel_x*rel_pos_x)+(rel_vel_y*rel_pos_y))/math.sqrt(rel_pos_x**2 + rel_pos_y**2)
-        return heading_degrees, relative_speed
+    heading_radians = math.atan2(rel_vel_x, -rel_vel_y)
+    heading_degrees = (math.degrees(heading_radians)+90)
+    relative_speed = ((rel_vel_x*rel_pos_x)+(rel_vel_y*rel_pos_y))/math.sqrt(rel_pos_x**2 + rel_pos_y**2)
+    return heading_degrees, relative_speed
 
 def cluster_radar_obstacles( data, distance_threshold=0.7):
     clusters = []  
@@ -42,13 +42,9 @@ def cluster_radar_obstacles( data, distance_threshold=0.7):
                 y += c[1]
             x = x/len(cluster)
             y = y/len(cluster)
-
-            heading,velocity = calculate_radar_heading_velocity(x, y, max_age_point[2], max_age_point[3])
-            clusters.append([x, y,  heading, velocity, float(max_age_point[4])])
-
+            clusters.append([x, y,   max_age_point[2], max_age_point[3], float(max_age_point[4])])
         else:
-            heading,velocity = calculate_radar_heading_velocity(x1, y1, data[i][2], data[i][3])
-            clusters.append([data[i][0], data[i][1], heading, velocity, float(data[i][4])])  
+            clusters.append([data[i][0], data[i][1], data[i][2], data[i][3], float(data[i][4])])  
     return clusters
 
 def filtering_by_spd(data, spd):

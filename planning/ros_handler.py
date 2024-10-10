@@ -72,14 +72,14 @@ class ROSHandler():
         self.local_pos = (msg.enu.x, msg.enu.y)
     
     def ccan_output_cb(self, msg: CCANOutput):
-        self.left_bsd_detect = int(CCANOutput.CF_Lca_IndLeft.data) # 0 : none, 1 : detect
-        self.right_bsd_detect = int(CCANOutput.CF_Lca_IndRight.data) 
+        self.left_bsd_detect = int(msg.CF_Lca_IndLeft.data) # 0 : none, 1 : detect
+        self.right_bsd_detect = int(msg.CF_Lca_IndRight.data) 
     
     def detection_data_cb(self, msg):
         object_list = []
         position_list = []
         for i, object in enumerate(msg.objects):
-            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 4.0, 'v': object.velocity.data})
+            object_list.append({'X': object.position.x, 'Y': object.position.y, 'theta': math.radians(object.heading.data), 'type': 'physical', 'id': i, 'length': 4.0, 'v': object.velocity.data, 'dist': object.distance.data})
             position_list.append([object.position.x, object.position.y])
         self.object_list = object_list
 

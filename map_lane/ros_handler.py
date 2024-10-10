@@ -52,7 +52,7 @@ class ROSHandler():
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
 
-        rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        #rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
         #rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
         #rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
@@ -115,7 +115,7 @@ class ROSHandler():
                 continue
             else:
                 nx, ny = conv
-                obstacles.append([int(obj.position.z),nx, ny,float(obj.orientation.x)+self.current_velocity])
+                obstacles.append([int(obj.position.z),nx, ny,float(obj.orientation.x)])
         self.fus_obstacles = obstacles
 
     

@@ -50,11 +50,11 @@ class MyApp(QMainWindow, form_class):
     def set_timers(self):
         self.timer = QTimer(self)   
         self.timer.timeout.connect(self.updateUI)
-        self.timer.start(100)
+        self.timer.start(500)
 
         self.user_input_timer = QTimer(self)
         self.user_input_timer.timeout.connect(self.RH.publish)
-        self.user_input_timer.start(500)
+        self.user_input_timer.start(1000)
 
 
     def updateUI(self):

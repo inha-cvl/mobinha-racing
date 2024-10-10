@@ -7,4 +7,4 @@ lane1_goal_coordinate: [805.165, -780.892]
 lane2_goal_coordinate: [809.476, -781.135]
 lane3_goal_coordinate: [812.864, -780.866]
 now_lap: 0
-max_velocity: 70
+max_velocity: 60

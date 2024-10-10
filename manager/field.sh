@@ -2,24 +2,24 @@
 rosparam load coordinates.yaml &
 sleep 1
 cd ../ui/
-python3 ui.py & 
+python3 ui.py &  
 cd ../localization/
 python3 localization_new.py &
-cd ../visualizer
+cd ../visualizer #0
 python3 visualizer.py &
-cd ../drive_message/
+cd ../drive_message/ #0
 python3 drive_message.py KIAPI_Racing_Fast &
 cd ../perception/
 python3 perception.py &
 sleep 2 
 cd ../map_lane
 python3 map_lane.py &
-cd ../simulator
-python3 object_simulator.py &
-cd ../transmitter/
+cd ../simulator #0
+python3 object_simulator.py & 
+cd ../transmitter/ #0
 python3 transmitter.py & 
-cd ../control/  
-python3 control.py &
+cd ../control/  #0
+python3 control.py &  
 cd ../planning/
 python3 planning2.py 
 

@@ -163,8 +163,8 @@ class Planning():
                 if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
                     obj['s'] = s
                     obj['d'] = d 
-                    obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                    obj['dist'] = obj_dist
+                    # obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                    # obj['dist'] = obj_dist
                     check_object.append(obj)
                     
                     if -1.25 < d < 1.25 :
@@ -237,8 +237,8 @@ class Planning():
                 for obj in object_list:
                     s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
                     if s> 0 and -1 < d < 1:
-                        obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                        acc_object_d_v.append([obj_dist, float(obj['v'])])
+                        #obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
+                        acc_object_d_v.append([float(obj['dist']), float(obj['v'])])
                 min_s = 200
                 obj_v = 200
                 for s, v in acc_object_d_v:
@@ -267,6 +267,7 @@ class Planning():
                 else:
                     print("zone_error")
             else:
+                print("else")
                 target_v_ACC = interped_vel[2]
    
         else:
@@ -337,7 +338,7 @@ class Planning():
             rate.sleep()
 
     def executed(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(5)
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             while self.first_initialized:
 
@@ -354,31 +355,37 @@ class Planning():
                 updated_path = self.path_update(trimmed_path) 
 
                 #path spline
-                interped_path,R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
-                
-                acc_vel = self.calculate_acc_vel(updated_path, interped_vel) 
+                interped_path, R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
+                print(interped_vel)
+                print("prev target vel: ", self.prev_target_vel)
+                acc_vel = self.calculate_acc_vel(updated_path, interped_vel)
+                print("acc_vel: ", acc_vel)
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
+                print("road max vel: ", road_max_vel)
 
-                planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)
-                if len(planned_velocity) > 2:
-                    planned_velocity = planned_velocity[1]
-                else:
-                    planned_velocity = self.prev_target_vel
+                # planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)
+                # if len(planned_velocity) > 2:
+                #     planned_velocity = planned_velocity[1]
+                # else:
+                #     planned_velocity = self.prev_target_vel
+                
+                print("planned vel: ",road_max_vel)
                 
                 if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6 
                 else:
                     limit_vel = self.max_vel
-                target_velocity = min(limit_vel, planned_velocity)
+                target_velocity = min(limit_vel, road_max_vel)
+                print("target vel: ", target_velocity)
 
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
 
-                res = ''#ph.check_lane_deaprture(interped_path, self.RH.local_pos)
-                if res == 'Warning':
-                    target_velocity = self.prev_target_vel - 0.5 if self.prev_target_vel - 0.5 >= 0 else 0
-                elif res == 'Danger':
-                    target_velocity = 0
+                # res = ph.check_lane_deaprture(interped_path, self.RH.local_pos)
+                # if res == 'Warning':
+                #     target_velocity = max(0, self.prev_target_vel - 0.5)
+                # elif res == 'Danger':
+                #     target_velocity = 0
 
                 self.prev_target_vel = target_velocity
                 self.RH.publish2(interped_path, R_list, interped_vel, target_velocity, self.race_mode, self.lane_change_state)

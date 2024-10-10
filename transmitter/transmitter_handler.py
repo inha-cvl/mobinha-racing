@@ -35,7 +35,7 @@ class TransmitterHandler:
 
         self.decode_handler1 = {
             1419: self.LCA11,
-            832: self.LKAS11
+            # 832: self.LKAS11
         }
 
         self.decode_handler2 = {

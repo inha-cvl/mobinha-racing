@@ -11,7 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from std_msgs.msg import Float32MultiArray
 from drive_msgs.msg import *
 import math
-
+import perception_handler as ph
 
 import tf
 
@@ -47,7 +47,12 @@ class ROSHandler():
         radar_objects = []
         for ro in msg.radarObjects:
             # if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
-            obj = [ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data, ro.alvAge.data]
+            heading, velocity = ph.calculate_radar_heading_velocity(ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data)
+            if velocity == 0:
+                obj_vel = 0
+            else:
+                obj_vel = velocity + self.est_veh_spd
+            obj = [ro.relPosX.data+2.325, ro.relPosY.data, heading, obj_vel, ro.alvAge.data]
             radar_objects.append(obj)
         self.radar_objects = radar_objects
 

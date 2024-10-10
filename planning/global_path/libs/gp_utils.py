@@ -65,7 +65,7 @@ def get_straight_path(idnidx, path_len, stop_id, prior='Left'):
     wps = copy.deepcopy(lanelets[s_n]['waypoints'])
     lls_len = len(wps)
     ids = [s_n]*lls_len
-    vs = [lanelets[s_n]['speedLimit']-1]*lls_len
+    vs = [lanelets[s_n]['speedLimit']]*lls_len
     u_n = s_n
     u_i = s_i+int(path_len)#*M_TO_IDX)
     e_i = u_i
@@ -85,7 +85,7 @@ def get_straight_path(idnidx, path_len, stop_id, prior='Left'):
         u_wp = lanelets[u_n]['waypoints']
         lls_len = len(u_wp)
         ids.extend([u_n]*lls_len)
-        v = lanelets[u_n]['speedLimit']-1
+        v = lanelets[u_n]['speedLimit']
         vs.extend([v]*lls_len)
         wps += u_wp
 
@@ -267,7 +267,6 @@ def dijkstra(start, finish):
 
 def cut_by_start_goal(sidnidx, gidnidx, path_from_id):
     waypoints = path_from_id[0]
-    print(waypoints[0], sidnidx[1], gidnidx[1])
     s_idx = min(range(len(waypoints)), key=lambda i: euc_distance(waypoints[i], sidnidx[1]))
     g_idx = min(range(len(waypoints)), key=lambda i: euc_distance(waypoints[i], gidnidx[1]))
     return path_from_id[0][s_idx:g_idx+1],path_from_id[1][s_idx:g_idx+1],path_from_id[2][s_idx:g_idx+1]
