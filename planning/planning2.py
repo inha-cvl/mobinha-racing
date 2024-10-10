@@ -154,8 +154,8 @@ class Planning():
         front_object = []
         self.lane_change_state = 'straight'
 
-        long_avoidance_gap = 40
-        lat_avoidance_gap = 4
+        long_avoidance_gap = 45
+        lat_avoidance_gap = 4.2
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -368,7 +368,7 @@ class Planning():
                 #     planned_velocity = self.prev_target_vel
                                 
                 if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 75/3.6  #TODO: 0lap limit velocity
+                    limit_vel = 30/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

@@ -23,6 +23,11 @@ class ROSHandler():
         self.current_heading = 0
         self.planned_route = []
         self.target_actuator = Actuator()
+        self.lane_number = 2
+        self.curve_list = ['1', '7', '8', '9', '10', '11', '15', '16', '17', '21', '22', '23', '24', 
+                           '25', '26', '27', '36', '37', '38', '39', '43', '44', '45', '46', '47', '54', 
+                           '59', '60', '61', '62', '63', '68', '69', '70', '72', '73', '78', '79', '80']
+        self.curved = False
 
     def set_publisher_protocol(self):
         self.target_actuator_pub = rospy.Publisher('/control/target_actuator', Actuator, queue_size=1)
@@ -32,6 +37,17 @@ class ROSHandler():
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
+        rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
+
+    def lane_data_cb(self, msg):
+        if msg.currentLane.laneNumber.data != 0:
+            self.lane_number = msg.currentLane.laneNumber.data
+            
+        if msg.currentLane.id.data in self.curve_list:
+            self.curved = True
+        else:
+            self.curved = False
+        
     
     def system_status_cb(self, msg):
         self.system_mode = msg.systemMode.data 

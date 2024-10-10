@@ -29,10 +29,6 @@ class PurePursuit(object):
         if len(self.RH.current_location) < 1 or self.RH.system_mode < 1:
             return 0
         
-        lfd = self.lfd_gain * self.RH.current_velocity * MPS_TO_KPH
-        print("original lfd:, ", lfd)
-        # lfd = np.clip(lfd, self.min_lfd, self.max_lfd)
-        # lfd = 40
 
         # 1st lane, roll: 19~20
         # lfd = 15 # optimal at 30kph
@@ -47,7 +43,32 @@ class PurePursuit(object):
         # 3rd lane, # roll 0
         # lfd = 20 # optimal at 30kph
         # lfd = 24 # optimal at 50kph
-        lfd = 36 # optimal at 75pkh
+        # lfd = 36 # optimal at 75pkh
+
+        # lfd = self.lfd_gain * self.RH.current_velocity * MPS_TO_KPH
+        # lfd = np.clip(lfd, self.min_lfd, self.max_lfd)
+        
+        vehicle_speed = self.RH.current_velocity * MPS_TO_KPH
+
+        if self.RH.curved:
+            if self.RH.lane_number == 1:
+                lfd = 0.3*vehicle_speed + 6
+                lfd = min(max(lfd, 15), 36)
+            elif self.RH.lane_number == 2:
+                lfd = 0.3*vehicle_speed + 11
+                lfd = min(max(lfd, 20), 41)
+            elif self.RH.lane_number == 3:
+                lfd = 7/1125*vehicle_speed**2 - 67/225*vehicle_speed + 70/3
+                lfd = min(max(lfd, 20), 36)
+            else:
+                lfd = self.lfd_gain*vehicle_speed
+                lfd = min(max(lfd, self.min_lfd), self.max_lfd)
+        else:
+            lfd = self.lfd_gain*vehicle_speed
+            lfd = min(max(lfd, self.min_lfd), self.max_lfd)
+
+
+
 
 
         point = self.RH.current_location
