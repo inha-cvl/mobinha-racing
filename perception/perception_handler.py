@@ -1,4 +1,5 @@
 import math
+import time
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
@@ -42,9 +43,9 @@ def cluster_radar_obstacles( data, distance_threshold=0.7):
                 y += c[1]
             x = x/len(cluster)
             y = y/len(cluster)
-            clusters.append([x, y,   max_age_point[2], max_age_point[3], float(max_age_point[4])])
+            clusters.append([x, y,   max_age_point[2], max_age_point[3], float(max_age_point[4]), float(max_age_point[5])])
         else:
-            clusters.append([data[i][0], data[i][1], data[i][2], data[i][3], float(data[i][4])])  
+            clusters.append([data[i][0], data[i][1], data[i][2], data[i][3], float(data[i][4]), float(data[i][5])])  
     return clusters
 
 def filtering_by_spd(data, spd):
@@ -86,10 +87,10 @@ def rectify_corners(objects_3d, P, intrinsic):
 def find_corners(clustered_list): 
     corners_list = []
     # # for car
-    center_z = 0.4
-    size_x = 4.65
+    center_z = 0.6
+    size_x = 0.5
     size_y = 1.82
-    size_z = 1.4
+    size_z = 2.0
     
     # human
     # center_z = 0.55
@@ -98,7 +99,7 @@ def find_corners(clustered_list):
     # size_z = 1.8
     
 
-    for (center_x,center_y, heading, velocity, _) in clustered_list:
+    for (center_x,center_y, heading, velocity, age, qual) in clustered_list:
         corners = np.array([[(center_x) + size_x/2, center_y + size_y/2, center_z + size_z/2],
                             [(center_x) + size_x/2, center_y + size_y/2, center_z - size_z/2],
                             [(center_x) + size_x/2, center_y - size_y/2, center_z + size_z/2],
@@ -108,10 +109,9 @@ def find_corners(clustered_list):
                             [(center_x) - size_x/2, center_y - size_y/2, center_z + size_z/2],
                             [(center_x) - size_x/2, center_y - size_y/2, center_z - size_z/2]])
         position = np.array([(center_x) , center_y, center_z]).T
-        corners_list.append([corners, position, (heading, velocity)])
+        corners_list.append([corners, position, (heading, velocity), (age, qual)])
 
     return corners_list
-
 
 
 def compute_iou(box1, box2):
@@ -132,24 +132,114 @@ def compute_iou(box1, box2):
     return iou
 
 
-def create_iou_matrix(points_2d, bounding_boxes):
+def create_iou_matrix(points_2d, bounding_boxes, iou_threshold):
     iou_matrix = np.zeros((len(points_2d), len(bounding_boxes)))
 
     for i, point_box in enumerate(points_2d):
         for j, detection_box in enumerate(bounding_boxes):
-            iou_matrix[i, j] = compute_iou(point_box, detection_box)
+            iou = compute_iou(point_box, detection_box)
+            if iou >= iou_threshold:
+                iou_matrix[i, j] = iou
+            else:
+                iou_matrix[i, j] = -10e5
 
     return iou_matrix
 
 
-def match_bounding_boxes(points_2d, bounding_boxes, iou_threshold=0.3):
-    iou_matrix = create_iou_matrix(points_2d, bounding_boxes)
 
-    row_indices, col_indices = linear_sum_assignment(-iou_matrix) 
+def compute_distance(box1, box2):
     
+    x1_min, y1_min, x1_max, y1_max, *rest1 = box1
+    x2_min, y2_min, x2_max, y2_max, *rest2 = box2
+
+    center_x1 = (x1_max + x1_min) / 2
+    center_x2 = (x2_max + x2_min) / 2
+
+    distance = abs(center_x1 - center_x2)
+    
+    return distance
+
+
+def create_distance_matrix(points_2d, bounding_boxes, distance_threshold):
+    distance_matrix = np.zeros((len(points_2d), len(bounding_boxes)))
+    
+    for i, point_box in enumerate(points_2d):
+        for j, detection_box in enumerate(bounding_boxes):
+            distance = compute_distance(point_box, detection_box)  
+            if distance <= distance_threshold:  
+                distance_matrix[i, j] = distance
+            else:
+                distance_matrix[i, j] = 10e5
+    return distance_matrix
+
+
+
+    
+
+def match_bounding_boxes(points_2d, bounding_boxes, iou_threshold=0.2, distance_threshold=100):
+    # print(points_2d)
+    iou_matrix = create_iou_matrix(points_2d, bounding_boxes, iou_threshold)
+    weights = [0.7, 0.3]
+    # 기준 is detection bounding box
+    row_indices, col_indices = linear_sum_assignment(-iou_matrix) 
     matched_boxes = []
+    matched_bbox_indices = []
+    matched_points_indices = []
+    start = time.time()
     for i, j in zip(row_indices, col_indices):
         if iou_matrix[i, j] >= iou_threshold: 
+            
             matched_boxes.append([bounding_boxes[j], points_2d[i][4:]])
+            matched_bbox_indices.append(j)
+            matched_points_indices.append(i)
+    
+    matched_bbox_indices.sort(reverse=True)
+    matched_points_indices.sort(reverse=True)
 
+    for index in matched_bbox_indices:
+        del bounding_boxes[index]
+        
+    for index in matched_points_indices:
+        del points_2d[index]
+    
+    distance_matrix = create_distance_matrix(points_2d, bounding_boxes, distance_threshold)
+    row_indices_unmatched, col_indices_unmatched = linear_sum_assignment(distance_matrix) 
+    
+    for i, j in zip(row_indices_unmatched, col_indices_unmatched):
+        if distance_matrix[i, j] <= distance_threshold:
+            other_candidates = np.where((distance_matrix[:,j] <= distance_threshold) & (np.arange(distance_matrix.shape[0]) != i))
+            # print("distance : ", points_2d[i][4:6])
+            # print("pixel distance : ", distance_matrix[i, j])
+            # print("best match with ", j, "is : ", i)
+            # print("but other candidate is : ", other_candidates)
+            result = [points_2d[index][-2:] for index in other_candidates[0]]
+            # print("best match alv and qual is ", points_2d[i][-2:])
+            # print("other candidates alv and qual is ", result)
+            final_match_idx = compare_matches(points_2d[i][-2:], result, other_candidates[0])
+            if final_match_idx is not None:
+                matched_boxes.append([bounding_boxes[j], points_2d[final_match_idx][4:]])
+            else:
+                matched_boxes.append([bounding_boxes[j], points_2d[i][4:]])
+                
+    # print(time.time() - start)
+        
     return matched_boxes
+
+
+def compare_matches(bestmatch, othermatch, othermatchidx):
+    
+    best_weighted_sum = 0.7 * bestmatch[0] + 0.3 * bestmatch[1]
+    
+    max_weighted_sum = best_weighted_sum
+    max_idx = None
+    
+    for i, match in enumerate(othermatch):
+        other_weighted_sum = 0.7 * match[0] + 0.3 * match[1]
+        if other_weighted_sum > max_weighted_sum:
+            max_weighted_sum = other_weighted_sum
+            max_idx = i
+    
+    if max_idx is not None:
+        return othermatchidx[max_idx]
+    
+    return None

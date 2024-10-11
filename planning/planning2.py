@@ -154,24 +154,27 @@ class Planning():
         front_object = []
         self.lane_change_state = 'straight'
 
-        long_avoidance_gap = 45
-        lat_avoidance_gap = 4
+        long_avoidance_gap = 50
+        lat_avoidance_gap = 3.5
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if s > -50:
-                if int(s) < len(trim_global_path)-1 and (len(trim_global_path[-1])>4):
-                    if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
+            if int(s) < len(trim_global_path)-1 and (len(trim_global_path[-1])>4):
+                if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
+                    if s > 1 and obj['id'] == 4:
                         obj['s'] = s
                         obj['d'] = d 
-                        # obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
-                        # obj['dist'] = obj_dist
                         check_object.append(obj)
-                        
                         if -1.25 < d < 1.25 :
                             front_object.append(obj)
                             if s < 100:
                                 self.lane_change_state = 'follow'
+                    elif ( 1 >= s > -15 ) and obj['id'] == 2:
+                        obj['s'] = s
+                        obj['d'] = d 
+                        check_object.append(obj)
+                        if -1.25 < d < 1.25 :
+                            front_object.append(obj)
 
         self.RH.publish_target_object(check_object)
 
@@ -238,7 +241,6 @@ class Planning():
                 for obj in object_list:
                     s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
                     if s> 0 and -1 < d < 1:
-                        #obj_dist = ph.distance(self.RH.local_pos[0], self.RH.local_pos[1], float(obj['X']), float(obj['Y']))
                         acc_object_d_v.append([float(obj['dist']), float(obj['v'])])
                 min_s = 200
                 obj_v = 200
@@ -250,10 +252,6 @@ class Planning():
                 safety_distance = 30
 
                 ttc = ph.calc_ttc(min_s, obj_v, self.RH.current_velocity)
-
-                # < 50 : 20
-                # < 80 : 30
-                # < 100 : 40
                 safety_distance = 0.4*self.RH.current_velocity*3.6
                 safety_distance = min(max(safety_distance, 20), 40)
 
@@ -261,28 +259,6 @@ class Planning():
 
                 offset = 0.8
                 target_v_ACC = obj_v - margin*offset
-
-                print("target_v_ACC: ", target_v_ACC*3.6)
-
-                # original
-                # if min_s < 15:
-                # # if min_s < 10:
-                #     status = "danger"
-                #     target_v_ACC = -1
-                # elif min_s < safety_distance:
-                # # if 10 < min_s < 40:
-                #     status = "close"
-                #     target_v_ACC = obj_v * 0.8
-                # elif safety_distance < min_s < safety_distance*1.4:
-                # # elif 40 < min_s < 80:
-                #     status = "middle"
-                #     target_v_ACC = obj_v * min_s / safety_distance
-                # elif safety_distance*1.4 < min_s:
-                # # elif 80 < min_s:
-                #     status = "far or none"
-                #     target_v_ACC = interped_vel[2]               
-                # else:
-                #     print("zone_error")
             else:
                 target_v_ACC = interped_vel[2]
    
@@ -384,7 +360,7 @@ class Planning():
                 #     planned_velocity = self.prev_target_vel
                                 
                 if self.RH.lap_count == 100: # TODO: 0lap limit velocity
-                    limit_vel = 30/3.6  #TODO: 0lap limit velocity
+                    limit_vel = 29/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

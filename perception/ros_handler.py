@@ -46,14 +46,15 @@ class ROSHandler():
     def radar_object_array_cb(self, msg):
         radar_objects = []
         for ro in msg.radarObjects:
-            # if ro.mvngFlag.data > 0 and ro.qualLvl.data > 33  and ro.coastAge.data < 1 and ro.alvAge.data > 10:
-            heading, velocity = ph.calculate_radar_heading_velocity(ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data)
-            if velocity == 0:
-                obj_vel = 0
-            else:
-                obj_vel = velocity + self.est_veh_spd
-            obj = [ro.relPosX.data+2.325, ro.relPosY.data, heading, obj_vel, ro.alvAge.data]
-            radar_objects.append(obj)
+            if ro.qualLvl.data > 33  and ro.alvAge.data > 10:
+                heading, velocity = ph.calculate_radar_heading_velocity(ro.relPosX.data+2.325, ro.relPosY.data, ro.relVelX.data, ro.relVelY.data)
+                if velocity == 0:
+                    obj_vel = 0
+                else:
+                    obj_vel = velocity + self.est_veh_spd
+                # obj = [ro.relPosX.data+2.325, ro.relPosY.data, heading, obj_vel, ro.alvAge, ro.qualLvl.data]
+                obj = [ro.relPosX.data, ro.relPosY.data, heading, obj_vel, int(ro.alvAge.data), int(ro.qualLvl.data)]
+                radar_objects.append(obj)
         self.radar_objects = radar_objects
 
     def image_cb(self, msg):
@@ -76,7 +77,7 @@ class ROSHandler():
         
         marker_array = MarkerArray()
 
-        for i, (x, y, o1, o2, o3) in enumerate(positions):
+        for i, (x, y, o1, o2, o3, o4) in enumerate(positions):
 
             marker = Marker()
             marker.header.frame_id = "hesai_lidar"
@@ -137,7 +138,7 @@ class ROSHandler():
         pose_array = PoseArray()
         for obj in list:
             pose = Pose()
-            pose.position.x = obj[0]
+            pose.position.x = obj[0]+2.35
             pose.position.y = obj[1]
             pose.position.z = 1
             pose.orientation.x = obj[3]
