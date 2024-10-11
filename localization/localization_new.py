@@ -20,6 +20,7 @@ class Localization:
     def __init__(self):
         self.RH = ROSHandler()
         self.initiated = False
+        self.health_published = True
 
         self.last_pos = None
         self.last_hdg = None
@@ -167,18 +168,26 @@ class Localization:
     def localization_sensor_health(self):
         if self.timer(30):
             if self.RH.hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:  # 20 = hz, 0.8 = safety number
-                self.RH.nav_health_pub.publish(False)
+                self.RH.nav_health_pub.publish(1)
                 print("ERROR: invalid heading")
                 os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
                 self.restart_timer = rospy.Time.now()
                 self.RH.hdg_invalid_cnt = 0
+                self.health_published = False 
 
             if self.RH.pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
-                self.RH.nav_health_pub.publish(False)
+                self.RH.nav_health_pub.publish(1)
                 print("ERROR: invalid position")
                 os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
                 self.restart_timer = rospy.Time.now()
                 self.RH.pos_invalid_cnt = 0
+                self.health_published = False
+
+            if (nav_pos_valid and nav_hdg_valid) and not self.health_published:
+                self.RH.nav_health_pub.publish(0)
+                print("INFO: RTK has been restored!")
+                self.restart_timer = rospy.Time.now()
+                self.health_published = True 
 
 
     def timer(self, sec):   
@@ -233,6 +242,7 @@ class Localization:
     def update_last_pos(self):
         nav_diff = ((self.RH.nav_pos[0]-self.dr_pos[0])**2 + (self.RH.nav_pos[1]-self.dr_pos[1])**2)**0.5
         if (nav_diff < 5 and self.RH.hAcc < 50) or self.RH.corr_can_velocity*3.6 < 10:
+            global nav_pos_valid 
             nav_pos_valid = True
         elif nav_diff >= 5 or self.RH.hAcc >= 50:
             nav_pos_valid = False
@@ -254,9 +264,9 @@ class Localization:
         elif dr_pos_valid:
             self.last_pos = self.dr_pos
             self.dr_pos_cnt += 1
-            print(f"DR_POS has used during {self.dr_pos_cnt * 0.05:.2f} sec!")
+            print(f"DR_POS has used total {self.dr_pos_cnt * 0.05:.2f} sec!")
         else:
-            self.RH.nav_health_pub.publish(False)  # emergency stop
+            self.RH.nav_health_pub.publish(1)  # emergency stop
             print("ERROR: ALL Position Dead")
             os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
             self.RH.pos_invalid_cnt = 0
@@ -267,6 +277,7 @@ class Localization:
         nav_val = abs(self.dr_hdg - self.RH.nav_hdg)
         nav_diff = min(nav_val, 360 - nav_val)
         if (nav_diff < 5 and self.RH.headAcc < 50000) or self.RH.corr_can_velocity*3.6 < 10:
+            global nav_hdg_valid
             nav_hdg_valid = True
         elif nav_diff >= 5 or self.RH.headAcc >= 50000:
             nav_hdg_valid = False
@@ -302,12 +313,12 @@ class Localization:
         elif dr_hdg_valid:
             self.last_hdg = self.dr_hdg
             self.dr_hdg_cnt += 1
-            print(f"DR_HDG has used during {self.dr_hdg_cnt * 0.05:.2f} sec!")
+            print(f"DR_HDG has used total {self.dr_hdg_cnt * 0.05:.2f} sec!")
         # elif source == "IMU":
         # elif imu_hdg_valid:
         #     self.last_hdg = self.RH.imu_hdg
         else:
-            self.RH.nav_health_pub.publish(False)  # emergency stop
+            self.RH.nav_health_pub.publish(1)  # emergency stop
             print("ERROR: ALL Heading Dead")
             os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')    
             self.RH.hdg_invalid_cnt = 0
