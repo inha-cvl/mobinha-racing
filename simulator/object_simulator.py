@@ -3,7 +3,7 @@ import sys
 import signal
 import tf
 import math
-import time 
+import time
 
 from drive_msgs.msg import *
 from libs.vehicle import Vehicle
@@ -15,10 +15,7 @@ def signal_handler(sig, frame):
 
 class ObjectSimulator:
     def __init__(self):
-        
-        self.object = None
-        self.object2 = None
-        self.object_ready = False
+        self.objects = []  # 객체들을 저장할 리스트
         self._steer = 0
         self._accel = 0
         self._brake = 0
@@ -32,54 +29,33 @@ class ObjectSimulator:
         self.heading = msg.heading.data
 
     def goal_cb(self, msg):
-       quaternion = (msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
-       _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
-       if self.object_ready == True:
-           self.object2 = Vehicle(msg.pose.position.x, msg.pose.position.y, math.radians(self.heading), 30/3.6, 2.97)
-       else:
-        self.object = Vehicle(msg.pose.position.x, msg.pose.position.y, math.radians(self.heading), 30/3.6, 2.97)
-        self.object_ready = True
-       
+        quaternion = (msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
+        _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
+        new_object = Vehicle(msg.pose.position.x, msg.pose.position.y, math.radians(self.heading), 30/3.6, 2.97)
+        self.objects.append(new_object)  # 새로운 객체를 리스트에 추가
+
     def target_actuator_cb(self, msg):
-        self._steer = 0#msg.steer.data
+        self._steer = 0  # msg.steer.data
         self._accel = msg.accel.data
         self._brake = msg.brake.data
 
     def publish_object(self):
         rate = rospy.Rate(20)
-        start_time = time.time()
-        vel = 0#/3.6
         dt = 0.05
         pose_array = PoseArray()
         while not rospy.is_shutdown():
-            if self.object_ready:
-                if time.time()-start_time > 30:
-                    self.object_ready = False
-                x,y,yaw,v = self.object.next_state(dt, self._steer, self._accel, 0)
-                yaw = math.degrees(yaw)
-                
-                pose = Pose()
-                pose.position.x = x#self.object.x
-                pose.position.y = y#self.object.y
-                pose.position.z = 1
-                pose.orientation.x = v
-                pose.orientation.y = yaw
-                pose_array.poses.append(pose)
-                #vel += 0.05
-
-                if self.object2 is not None:
-                    x,y,yaw,v = self.object2.next_state(dt, self._steer, self._accel, 0)
+            if self.objects:
+                for obj in self.objects:
+                    x, y, yaw, v = obj.next_state(dt, self._steer, self._accel, 0)
                     yaw = math.degrees(yaw)
+                    
                     pose = Pose()
-                    pose.position.x = x#self.object.x
-                    pose.position.y = y#self.object.y
+                    pose.position.x = x
+                    pose.position.y = y
                     pose.position.z = 1
                     pose.orientation.x = v
                     pose.orientation.y = yaw
                     pose_array.poses.append(pose)
-            else:
-                pose_array = PoseArray()
-                start_time = time.time()
             self.pub_sim_object.publish(pose_array)
             pose_array = PoseArray()
             rate.sleep()

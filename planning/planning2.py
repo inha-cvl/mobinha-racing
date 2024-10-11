@@ -39,6 +39,8 @@ class Planning():
         self.race_mode = 'to_goal'
         self.prev_race_mode = self.race_mode
         self.lane_change_state = False
+        self.lc_state_list = []
+        self.lc_state_time = None
 
         #kcity = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITY
 
@@ -155,26 +157,20 @@ class Planning():
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 50
-        lat_avoidance_gap = 3.5
+        lat_avoidance_gap = 3.4
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
-            if int(s) < len(trim_global_path)-1 and (len(trim_global_path[-1])>4):
-                if -trim_global_path[int(s)][3] < d < trim_global_path[int(s)][2]:
-                    if s > 1 and obj['id'] == 4:
-                        obj['s'] = s
-                        obj['d'] = d 
-                        check_object.append(obj)
-                        if -1.25 < d < 1.25 :
-                            front_object.append(obj)
-                            if s < 100:
-                                self.lane_change_state = 'follow'
-                    elif ( 1 >= s > -15 ) and obj['id'] == 2:
-                        obj['s'] = s
-                        obj['d'] = d 
-                        check_object.append(obj)
-                        if -1.25 < d < 1.25 :
-                            front_object.append(obj)
+            l_th, r_th = ph.get_lr_threshold(trim_global_path, s)  
+            if  r_th < d <l_th:
+                if (s > 1 and (obj['type'] in [0, 4])) or (1 >= s > -15 and (obj['type'] in [0,2])):
+                    obj['s'] = s
+                    obj['d'] = d
+                    check_object.append(obj)
+                    if -1.25 < d < 1.25:
+                        front_object.append(obj)
+                        if obj['type'] == 4 and s < 100:
+                            self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
 
@@ -188,13 +184,19 @@ class Planning():
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
                 closest_info = trim_global_path[closest_obj_idx_on_path]
-                lc_state_list = ph.get_lane_change_state(closest_info[3],closest_info[2])
-                break  # overtaking이 필요하면 바로 종료
+                if self.lc_state_time is None or time.time() - self.lc_state_time > 5:
+                    self.lc_state_list = ph.get_lane_change_state(closest_info[3], closest_info[2])
+                    if len(self.lc_state_list) > 0:
+                        self.lc_state_time = time.time()
+                break
+            else:
+                self.lc_state_time = None
+
         
         path_updated = False
         lc_state_idx = 9
-        if overtaking_required and lc_state_list is not None:
-            for i, lc_state in enumerate(lc_state_list):
+        if overtaking_required and self.lc_state_list is not None:
+            for i, lc_state in enumerate(self.lc_state_list):
                 if not path_updated:
                     updated_path = []
                     for point in trim_global_path:
@@ -219,7 +221,7 @@ class Planning():
                         updated_path.append(updated_point)
 
         if path_updated:
-            self.lane_change_state = lc_state_list[lc_state_idx]
+            self.lane_change_state = self.lc_state_list[lc_state_idx]
             for i, point in enumerate(trim_global_path):
                 for obj in object_list:
                     obj_radius = long_avoidance_gap + (obj['v'] / 5)

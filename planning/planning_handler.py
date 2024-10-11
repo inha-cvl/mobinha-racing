@@ -261,3 +261,16 @@ def check_lane_deaprture(local_path, localpos):
             return 'Warning'
         else:
             return 'Danger'
+
+def get_lr_threshold(trim_global_path, s):
+    if s > 0:
+        if s < len(trim_global_path)-1:
+            l_th = trim_global_path[int(s)][3]
+            r_th = -trim_global_path[int(s)][2]
+        else:
+            l_th = trim_global_path[-1][3]
+            r_th = -trim_global_path[-1][2]
+    else:
+        l_th = trim_global_path[0][3]
+        r_th = -trim_global_path[0][2]
+    return l_th, r_th
