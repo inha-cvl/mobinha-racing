@@ -56,7 +56,7 @@ class MessageViewer(QWidget):
     def set_tables(self):
         for key in self.TH.encode_handler.keys():
             self.create_table_for_msg_id_en(key)
-        for key in self.TH.decode_handler.keys():
+        for key in self.TH.decode_handler0.keys():
             self.create_table_for_msg_id_de(key)
         
     def create_table_for_msg_id_en(self, msg_id):
@@ -86,7 +86,7 @@ class MessageViewer(QWidget):
             table.setItem(index, 1, QTableWidgetItem(str(value)))
 
     def can_output_cb(self, msg):
-        for keys, values in self.TH.decode_handler.items():
+        for keys, values in self.TH.decode_handler0.items():
             for key in values.keys():
                 values[key] = getattr(msg, key).data
             self.update_table(keys, values)
