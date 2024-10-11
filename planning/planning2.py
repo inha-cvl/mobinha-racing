@@ -169,7 +169,7 @@ class Planning():
                     check_object.append(obj)
                     if -1.25 < d < 1.25:
                         front_object.append(obj)
-                        if obj['type'] == 4 and s < 100:
+                        if obj['type'] in [0, 4] and s < 100:
                             self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
@@ -184,14 +184,10 @@ class Planning():
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
                 closest_info = trim_global_path[closest_obj_idx_on_path]
-                if self.lc_state_time is None or time.time() - self.lc_state_time > 5:
+                if not ph.has_different_lane_number(self.RH.lane_number_stack):
                     self.lc_state_list = ph.get_lane_change_state(closest_info[3], closest_info[2])
-                    if len(self.lc_state_list) > 0:
-                        self.lc_state_time = time.time()
                 break
-            else:
-                self.lc_state_time = None
-
+        
         
         path_updated = False
         lc_state_idx = 9

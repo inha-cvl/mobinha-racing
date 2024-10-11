@@ -169,15 +169,14 @@ class MapLane():
                 local_velocity = self.lpt.get_velocity(self.max_vel)
                 self.RH.publish(local_path, local_kappa, local_velocity)
             
-            refine_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles, self.RH.rad_obstacles, self.RH.fus_obstacles])
-            
-            lidar_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.lid_obstacles])
-            radar_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.fus_obstacles])
-            refine_obstacles = self.lidar_radar_matching(lidar_obstacles, radar_obstacles)
-            
-            self.update_obstacles(refine_obstacles)
+            sim_obs, lid_obs, rad_obs = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.sim_obstacles, self.RH.lid_obstacles, self.RH.fus_obstacles]) # 0: simulator, 1 : lidar, 2 : fusion
+            matched_obstacles, _ = self.lidar_radar_matching(lid_obs, rad_obs)
+            final_obstacles = sim_obs+matched_obstacles #0: sim, 1: matched, 2: non-matched
+
+            #if stacking
+            #self.update_obstacles(final_obstacles)
             #self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
-            self.RH.publish_refine_obstacles(refine_obstacles)
+            self.RH.publish_refine_obstacles(final_obstacles)
             
             lane_data, lane_id = self.llh.get_lane_number(self.RH.local_pose)
 

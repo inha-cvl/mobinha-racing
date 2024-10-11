@@ -144,7 +144,7 @@ class ROSHandler():
         self.detection_data = DetectionData()
         for obj in msg.poses:
             object_info = ObjectInfo()
-            object_info.type.data = int(obj.position.z) #0: sim, 1: cam, 2: lidar, 3: radar, 4: fusion
+            object_info.type.data = int(obj.position.z) #0: sim, 1: matched, 2: non-matched
             object_info.position.x = obj.position.x
             object_info.position.y = obj.position.y
             object_info.velocity.data = float(obj.orientation.x)

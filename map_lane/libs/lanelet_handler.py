@@ -57,8 +57,9 @@ class LaneletHandler:
             
 
     def refine_obstacles_heading(self,local_pose,  obstacle_lists):
-        refine_obstacles = []
+        refine_obstacles_list = []
         for i, obs_list in enumerate(obstacle_lists):
+            refine_obstacles = []
             for obs in obs_list:
                 refine_heading = self.refine_heading_by_lane([obs[1], obs[2]]) # insert x,y
                 if refine_heading is not None:
@@ -72,5 +73,6 @@ class LaneletHandler:
                     refine_obstacles.append(refine_obs)
                 else:
                     continue
-        return refine_obstacles
+            refine_obstacles_list.append(refine_obstacles)
+        return refine_obstacles_list
     

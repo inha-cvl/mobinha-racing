@@ -152,17 +152,12 @@ def CarViz(frame_id, name_space, position, color):
 def ObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color1 = [255, 114, 48, 1] #orange: simulator
-    color2 = [69,255,48,1] #green: LiDAR
-    color3 = [48,255,255,1] #cyan: Radar fusion
+    color1 = [48,255,255,1] #cyan: simulator
+    color2 = [69,255,48,1] #green: matched
+    color3 = [255, 114, 48, 1] #orage: non-matched
+    colors = [color1, color2, color3]
     for n, obj in enumerate(objects):
-        if obj[0] == 2:
-            color = color2
-        elif obj[0] == 4:
-            color = color3
-        else:
-            color = color1
-
+        color = colors[obj[0]]
         marker = ObjectViz(n, (round(obj[1],1), round(obj[2],1)), obj[3], color)
         marker_array.markers.append(marker)
         dist = f"{round(obj[5])}m, {round(obj[4]*3.6)}km/h"
@@ -174,7 +169,7 @@ def ObjectsViz(objects):
 def TargetObjectsViz(objects):
     marker_array = MarkerArray()
     marker = Marker()
-    color = [252, 227, 3, 1]
+    color = [252, 227, 3, 1] #yellow: using at planning
     for n, obj in enumerate(objects):
         marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)

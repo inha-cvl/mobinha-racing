@@ -154,8 +154,7 @@ def calculate_R_list2(array, base_offset=2, step_size=40):
     return Rs
 
 #best
-def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing_factor=30.0, interp_points=10):
-#def interpolate_path(final_global_path, min_length=100, sample_rate=20, smoothing_factor=3.0, interp_points=20):
+def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing_factor=15, interp_points=4):
     local_path = np.array([(point[0], point[1]) for point in final_global_path])
     local_vel = [point[10] for point in final_global_path]
 
@@ -163,8 +162,6 @@ def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing
         sampled_indices = np.arange(0, len(local_path), sample_rate)
         sampled_local_path = local_path[sampled_indices]
         sampled_local_vel = np.array(local_vel)[sampled_indices]
-        # sampled_local_path = local_path
-        # sampled_local_vel = local_vel
 
         tck, u = splprep([sampled_local_path[:, 0], sampled_local_path[:, 1]], s=smoothing_factor)
         t_new = np.linspace(0, 1, len(sampled_local_path) * interp_points)
@@ -173,11 +170,9 @@ def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing
         vel_interp_func = interp1d(np.linspace(0, 1, len(sampled_local_vel)), sampled_local_vel, kind='linear')
         vel_interp = vel_interp_func(t_new).tolist()
 
-        #first_R = calculate_R_first_index(path_interp)
         R_list = calculate_R_list(path_interp_list)
     else:
         path_interp_list = local_path.tolist()
-        #first_R = calculate_R_first_index(path_interp_list)
         R_list = calculate_R_list(path_interp_list)
         vel_interp = local_vel
 
@@ -274,3 +269,8 @@ def get_lr_threshold(trim_global_path, s):
         l_th = trim_global_path[0][3]
         r_th = -trim_global_path[0][2]
     return l_th, r_th
+
+
+def has_different_lane_number(lane_number_stack):
+    # 스택 내에 다른 값이 있으면 True를 반환
+    return len(set(lane_number_stack)) > 1

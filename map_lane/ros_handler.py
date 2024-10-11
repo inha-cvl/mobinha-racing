@@ -51,15 +51,13 @@ class ROSHandler():
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
+        rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb)
 
         rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
-        #rospy.Subscriber('/detection_markers', MarkerArray, self.cam_objects_cb)
         #rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
         rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
 
-        rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb)
-    
     def system_status_cb(self, msg):
         self.map_name = msg.mapName.data
         base_lla = msg.baseLLA
@@ -119,18 +117,6 @@ class ROSHandler():
                 obstacles.append([int(obj.position.z),nx, ny,float(obj.orientation.x)])
         self.fus_obstacles = obstacles
 
-    
-    def cam_objects_cb(self,msg):
-        obstacles = []
-        for obj in msg.markers:
-            conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
-            if conv is None:
-                continue
-            else:
-                nx,ny = conv
-                obstacles.append([0, nx, ny, 3])
-        self.cam_obstacles = obstacles
-
     def lidar_track_box_cb(self, msg):
         obstacles = []
         for obj in msg.boxes:
@@ -176,11 +162,11 @@ class ROSHandler():
         pose_array = PoseArray()
         for obs in obstacles:
             pose = Pose()
-            pose.position.x = obs[1]
-            pose.position.y = obs[2]
-            pose.position.z = obs[0]
-            pose.orientation.x = obs[3]
-            pose.orientation.y = obs[4]
-            pose.orientation.z = obs[5]
+            pose.position.x = obs[1] #pos x
+            pose.position.y = obs[2] #pos y 
+            pose.position.z = obs[0] #type
+            pose.orientation.x = obs[3] #velocity
+            pose.orientation.y = obs[4] #heading
+            pose.orientation.z = obs[5] #distance
             pose_array.poses.append(pose)
         self.refine_obstacles_pub.publish(pose_array)
