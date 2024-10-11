@@ -3,7 +3,10 @@ import sys
 import signal
 from ros_handler import ROSHandler
 import time
-
+import math
+import numpy as np
+from scipy.optimize import linear_sum_assignment
+from shapely.geometry import Polygon
 from local_path_test import LocalPathTest
 from hd_map.map import MAP
 from libs.lanelet_handler import LaneletHandler
@@ -50,6 +53,103 @@ class MapLane():
             timestamp for timestamp in self.obstacle_timestamps 
             if current_time - timestamp < self.remian_duration
         ]
+    
+    
+    def rotate_point(self, px, py, cx, cy, angle):
+
+        sin_theta = math.sin(angle)
+        cos_theta = math.cos(angle)
+        
+        translated_x = px - cx
+        translated_y = py - cy
+        
+        rotated_x = translated_x * cos_theta - translated_y * sin_theta + cx
+        rotated_y = translated_x * sin_theta + translated_y * cos_theta + cy
+        
+        return rotated_x, rotated_y
+
+
+
+    def calculate_iou(self, obj1, obj2, size_x, size_y):
+        x1, y1, heading1 = obj1[1], obj1[2], obj1[4]
+        x2, y2, heading2 = obj2[1], obj2[2], obj2[4]
+
+        corners1 = [
+            (x1 - size_x / 2, y1 - size_y / 2),
+            (x1 + size_x / 2, y1 - size_y / 2),
+            (x1 + size_x / 2, y1 + size_y / 2),
+            (x1 - size_x / 2, y1 + size_y / 2)
+        ]
+
+        corners2 = [
+            (x2 - size_x / 2, y2 - size_y / 2),
+            (x2 + size_x / 2, y2 - size_y / 2),
+            (x2 + size_x / 2, y2 + size_y / 2),
+            (x2 - size_x / 2, y2 + size_y / 2)
+        ]
+
+        rotated_corners1 = [self.rotate_point(px, py, x1, y1, heading1) for (px, py) in corners1]
+        rotated_corners2 = [self.rotate_point(px, py, x2, y2, heading2) for (px, py) in corners2]
+
+        poly1 = Polygon(rotated_corners1)
+        poly2 = Polygon(rotated_corners2)
+
+        inter_area = poly1.intersection(poly2).area
+        
+        box1_area = poly1.area
+        box2_area = poly2.area
+        
+        iou = inter_area / (box1_area + box2_area - inter_area)
+        return iou
+
+    def lidar_radar_matching(self, lidar_objects, radar_objects,iou_threshold = 0.1, size_x = 4.365, size_y = 1.85):
+        iou_matrix = np.zeros((len(lidar_objects), len(radar_objects)))
+
+        for i, lidar_obj in enumerate(lidar_objects):
+            for j, radar_obj in enumerate(radar_objects):
+                iou = self.calculate_iou(lidar_obj, radar_obj, size_x, size_y)
+                if iou >= iou_threshold:
+                    iou_matrix[i, j] = iou
+                else:
+                    iou_matrix[i, j] = -10e5
+
+        row_ind, col_ind = linear_sum_assignment(-iou_matrix)
+
+        print("radar objects : ", radar_objects)
+        print("lidar objects : " , lidar_objects)
+        matched_pairs = list(zip(row_ind, col_ind))
+        matched_pairs_filtered = []
+        # lidar_matched = []
+        radar_matched = []
+        # combined_object = []
+        for l, r in matched_pairs:
+            if iou_matrix[l][r] >= iou_threshold:
+                lidar_objects[l][3] = radar_objects[r][3]
+                matched_pairs_filtered.append((l, r))
+                # lidar_matched.append(l)
+                radar_matched.append(r)
+        
+        
+        print(matched_pairs_filtered)
+        # lidar_matched.sort(reverse=True)
+        # for index in lidar_matched:
+        #     del lidar_objects[index]
+        # matched_pairs_filtered.append(lidar_objects)
+            
+        radar_matched.sort(reverse=True)
+        for index in radar_matched:
+            del radar_objects[index]
+
+        for i in range(len(lidar_objects)):
+            lidar_objects[i][0] = 1
+
+        for i , radar_object in enumerate(radar_objects):
+            radar_object[0] = 2
+            lidar_objects.append(radar_object)
+
+        print("final objects :",lidar_objects)
+        return lidar_objects, matched_pairs_filtered
+        
 
     def execute(self):
         while self.map == None:
@@ -70,6 +170,11 @@ class MapLane():
                 self.RH.publish(local_path, local_kappa, local_velocity)
             
             refine_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.sim_obstacles, self.RH.cam_obstacles, self.RH.lid_obstacles, self.RH.rad_obstacles, self.RH.fus_obstacles])
+            
+            lidar_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.lid_obstacles])
+            radar_obstacles = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.fus_obstacles])
+            refine_obstacles = self.lidar_radar_matching(lidar_obstacles, radar_obstacles)
+            
             self.update_obstacles(refine_obstacles)
             #self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
             self.RH.publish_refine_obstacles(refine_obstacles)
