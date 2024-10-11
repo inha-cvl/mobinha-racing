@@ -4,7 +4,7 @@ from drive_msgs.msg import *
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
 from geometry_msgs.msg import Pose
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int8
 from pyproj import Proj, Transformer
 from ahrs.filters import Madgwick
 import numpy as np
@@ -90,7 +90,7 @@ class ROSHandler():
 
         self.best_pose_pub = rospy.Publisher('/best/pose', Pose, queue_size=1)
         ## Sensot health
-        self.nav_health_pub = rospy.Publisher('/nav_health', Bool, queue_size=1)
+        self.nav_health_pub = rospy.Publisher('/nav_health', Int8, queue_size=1)
 
     def hdg_cb(self, msg):
         self.hdg_hack = msg.data

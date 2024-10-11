@@ -5,7 +5,7 @@ from pyproj import Proj, Transformer
 from drive_msgs.msg import *
 from geometry_msgs.msg import PoseArray, Pose, Pose2D, QuaternionStamped
 from ublox_msgs.msg import NavPVT
-from std_msgs.msg import Header, Float32, Bool
+from std_msgs.msg import Header, Float32, Bool, Int8
 from sensor_msgs.msg import NavSatFix
 # from sbg_driver.msg import SbgEkfNav, SbgEkfEuler, SbgEkfQuat, SbgGpsHdt
 
@@ -71,8 +71,8 @@ class ROSHandler():
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb) # Obstacles
 
         # Sensor Health
-        rospy.Subscriber('/nav_health', Bool, self.sensor_health_cb)
-        rospy.Subscriber('/lid_health', Bool, self.sensor_health_cb)
+        rospy.Subscriber('/nav_health', Int8, self.sensor_health_cb)
+        rospy.Subscriber('/lid_health', Int8, self.sensor_health_cb)
 
         
         # If Synnerex working
