@@ -53,7 +53,7 @@ class Planning():
         self.local_action_set = []
         self.prev_lap = now_lap
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
-        self.selected_lane = 1
+        self.selected_lane = 3
         self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
 
         
@@ -155,7 +155,7 @@ class Planning():
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 45
-        lat_avoidance_gap = 4.2
+        lat_avoidance_gap = 4
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -170,7 +170,7 @@ class Planning():
                         
                         if -1.25 < d < 1.25 :
                             front_object.append(obj)
-                            if s < 20:
+                            if s < 100:
                                 self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
@@ -190,7 +190,7 @@ class Planning():
         
         path_updated = False
         lc_state_idx = 9
-        if overtaking_required:
+        if overtaking_required and lc_state_list is not None:
             for i, lc_state in enumerate(lc_state_list):
                 if not path_updated:
                     updated_path = []
@@ -245,28 +245,44 @@ class Planning():
                 for s, v in acc_object_d_v:
                     if min_s > s:
                         min_s = s
-                        obj_v = v/3.6
-                safety_distance = 40
+                        obj_v = v
 
-                if min_s < 15:
-                # if min_s < 10:
-                    status = "danger"
-                    target_v_ACC = -1
-                elif min_s < safety_distance:
-                # if 10 < min_s < 40:
-                    status = "close"
-                    target_v_ACC = obj_v*3.6 * 0.8
-                elif safety_distance < min_s < safety_distance*1.4:
-                # elif 40 < min_s < 80:
-                    status = "middle"
-                    target_v_ACC = obj_v*3.6 * min_s / safety_distance
-                elif safety_distance*1.4 < min_s:
-                # elif 80 < min_s:
-                    status = "far or none"
-                    target_v_ACC = interped_vel[2]
-                
-                else:
-                    print("zone_error")
+                safety_distance = 30
+
+                ttc = ph.calc_ttc(min_s, obj_v, self.RH.current_velocity)
+
+                # < 50 : 20
+                # < 80 : 30
+                # < 100 : 40
+                safety_distance = 0.4*self.RH.current_velocity*3.6
+                safety_distance = min(max(safety_distance, 20), 40)
+
+                margin = safety_distance - min_s
+
+                offset = 0.8
+                target_v_ACC = obj_v - margin*offset
+
+                print("target_v_ACC: ", target_v_ACC*3.6)
+
+                # original
+                # if min_s < 15:
+                # # if min_s < 10:
+                #     status = "danger"
+                #     target_v_ACC = -1
+                # elif min_s < safety_distance:
+                # # if 10 < min_s < 40:
+                #     status = "close"
+                #     target_v_ACC = obj_v * 0.8
+                # elif safety_distance < min_s < safety_distance*1.4:
+                # # elif 40 < min_s < 80:
+                #     status = "middle"
+                #     target_v_ACC = obj_v * min_s / safety_distance
+                # elif safety_distance*1.4 < min_s:
+                # # elif 80 < min_s:
+                #     status = "far or none"
+                #     target_v_ACC = interped_vel[2]               
+                # else:
+                #     print("zone_error")
             else:
                 target_v_ACC = interped_vel[2]
    
@@ -367,7 +383,7 @@ class Planning():
                 # else:
                 #     planned_velocity = self.prev_target_vel
                                 
-                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 30/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel

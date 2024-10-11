@@ -194,6 +194,15 @@ def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,ttc_threshold = 13):
     else:
         return False
 
+def calc_ttc(obj_dist, obj_vel, ego_vel):
+    rel_vel = ego_vel-obj_vel
+    if rel_vel > 0:
+        ttc = obj_dist/rel_vel
+    else:
+        ttc = float('inf')
+    
+    return ttc
+
 def check_bsd(left_bsd, right_bsd, lc_state):
     if lc_state == 'left':
         if left_bsd == 1:
@@ -207,11 +216,23 @@ def check_bsd(left_bsd, right_bsd, lc_state):
             return False
 
 def get_lane_change_state(l_width, r_width):
+    
     if l_width > r_width:
-        lane_change_state = ['left', 'right']
+        if l_width > 1.25:
+            lane_change_state = ['left']
+            if r_width > 1.25:
+                lane_change_state.append('right')
+        else:
+            lane_change_state = None
     else:
-        lane_change_state = ['right', 'left']
+        if r_width > 1.25:
+            lane_change_state = ['right']
+            if l_width > 1.25:
+                lane_change_state.append('left')
+        else:
+            lane_change_state = None
     return lane_change_state
+
 
 def check_around(xobj, yobjs, lc_state, radius = 7):
     around = False
