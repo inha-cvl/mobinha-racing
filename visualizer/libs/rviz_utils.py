@@ -173,7 +173,7 @@ def TargetObjectsViz(objects):
     for n, obj in enumerate(objects):
         marker = ObjectViz(n, (round(obj[0],1), round(obj[1],1)), obj[2], color)
         marker_array.markers.append(marker)
-        dist = f"s = {round(obj[3])}, d = {round(obj[4])}"
+        dist = f"s = {round(obj[3],2)}, d = {round(obj[4],2)}"
         marker = CarInfoViz('world',str(n+1), dist,(round(obj[0],1), round(obj[1],1), 4.5) )
         marker_array.markers.append(marker)
     return marker_array

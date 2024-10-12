@@ -192,7 +192,7 @@ class Planning():
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
                 closest_info = trim_global_path[closest_obj_idx_on_path]
-                self.lc_state_list = ph.get_lane_change_state(closest_info[3], closest_info[2])
+                self.lc_state_list = ph.get_lane_change_state(obj['d'], closest_info[3], closest_info[2])
                 break
         
         
@@ -212,8 +212,7 @@ class Planning():
                             if overtakng:
                                 around_detected = ph.check_around(obj, check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-                                avoidance_gap = lat_avoidance_gap + abs(obj['d'])
-                                lat_avoidance_overed = ph.check_avoidance_gap_over(lc_state, avoidance_gap, l_width, r_width)
+                                lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, obj['d'])
                                 if not around_detected and not bsd_detected and not lat_avoidance_overed:
                                     path_updated = True
                                     lc_state_idx = i
@@ -226,7 +225,6 @@ class Planning():
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
                         updated_path.append(updated_point)
-
 
 
         if path_updated:
@@ -363,7 +361,7 @@ class Planning():
                 acc_vel = self.calculate_acc_vel(updated_path, interped_vel)
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 28.5/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel

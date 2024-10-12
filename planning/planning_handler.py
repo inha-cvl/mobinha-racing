@@ -154,7 +154,7 @@ def calculate_R_list2(array, base_offset=2, step_size=40):
     return Rs
 
 #best
-def interpolate_path(final_global_path, min_length=100, sample_rate=3, smoothing_factor=15, interp_points=3):
+def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing_factor=50, interp_points=4):
     local_path = np.array([(point[0], point[1]) for point in final_global_path])
     local_vel = [point[10] for point in final_global_path]
 
@@ -210,22 +210,28 @@ def check_bsd(left_bsd, right_bsd, lc_state):
         else:
             return False
 
-def get_lane_change_state(l_width, r_width):
-    
+def get_lane_change_state(d, l_width, r_width):
+    # d : left + , right -
     if l_width > r_width:
-        if l_width > 1.25:
+        if (l_width - d) > 1.5:
             lane_change_state = ['left']
-            if r_width > 1.25:
+            if abs(-r_width-d) > 1.5:
                 lane_change_state.append('right')
         else:
-            lane_change_state = None
+            if abs(-r_width-d) > 1.5:
+                lane_change_state=['right']
+            else:
+                lane_change_state = None
     else:
-        if r_width > 1.25:
+        if abs(-r_width-d) > 1.5:
             lane_change_state = ['right']
-            if l_width > 1.25:
+            if (l_width - d) > 1.5:
                 lane_change_state.append('left')
         else:
-            lane_change_state = None
+            if (l_width - d) > 1.5:
+                lane_change_state = ['left']
+            else:
+                lane_change_state = None
     return lane_change_state
 
 
@@ -277,15 +283,15 @@ def has_different_lane_number(prev, current, cnt):
     else:
         return False
 
-def check_avoidance_gap_over(lc_state, avoidance_gap, l_width, r_width):
+def check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, d):
+    overed = True
     if lc_state == 'left':
-        if avoidance_gap >= l_width:
-            return True
-        else:
-            return False
+        avoidance_gap = lat_avoidance_gap+d
+        if avoidance_gap < l_width:
+            overed = False
     else:
-        if avoidance_gap >= r_width:
-            return True
-        else:
-            return False
+        avoidance_gap = lat_avoidance_gap-d
+        if avoidance_gap < r_width:
+            overed = False
+    return overed, avoidance_gap
     
