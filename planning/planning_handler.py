@@ -235,7 +235,7 @@ def get_lane_change_state(d, l_width, r_width):
     return lane_change_state
 
 
-def check_around(xobj, yobjs, lc_state, radius = 10):
+def check_around(xobj, yobjs, lc_state, radius = 15):
     around = False
     for yobj in yobjs:
         if xobj['s'] - radius < yobj['s'] < xobj['s'] + radius:
@@ -277,8 +277,8 @@ def get_lr_threshold(trim_global_path, s):
     return l_th, r_th
 
 
-def has_different_lane_number(prev, current, cnt):
-    if cnt < 10 and prev != current:
+def has_different_lane_number(prev, current):
+    if prev != current:
         return True
     else:
         return False

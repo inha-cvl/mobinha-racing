@@ -40,6 +40,8 @@ class Planning():
         self.prev_race_mode = self.race_mode
         self.lane_change_state = False
         self.lc_state_list = []
+        self.prev_lc_state_list = None
+        self.lc_state_list_remain_cnt = 0
         self.lc_state_time = None
         self.prev_lane_number = self.RH.current_lane_number
         self.diffrent_lane_cnt = 0
@@ -60,8 +62,7 @@ class Planning():
         self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
         
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
-        self.bank_list = ['1', '10', '11', '12', '13', '14', '37', '40', '41', '42', '43', '44', '45', '46', '47', '54', '59', '60']
-        self.lane3_list = ['1', '54']
+        self.bank_list = ['1', '2', '4','5', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42', '47', '48', '58', '59', '60']
     
     def check_planning_state(self):
         planning_state = 'NONE'
@@ -93,12 +94,14 @@ class Planning():
         elif self.RH.kiapi_signal == 4 and self.race_mode != 'slow_off':
             race_mode = self.prev_race_mode
             self.slow_mode = 'OFF'
-        elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number, self.diffrent_lane_cnt):
+        elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number) and self.race_mode != 'pit_stop':
             self.diffrent_lane_cnt += 1
-            if self.diffrent_lane_cnt > 9:
+            if self.diffrent_lane_cnt > 10:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
-                self.prev_lane_number = self.RH.current_lane_number    
+                self.prev_lane_number = self.RH.current_lane_number   
+                self.lc_state_list_remain_cnt = 0
+                self.prev_lc_state_list = None 
             race_mode = self.prev_race_mode
             planning_state = 'INIT'
             self.prev_race_mode = self.race_mode
@@ -181,7 +184,10 @@ class Planning():
                         self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
-
+        
+        if self.race_mode == 'pit_stop':
+            return final_global_path
+        
         front_object = sorted(front_object, key=lambda x: x['s'])
 
         overtaking_required = False
@@ -192,7 +198,13 @@ class Planning():
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
                 closest_info = trim_global_path[closest_obj_idx_on_path]
-                self.lc_state_list = ph.get_lane_change_state(obj['d'], closest_info[3], closest_info[2])
+                if self.lc_state_list_remain_cnt < 5:
+                    self.lc_state_list = ph.get_lane_change_state(obj['d'], closest_info[3], closest_info[2])
+                    if self.lc_state_list is not None:
+                        if self.prev_lc_state_list is None or self.prev_lc_state_list[0] == self.lc_state_list[0]:
+                            self.lc_state_list_remain_cnt += 1
+                            self.prev_lc_state_list = self.lc_state_list
+
                 break
         
         

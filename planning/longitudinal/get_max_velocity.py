@@ -7,7 +7,7 @@ class GetMaxVelocity:
         self.RH = ros_handler
         self.global_poses = []
         self.global_velocitys = []
-        self.cut_dist = 50
+        self.cut_dist = 30
         self.set_values(global_path_name)
 
     def set_values(self,global_path_name):
