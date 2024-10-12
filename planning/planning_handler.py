@@ -276,3 +276,16 @@ def has_different_lane_number(prev, current, cnt):
         return True
     else:
         return False
+
+def check_avoidance_gap_over(lc_state, avoidance_gap, l_width, r_width):
+    if lc_state == 'left':
+        if avoidance_gap >= l_width:
+            return True
+        else:
+            return False
+    else:
+        if avoidance_gap >= r_width:
+            return True
+        else:
+            return False
+    

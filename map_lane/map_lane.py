@@ -11,6 +11,7 @@ from local_path_test import LocalPathTest
 from hd_map.map import MAP
 from libs.lanelet_handler import LaneletHandler
 
+
 def signal_handler(sig, frame):
     sys.exit(0)
 
@@ -102,18 +103,37 @@ class MapLane():
         iou = inter_area / (box1_area + box2_area - inter_area)
         return iou
 
-    def lidar_radar_matching(self, lidar_objects, radar_objects,iou_threshold = 0.05, size_x = 4.365, size_y = 1.85):
-        iou_matrix = np.zeros((len(lidar_objects), len(radar_objects)))
+    def caculate_distance(self, obj1, obj2):
+        x1, y1, heading1 = obj1[1], obj1[2], obj1[4]
+        x2, y2, heading2 = obj2[1], obj2[2], obj2[4]
+        distance = np.sqrt((x1-x2)**2 + (y1-y2)**2)
+        return distance
 
+
+    def lidar_radar_matching(self, lidar_objects, radar_objects,distance_threshold = 5.0, iou_threshold = 0.05, size_x = 4.365, size_y = 1.85):
+        iou_matrix = np.zeros((len(lidar_objects), len(radar_objects)))
+        dist_matrix = np.zeros((len(lidar_objects), len(radar_objects)))
+
+        # for i, lidar_obj in enumerate(lidar_objects):
+        #     for j, radar_obj in enumerate(radar_objects):
+        #         iou = self.calculate_iou(lidar_obj, radar_obj, size_x, size_y)
+        #         if iou >= iou_threshold:
+        #             iou_matrix[i, j] = iou
+        #         else:
+        #             iou_matrix[i, j] = -10e5
+        
         for i, lidar_obj in enumerate(lidar_objects):
             for j, radar_obj in enumerate(radar_objects):
-                iou = self.calculate_iou(lidar_obj, radar_obj, size_x, size_y)
-                if iou >= iou_threshold:
-                    iou_matrix[i, j] = iou
+                dist = self.llh.distance(lidar_obj[1], lidar_obj[2], radar_obj[1],radar_obj[2])
+                if dist <= distance_threshold:
+                    dist_matrix[i, j] = dist
                 else:
-                    iou_matrix[i, j] = -10e5
+                    dist_matrix[i, j] = 10e5
 
-        row_ind, col_ind = linear_sum_assignment(-iou_matrix)
+
+
+        # row_ind, col_ind = linear_sum_assignment(-iou_matrix)
+        row_ind, col_ind = linear_sum_assignment(dist_matrix)
 
         matched_pairs = list(zip(row_ind, col_ind))
         matched_pairs_filtered = []
@@ -121,7 +141,7 @@ class MapLane():
         radar_matched = []
         # combined_object = []
         for l, r in matched_pairs:
-            if iou_matrix[l][r] >= iou_threshold:
+            if dist_matrix[l][r] <= distance_threshold:
                 lidar_objects[l][3] = radar_objects[r][3]
                 matched_pairs_filtered.append((l, r))
                 # lidar_matched.append(l)

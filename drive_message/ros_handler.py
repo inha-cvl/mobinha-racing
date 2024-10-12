@@ -148,7 +148,7 @@ class ROSHandler():
             object_info.position.x = obj.position.x
             object_info.position.y = obj.position.y
             object_info.velocity.data = float(obj.orientation.x)
-            object_info.heading.data = float(obj.orientation.y)
+            object_info.heading.data = obj.orientation.y
             object_info.distance.data = float(obj.orientation.z)
             self.detection_data.objects.append(object_info)
 

@@ -52,14 +52,12 @@ class Planning():
         self.first_lap = 0
         self.slow_mode = 'OFF'
         self.pit_stop_decel = 'OFF'
-        
 
         self.local_action_set = []
         self.prev_lap = now_lap
         self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
-        self.selected_lane = 3
+        self.selected_lane = rospy.get_param("/selected_lane")
         self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
-
         
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
         self.bank_list = ['1', '10', '11', '12', '13', '14', '37', '40', '41', '42', '43', '44', '45', '46', '47', '54', '59', '60']
@@ -103,9 +101,11 @@ class Planning():
                 self.prev_lane_number = self.RH.current_lane_number    
             race_mode = self.prev_race_mode
             planning_state = 'INIT'
+            self.prev_race_mode = self.race_mode
         if self.start_pose_initialized == True:
             planning_state = 'MOVE'
 
+       
         return planning_state, race_mode
         
     def set_start_pos(self, race_mode):
@@ -165,8 +165,8 @@ class Planning():
         front_object = []
         self.lane_change_state = 'straight'
 
-        long_avoidance_gap = 30
-        lat_avoidance_gap = 3.4
+        long_avoidance_gap = 37
+        lat_avoidance_gap = 3.5
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -175,7 +175,7 @@ class Planning():
                 obj['s'] = s
                 obj['d'] = d
                 check_object.append(obj)
-                if -1.25 < d < 1.25 and s > -10:
+                if -2.5 < d < 2.5 and s > -10:
                     front_object.append(obj)
                     if s < 100:
                         self.lane_change_state = 'follow'
@@ -204,6 +204,7 @@ class Planning():
                     updated_path = []
                     for point in trim_global_path:
                         x, y = point[0], point[1]
+                        r_width, l_width = point[2], point[3]
                         x_normvec, y_normvec = point[4], point[5]
                         updated_point = point.copy()
                         for obj in front_object:
@@ -211,14 +212,16 @@ class Planning():
                             if overtakng:
                                 around_detected = ph.check_around(obj, check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-                                if not around_detected and not bsd_detected:
+                                avoidance_gap = lat_avoidance_gap + abs(obj['d'])
+                                lat_avoidance_overed = ph.check_avoidance_gap_over(lc_state, avoidance_gap, l_width, r_width)
+                                if not around_detected and not bsd_detected and not lat_avoidance_overed:
                                     path_updated = True
                                     lc_state_idx = i
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
                                     obj_radius = long_avoidance_gap + (obj['v'] / 5)  # 앞쪽 반경
                                     distance_to_obj = ph.distance(x, y, obj_x, obj_y)
                                     if distance_to_obj <= obj_radius:
-                                        shift_value = lat_avoidance_gap if lc_state == 'left' else -lat_avoidance_gap
+                                        shift_value = avoidance_gap if lc_state == 'left' else -avoidance_gap
                                         generated_point = (x + (-1 * x_normvec) * shift_value, y + (-1 * y_normvec) * shift_value)
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
@@ -248,7 +251,7 @@ class Planning():
                 acc_object_d_v = []
                 for obj in object_list:
                     s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
-                    if s> 0 and -1 < d < 1:
+                    if s> 0 and -2.5 < d < 2.5:
                         acc_object_d_v.append([float(obj['dist']), float(obj['v'])])
                 min_s = 200
                 obj_v = 200

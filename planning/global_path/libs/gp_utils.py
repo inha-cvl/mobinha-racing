@@ -559,6 +559,11 @@ def get_lane_width(id):
     l_n, r_n = get_neighbor(id)
     if l_n != None or r_n != None:
         lane_num = lanelets[id]['laneNo']
+        if id in ['59', '10']:
+            l_w = h_w
+            r_w = lane_width+h_w
+        elif id in ['68', '28', '29']:
+            l_w = r_w = h_w
         if lane_num == 1:
             l_w = h_w
             r_w = (2*lane_width)+h_w
