@@ -162,15 +162,14 @@ class Planning():
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
             l_th, r_th = ph.get_lr_threshold(trim_global_path, s)  
-            if  r_th < d <l_th:
-                if (s > 1 and (obj['type'] in [0, 4])) or (1 >= s > -15 and (obj['type'] in [0,2])):
-                    obj['s'] = s
-                    obj['d'] = d
-                    check_object.append(obj)
-                    if -1.25 < d < 1.25:
-                        front_object.append(obj)
-                        if obj['type'] in [0, 4] and s < 100:
-                            self.lane_change_state = 'follow'
+            if  r_th < d <l_th and s > -15:
+                obj['s'] = s
+                obj['d'] = d
+                check_object.append(obj)
+                if -1.25 < d < 1.25:
+                    front_object.append(obj)
+                    if s < 100:
+                        self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
 

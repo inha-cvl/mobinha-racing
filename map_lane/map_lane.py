@@ -102,7 +102,7 @@ class MapLane():
         iou = inter_area / (box1_area + box2_area - inter_area)
         return iou
 
-    def lidar_radar_matching(self, lidar_objects, radar_objects,iou_threshold = 0.1, size_x = 4.365, size_y = 1.85):
+    def lidar_radar_matching(self, lidar_objects, radar_objects,iou_threshold = 0.05, size_x = 4.365, size_y = 1.85):
         iou_matrix = np.zeros((len(lidar_objects), len(radar_objects)))
 
         for i, lidar_obj in enumerate(lidar_objects):
@@ -115,8 +115,6 @@ class MapLane():
 
         row_ind, col_ind = linear_sum_assignment(-iou_matrix)
 
-        print("radar objects : ", radar_objects)
-        print("lidar objects : " , lidar_objects)
         matched_pairs = list(zip(row_ind, col_ind))
         matched_pairs_filtered = []
         # lidar_matched = []
@@ -129,8 +127,10 @@ class MapLane():
                 # lidar_matched.append(l)
                 radar_matched.append(r)
         
-        
-        print(matched_pairs_filtered)
+        if len(matched_pairs_filtered) == 0:
+            print(matched_pairs_filtered)
+            print("radar objects : ", radar_objects)
+            print("lidar objects : " , lidar_objects)
         # lidar_matched.sort(reverse=True)
         # for index in lidar_matched:
         #     del lidar_objects[index]
@@ -147,7 +147,8 @@ class MapLane():
             radar_object[0] = 2
             lidar_objects.append(radar_object)
 
-        print("final objects :",lidar_objects)
+        if len(matched_pairs_filtered) == 0:
+            print("final objects :",lidar_objects)
         return lidar_objects, matched_pairs_filtered
         
 

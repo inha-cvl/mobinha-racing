@@ -53,7 +53,7 @@ class ROSHandler():
                 else:
                     obj_vel = velocity + self.est_veh_spd
                 # obj = [ro.relPosX.data+2.325, ro.relPosY.data, heading, obj_vel, ro.alvAge, ro.qualLvl.data]
-                obj = [ro.relPosX.data, ro.relPosY.data, heading, obj_vel, int(ro.alvAge.data), int(ro.qualLvl.data)]
+                obj = [ro.relPosX.data+2.35, ro.relPosY.data, heading, obj_vel, int(ro.alvAge.data), int(ro.qualLvl.data)]
                 radar_objects.append(obj)
         self.radar_objects = radar_objects
 
