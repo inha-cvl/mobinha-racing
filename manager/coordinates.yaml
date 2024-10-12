@@ -8,4 +8,4 @@ lane2_goal_coordinate: [797.923, -752.852]
 lane3_goal_coordinate: [801.390, -751.324]
 now_lap: 0
 selected_lane: 3
-max_velocity: 49
+max_velocity: 48

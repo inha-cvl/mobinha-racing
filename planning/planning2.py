@@ -184,7 +184,7 @@ class Planning():
                         self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
-        
+
         if self.race_mode == 'pit_stop':
             return final_global_path
         
@@ -373,8 +373,8 @@ class Planning():
                 acc_vel = self.calculate_acc_vel(updated_path, interped_vel)
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
-                    limit_vel = 28.5/3.6  #TODO: 0lap limit velocity
+                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                    limit_vel = 28/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)
