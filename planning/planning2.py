@@ -41,6 +41,8 @@ class Planning():
         self.lane_change_state = False
         self.lc_state_list = []
         self.lc_state_time = None
+        self.prev_lane_number = self.RH.current_lane_number
+        self.diffrent_lane_cnt = 0
 
         #kcity = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITY
 
@@ -93,7 +95,14 @@ class Planning():
         elif self.RH.kiapi_signal == 4 and self.race_mode != 'slow_off':
             race_mode = self.prev_race_mode
             self.slow_mode = 'OFF'
-
+        elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number, self.diffrent_lane_cnt):
+            self.diffrent_lane_cnt += 1
+            if self.diffrent_lane_cnt > 9:
+                self.diffrent_lane_cnt = 0
+                self.start_pose_initialized = False
+                self.prev_lane_number = self.RH.current_lane_number    
+            race_mode = self.prev_race_mode
+            planning_state = 'INIT'
         if self.start_pose_initialized == True:
             planning_state = 'MOVE'
 
@@ -156,17 +165,17 @@ class Planning():
         front_object = []
         self.lane_change_state = 'straight'
 
-        long_avoidance_gap = 50
+        long_avoidance_gap = 30
         lat_avoidance_gap = 3.4
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
             l_th, r_th = ph.get_lr_threshold(trim_global_path, s)  
-            if  r_th < d <l_th and s > -15:
+            if  r_th < d <l_th and s > -50:
                 obj['s'] = s
                 obj['d'] = d
                 check_object.append(obj)
-                if -1.25 < d < 1.25:
+                if -1.25 < d < 1.25 and s > -10:
                     front_object.append(obj)
                     if s < 100:
                         self.lane_change_state = 'follow'
@@ -183,8 +192,7 @@ class Planning():
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
                 closest_info = trim_global_path[closest_obj_idx_on_path]
-                if not ph.has_different_lane_number(self.RH.lane_number_stack):
-                    self.lc_state_list = ph.get_lane_change_state(closest_info[3], closest_info[2])
+                self.lc_state_list = ph.get_lane_change_state(closest_info[3], closest_info[2])
                 break
         
         
@@ -201,19 +209,22 @@ class Planning():
                         for obj in front_object:
                             overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                             if overtakng:
-                                around_detected = ph.check_around(obj,check_object, lc_state)
+                                around_detected = ph.check_around(obj, check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
                                 if not around_detected and not bsd_detected:
                                     path_updated = True
                                     lc_state_idx = i
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
-                                    obj_radius = long_avoidance_gap + (obj['v'] / 5)
-                                    if ph.distance(x, y, obj_x, obj_y) <= obj_radius:
+                                    obj_radius = long_avoidance_gap + (obj['v'] / 5)  # 앞쪽 반경
+                                    distance_to_obj = ph.distance(x, y, obj_x, obj_y)
+                                    if distance_to_obj <= obj_radius:
                                         shift_value = lat_avoidance_gap if lc_state == 'left' else -lat_avoidance_gap
                                         generated_point = (x + (-1 * x_normvec) * shift_value, y + (-1 * y_normvec) * shift_value)
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
                         updated_path.append(updated_point)
+
+
 
         if path_updated:
             self.lane_change_state = self.lc_state_list[lc_state_idx]
@@ -310,7 +321,6 @@ class Planning():
 
         return acc_vel
 
-
     
     def initd(self):
         rate = rospy.Rate(20)
@@ -349,15 +359,9 @@ class Planning():
                 
                 acc_vel = self.calculate_acc_vel(updated_path, interped_vel)
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
-
-                # planned_velocity = self.gmv.smooth_velocity_plan2(interped_vel, self.prev_target_vel, road_max_vel, R_list)
-                # if len(planned_velocity) > 2:
-                #     planned_velocity = planned_velocity[1]
-                # else:
-                #     planned_velocity = self.prev_target_vel
                                 
-                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
-                    limit_vel = 29/3.6  #TODO: 0lap limit velocity
+                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                    limit_vel = 28.5/3.6  #TODO: 0lap limit velocity
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

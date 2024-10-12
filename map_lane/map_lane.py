@@ -128,9 +128,10 @@ class MapLane():
                 radar_matched.append(r)
         
         if len(matched_pairs_filtered) == 0:
-            print(matched_pairs_filtered)
-            print("radar objects : ", radar_objects)
-            print("lidar objects : " , lidar_objects)
+            pass
+            #print(matched_pairs_filtered)
+            #print("radar objects : ", radar_objects)
+            #print("lidar objects : " , lidar_objects)
         # lidar_matched.sort(reverse=True)
         # for index in lidar_matched:
         #     del lidar_objects[index]
@@ -148,7 +149,8 @@ class MapLane():
             lidar_objects.append(radar_object)
 
         if len(matched_pairs_filtered) == 0:
-            print("final objects :",lidar_objects)
+            pass
+            #print("final objects :",lidar_objects)
         return lidar_objects, matched_pairs_filtered
         
 

@@ -34,9 +34,9 @@ class ROSHandler():
         self.current_lat_accel = 0
         self.current_long_accel = 0
         self.current_lane_id = None
+        self.current_lane_number = 0
         self.lap_count = 0
         self.map_name = None
-        self.lane_number_stack = []
 
 
     def set_publisher_protocol(self):
@@ -64,11 +64,7 @@ class ROSHandler():
         
     def lane_data_cb(self, msg: LaneData):
         self.current_lane_id = str(msg.currentLane.id.data)
-        lane_number =  int(msg.currentLane.laneNumber.data)
-        if len(self.lane_number_stack) >= 10:
-            self.lane_number_stack.pop(0)  # 10개를 유지하기 위해 가장 오래된 값을 제거
-        self.lane_number_stack.append(lane_number)
-
+        self.current_lane_number =  int(msg.currentLane.laneNumber.data)
 
     
     def vehicle_state_cb(self, msg):

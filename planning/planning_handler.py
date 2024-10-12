@@ -154,7 +154,7 @@ def calculate_R_list2(array, base_offset=2, step_size=40):
     return Rs
 
 #best
-def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing_factor=15, interp_points=4):
+def interpolate_path(final_global_path, min_length=100, sample_rate=3, smoothing_factor=15, interp_points=3):
     local_path = np.array([(point[0], point[1]) for point in final_global_path])
     local_vel = [point[10] for point in final_global_path]
 
@@ -178,7 +178,7 @@ def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing
 
     return path_interp_list, R_list, vel_interp
 
-def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,ttc_threshold = 13):
+def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,ttc_threshold = 15):
     rel_vel = ego_vel-obj_vel
     if rel_vel > 0:
         ttc = obj_dist/rel_vel
@@ -229,7 +229,7 @@ def get_lane_change_state(l_width, r_width):
     return lane_change_state
 
 
-def check_around(xobj, yobjs, lc_state, radius = 7):
+def check_around(xobj, yobjs, lc_state, radius = 10):
     around = False
     for yobj in yobjs:
         if xobj['s'] - radius < yobj['s'] < xobj['s'] + radius:
@@ -271,6 +271,8 @@ def get_lr_threshold(trim_global_path, s):
     return l_th, r_th
 
 
-def has_different_lane_number(lane_number_stack):
-    # 스택 내에 다른 값이 있으면 True를 반환
-    return len(set(lane_number_stack)) > 1
+def has_different_lane_number(prev, current, cnt):
+    if cnt < 10 and prev != current:
+        return True
+    else:
+        return False
