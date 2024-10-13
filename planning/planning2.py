@@ -144,12 +144,17 @@ class Planning():
         start_time = time.time()
         point = self.goal_points[self.selected_lane-1]
         name = f'to_goal{self.selected_lane}'
-        gpp_result, gp, gp_rviz = self.gpp.get_shortest_path(self.RH.local_pos, point, name)
-        if gpp_result:
-            self.to_goal_path = gp
-            self.start_pose_initialized = False
-            rospy.loginfo(f'[Planning] to_goal Global Path set took {round(time.time()-start_time, 4)} sec')
-        
+        while 1:
+            try:
+                gpp_result, gp, gp_rviz = self.gpp.get_shortest_path(self.RH.local_pos, point, name)
+                if gpp_result:
+                    self.to_goal_path = gp
+                    self.start_pose_initialized = False
+                    rospy.loginfo(f'[Planning] to_goal Global Path set took {round(time.time()-start_time, 4)} sec')
+                    break
+            except:
+                pass
+
     def check_bank(self):
         if self.RH.current_lane_id in self.bank_list:
             return True
@@ -374,7 +379,7 @@ class Planning():
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
                 if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 28/3.6  #TODO: 0lap limit velocity
+                    limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

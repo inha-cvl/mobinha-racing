@@ -74,24 +74,7 @@ class ROSHandler():
         rospy.Subscriber('/nav_health', Int8, self.sensor_health_cb)
         rospy.Subscriber('/lid_health', Int8, self.sensor_health_cb)
 
-        
-        # If Synnerex working
-        # rospy.Subscriber('/ublox/navpvt', NavPVT, self.nav_pvt_cb)
         rospy.Subscriber('/best/pose', Pose, self.best_callback)
-
-        # if Synnerex rtk.sh not working
-        #rospy.Subscriber('/fix',NavSatFix, self.nav_sat_fix_cb )
-        #rospy.Subscriber('/heading', QuaternionStamped, self.heading_cb)
-
-        # If use Novatel
-        # rospy.Subscriber('/novatel/oem7/inspva', INSPVA, self.novatel_inspva_cb)
-
-        # If use SBG
-        # rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_cb)
-        #rospy.Subscriber('/imu/nav_sat_fix', NavSatFix, self.nav_sat_fix_cb)
-        #rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.ekf_euler_cb)
-        #rospy.Subscriber('/sbg/ekf_quat', SbgEkfQuat, self.ekf_quat_cb)
-        # rospy.Subscriber('/sbg/gps_hdt', SbgGpsHdt, self.gps_hdt_cb)
 
 
     def can_output_cb(self, msg):
@@ -113,9 +96,7 @@ class ROSHandler():
         elif mode == 0 and self.vehicle_state.mode.data >= 1:
             self.can_input.EPS_En.data = 0
             self.can_input.ACC_En.data = 0
-        self.can_input.Turn_Signal.data = signal
-        
-
+        self.can_input.Turn_Signal.data = signal   
             
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.laneNumber.data != 0:
@@ -226,9 +207,6 @@ class ROSHandler():
         self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
         self.system_status.lapCount.data = self.lap_cnt
 
-
-    
-    
     def publish(self):
         if len(self.local_pose) > 0:
             self.lap_cnt, self.lap_flag = check_lap_count(self.lap_cnt, self.local_pose, self.goal_point, 9, self.lap_flag)
