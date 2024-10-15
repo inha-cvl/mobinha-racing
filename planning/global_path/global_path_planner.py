@@ -2,7 +2,6 @@ import os
 import copy
 import csv
 import numpy as np
-import time 
 
 import global_path.libs.gp_utils as gput
 import global_path
@@ -59,7 +58,6 @@ class GlobalPathPlanner():
             shortest_path_id = ([s_node], 0)
         else:
             shortest_path_id = gput.dijkstra(s_node, g_node)
-        
 
         if shortest_path_id is not None:
             shortest_path_id = shortest_path_id[0]
@@ -68,14 +66,13 @@ class GlobalPathPlanner():
             final_ids = final_ids[0:-20]
             final_vs = final_vs[0:-20]
             if name != 'pit_stop':
-                more_path, _, more_ids, more_vs = gput.get_straight_path(goal_ll, 800, '', 'Right')
+                more_path, _, more_ids, more_vs = gput.get_straight_path(goal_ll, 400, '', 'Right')
                 final_path.extend(more_path)
                 final_ids.extend(more_ids)
                 final_vs.extend(more_vs)
             final_tr = []
             final_path = self.interpolate_path(final_path)
             copy_final_path = copy.deepcopy(final_path)
-            vel_p, accel_p, dist_p = gput.adjust_velocity_profile(final_vs)
             s = 0
             window_size = 15
             for i,f in enumerate(final_path):
@@ -83,19 +80,34 @@ class GlobalPathPlanner():
                 lw_left, lw_right = gput.get_lane_width(final_ids[i])
                 A, B, theta = gput.calc_norm_vec(before_after_pts)
                 Rk = gput.calc_kappa(f, before_after_pts)
-                vx = final_vs[i]/3.6
+                vx = gput.convert_kmh_to_ms(final_vs[i])
                 ax = 1.5
                 final_tr.append([f[0], f[1], lw_right, lw_left, A, B, 0, s, theta, Rk, vx, ax])
                 s += 1            
-            #path_viz = gput.PathViz(final_path, (255/255, 196/255, 18/255, 0.5))
             self.to_csv(name, final_tr)
-            return True, final_tr, None
+            return True, final_tr
         else:
-            return False, [], None
+            return False, []
 
     def get_remain_distance(self, local_pose):
         if self.global_path is None:
             return 99999
         min_idx = gput.find_nearest_idx(self.global_path, local_pose)
         return (len(self.global_path)-min_idx)
-    
+
+    def get_change_point_caution(self, local_path, local_pose, current_vel, current_lane_num):
+        change_dist = int(current_vel*3.6)
+        change_dist = change_dist if change_dist < len(local_path)-1 else len(local_path)
+        c_idnidx = gput.lanelet_matching(local_path[change_dist])
+        e_idnidx = gput.lanelet_matching(local_pose)
+        change_lane_num = gput.current_lane_number(c_idnidx[0])
+        if c_idnidx is not None and e_idnidx is not None:
+            if c_idnidx[0] != e_idnidx[0] and change_lane_num != current_lane_num:
+                if change_lane_num < current_lane_num:
+                    return True, 'left', change_dist
+                else:
+                    return True, 'right', change_dist
+            else:
+                return False, None, None
+        else:
+            return False, None, None

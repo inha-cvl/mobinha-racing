@@ -38,6 +38,10 @@ class Planning():
         
         self.race_mode = 'to_goal'
         self.prev_race_mode = self.race_mode
+        
+        self.to_goal_path = None
+        self.pit_stop_path = None
+        
         self.lane_change_state = False
         self.lc_state_list = []
         self.prev_lc_state_list = None
@@ -96,7 +100,7 @@ class Planning():
             self.slow_mode = 'OFF'
         elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number) and self.race_mode != 'pit_stop':
             self.diffrent_lane_cnt += 1
-            if self.diffrent_lane_cnt > 10:
+            if self.diffrent_lane_cnt > 5:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 self.prev_lane_number = self.RH.current_lane_number   
@@ -112,29 +116,23 @@ class Planning():
         return planning_state, race_mode
         
     def set_start_pos(self, race_mode):
-        start_time = time.time()
-        if race_mode == 'to_goal':
-            global_path = copy.deepcopy(self.to_goal_path)
-        elif race_mode == 'pit_stop':
+        if race_mode == 'pit_stop':
             global_path = copy.deepcopy(self.pit_stop_path)
+        else:
+            global_path = copy.deepcopy(self.to_goal_path)
         
-        self.now_idx = 0
-        idx = ph.find_closest_index(global_path, self.RH.local_pos)
-
-        if idx is not None:
+        if global_path is not None:
             self.gmv = GetMaxVelocity(self.RH, race_mode)
             self.start_pose_initialized = True
             self.first_initialized = True
             self.global_path = global_path
-            self.now_idx = idx
             g_path = [(float(point[0]), float(point[1])) for point in global_path]
             self.RH.publish_global_path(g_path)
             self.gpp.global_path = g_path
-            rospy.loginfo(f'[Planning] {race_mode} Start position set took {round(time.time()-start_time, 4)} sec')
     
     def planning_pit_stop(self):
         start_time = time.time()
-        gpp_result, gp, gp_rviz = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
+        gpp_result, gp = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
         if gpp_result:
             self.pit_stop_path = gp
             self.start_pose_initialized = False
@@ -143,17 +141,11 @@ class Planning():
     def planning_to_goal(self):
         start_time = time.time()
         point = self.goal_points[self.selected_lane-1]
-        name = f'to_goal{self.selected_lane}'
-        while 1:
-            try:
-                gpp_result, gp, gp_rviz = self.gpp.get_shortest_path(self.RH.local_pos, point, name)
-                if gpp_result:
-                    self.to_goal_path = gp
-                    self.start_pose_initialized = False
-                    rospy.loginfo(f'[Planning] to_goal Global Path set took {round(time.time()-start_time, 4)} sec')
-                    break
-            except:
-                pass
+        gpp_result, gp = self.gpp.get_shortest_path(self.RH.local_pos, point, 'to_goal')
+        if gpp_result:
+            self.to_goal_path = gp
+            self.start_pose_initialized = False
+            rospy.loginfo(f'[Planning] to_goal Global Path set took {round(time.time()-start_time, 4)} sec')
 
     def check_bank(self):
         if self.RH.current_lane_id in self.bank_list:
@@ -179,20 +171,18 @@ class Planning():
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
             l_th, r_th = ph.get_lr_threshold(trim_global_path, s)  
-            if  r_th < d <l_th and s > -50:
+            if  r_th < d <l_th and -50 < s:
                 obj['s'] = s
                 obj['d'] = d
+                obj['ttc'] = ph.calc_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                 check_object.append(obj)
-                if -2.5 < d < 2.5 and s > -10:
+                if -2.6 < d < 2.6 and -10 < s :
                     front_object.append(obj)
                     if s < 100:
                         self.lane_change_state = 'follow'
 
         self.RH.publish_target_object(check_object)
 
-        if self.race_mode == 'pit_stop':
-            return final_global_path
-        
         front_object = sorted(front_object, key=lambda x: x['s'])
 
         overtaking_required = False
@@ -203,19 +193,19 @@ class Planning():
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
                 closest_info = trim_global_path[closest_obj_idx_on_path]
-                if self.lc_state_list_remain_cnt < 5:
-                    self.lc_state_list = ph.get_lane_change_state(obj['d'], closest_info[3], closest_info[2])
-                    if self.lc_state_list is not None:
+                self.lc_state_list = ph.get_lane_change_state(obj['d'], closest_info[3], closest_info[2])
+                if self.lc_state_list is not None:
+                    if self.lc_state_list_remain_cnt < 5:
                         if self.prev_lc_state_list is None or self.prev_lc_state_list[0] == self.lc_state_list[0]:
                             self.lc_state_list_remain_cnt += 1
                             self.prev_lc_state_list = self.lc_state_list
-
+                        else:
+                            self.lc_state_list = self.prev_lc_state_list
                 break
-        
         
         path_updated = False
         lc_state_idx = 9
-        if overtaking_required and self.lc_state_list is not None:
+        if self.race_mode != 'pit_stop' and overtaking_required and self.lc_state_list is not None:
             for i, lc_state in enumerate(self.lc_state_list):
                 if not path_updated:
                     updated_path = []
@@ -242,8 +232,24 @@ class Planning():
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
                         updated_path.append(updated_point)
-
-
+        else:
+            change_caution, lc_state, change_idx = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
+            bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+            if change_caution and bsd_detected:
+                change_radius = int((self.RH.current_velocity*3.6)/2)
+                shift_value = -3.25 if lc_state == 'left' else 3.25
+                for i, point in enumerate(trim_global_path):
+                    if change_idx-15 < i < change_idx+change_radius:
+                        generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
+                        final_global_path[i][0] = generated_path[0]
+                        final_global_path[i][1] = generated_path[1]
+                
+                _, _, change_idx = self.gpp.get_change_point_caution(self.global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
+                for point in self.global_path[change_idx-5:change_idx+change_radius]:
+                    generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
+                    point[0] = generated_path[0]
+                    point[1] = generated_path[1]
+                    
         if path_updated:
             self.lane_change_state = self.lc_state_list[lc_state_idx]
             for i, point in enumerate(trim_global_path):
@@ -251,6 +257,7 @@ class Planning():
                     obj_radius = long_avoidance_gap + (obj['v'] / 5)
                     if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
                         final_global_path[i] = updated_path[i]
+                        
             
         return final_global_path
     
@@ -376,9 +383,10 @@ class Planning():
                 interped_path, R_list, interped_vel = ph.interpolate_path(updated_path, min_length=int(LOCAL_PATH_LENGTH/2))
                 
                 acc_vel = self.calculate_acc_vel(updated_path, interped_vel)
+
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel
@@ -387,11 +395,11 @@ class Planning():
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
 
-                # res = ph.check_lane_deaprture(interped_path, self.RH.local_pos)
-                # if res == 'Warning':
-                #     target_velocity = max(0, self.prev_target_vel - 0.5)
-                # elif res == 'Danger':
-                #     target_velocity = 0
+                res = ph.check_lane_deaprture(interped_path, self.RH.local_pos)
+                if res == 'Warning':
+                    target_velocity = max(0, self.prev_target_vel - 0.5)
+                elif res == 'Danger':
+                    target_velocity = 0
 
                 self.prev_target_vel = target_velocity
                 self.RH.publish2(interped_path, R_list, interped_vel, target_velocity, self.race_mode, self.lane_change_state)

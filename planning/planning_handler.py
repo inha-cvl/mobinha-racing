@@ -3,7 +3,6 @@ import math
 import copy
 
 from scipy.interpolate import splprep, splev, interp1d
-from shapely.geometry import Point, Polygon
 
 
 def distance(x1, y1, x2, y2):
@@ -178,13 +177,13 @@ def interpolate_path(final_global_path, min_length=100, sample_rate=4, smoothing
 
     return path_interp_list, R_list, vel_interp
 
-def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,ttc_threshold = 15):
+def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,max_th= 15):
     rel_vel = ego_vel-obj_vel
     if rel_vel > 0:
         ttc = obj_dist/rel_vel
     else:
         ttc = float('inf')
-    if ttc < ttc_threshold or obj_vel < 3:
+    if (ttc <= max_th) or obj_vel < 2:
         return True
     else:
         return False
