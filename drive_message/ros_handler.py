@@ -7,6 +7,7 @@ from geometry_msgs.msg import PoseArray, Pose, Pose2D, QuaternionStamped
 from ublox_msgs.msg import NavPVT
 from std_msgs.msg import Header, Float32, Bool, Int8
 from sensor_msgs.msg import NavSatFix
+from nav_msgs.msg import Odometry
 # from sbg_driver.msg import SbgEkfNav, SbgEkfEuler, SbgEkfQuat, SbgGpsHdt
 
 # from novatel_oem7_msgs.msg import INSPVA
@@ -71,10 +72,11 @@ class ROSHandler():
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb) # Obstacles
 
         # Sensor Health
-        rospy.Subscriber('/nav_health', Int8, self.sensor_health_cb)
+        # rospy.Subscriber('/nav_health', Int8, self.sensor_health_cb)
         rospy.Subscriber('/lid_health', Int8, self.sensor_health_cb)
-
+        rospy.Subscriber('/rtk_health', Int8, self.sensor_health_cb)
         rospy.Subscriber('/best/pose', Pose, self.best_callback)
+        rospy.Subscriber('/kiss/odometry', Odometry, self.best_callback2)
 
 
     def can_output_cb(self, msg):
@@ -137,16 +139,34 @@ class ROSHandler():
         self.system_status.systemHealth.data = msg.data
 
 # ~~~~~~~~~~~~~~~~~~~ Positions ~~~~~~~~~~~~~~~~~~~~~~ #
-    
+
     def best_callback(self, msg):
-        self.vehicle_state.header = Header()
-        self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.enu.x = msg.position.x
-        self.vehicle_state.enu.y = msg.position.y
-        self.vehicle_state.position.x = msg.orientation.x
-        self.vehicle_state.position.y = msg.orientation.y
-        self.local_pose = (msg.position.x,msg.position.y)
-        self.vehicle_state.heading.data = msg.orientation.z%360
+        if self.system_status.systemHealth.data == 0:
+            self.vehicle_state.header = Header()
+            self.vehicle_state.header.stamp = rospy.Time.now()
+            self.vehicle_state.enu.x = msg.position.x
+            self.vehicle_state.enu.y = msg.position.y
+            self.vehicle_state.position.x = msg.orientation.x
+            self.vehicle_state.position.y = msg.orientation.y
+            self.local_pose = (msg.position.x,msg.position.y)
+            self.vehicle_state.heading.data = msg.orientation.z%360
+
+
+    
+    def best_callback2(self, msg):
+        if self.system_status.systemHealth.data == 1:
+            self.vehicle_state.header = Header()
+            self.vehicle_state.header.stamp = rospy.Time.now()
+            self.vehicle_state.enu.x = msg.pose.pose.position.x
+            self.vehicle_state.enu.y = msg.pose.pose.position.y
+            # self.vehicle_state.position.x = msg.orientation.x
+            # self.vehicle_state.position.y = msg.orientation.y
+            self.local_pose = (msg.pose.pose.position.x,msg.pose.pose.position.y)
+            _, _, yaw = tf.transformations.euler_from_quaternion([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+            yaw = ((float(math.degrees(yaw)-90))%360)+180
+            # yaw = match_heading(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
+
+            self.vehicle_state.heading.data = yaw
     
     def nav_pvt_cb(self, msg):
         latitude = msg.lat*1e-7

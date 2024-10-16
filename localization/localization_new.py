@@ -375,6 +375,8 @@ class Localization:
             self.localization_sensor_health()
             if self.last_hdg is not None and self.last_pos is not None:
                 self.RH.publish(self.last_hdg, self.last_pos)
+                self.RH.publishPoseStamped(self.last_hdg, self.last_pos)
+                
             rate.sleep()
 
 

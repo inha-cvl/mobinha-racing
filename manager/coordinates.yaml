@@ -6,6 +6,6 @@ goal_coordinate: [635.036, -561.048] # original [494.785, -407.950]
 lane1_goal_coordinate: [794.004, -753.691]
 lane2_goal_coordinate: [797.923, -752.852]
 lane3_goal_coordinate: [801.390, -751.324]
-now_lap: 5
-selected_lane: 2
-max_velocity: 100
+now_lap: 0
+selected_lane: 3
+max_velocity: 50 

@@ -3,10 +3,11 @@ import rospy
 from drive_msgs.msg import *
 from ublox_msgs.msg import NavATT, NavPVT
 from sensor_msgs.msg import Imu, NavSatFix
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, PoseStamped
 from std_msgs.msg import Bool, Int8
 from pyproj import Proj, Transformer
 from ahrs.filters import Madgwick
+from degree2quat import *
 import numpy as np
 
 class ROSHandler():
@@ -73,6 +74,8 @@ class ROSHandler():
         self.q = None
         self.imu_hdg = None
 
+        self.timestamp = rospy.Time(0)
+
     def set_protocol(self):
         rospy.Subscriber('/ublox/navatt', NavATT, self.navatt_cb)
         rospy.Subscriber('/ublox/navpvt', NavPVT, self.navpvt_cb)
@@ -87,6 +90,7 @@ class ROSHandler():
         self.pub_pos = rospy.Subscriber("/position_hack", Bool, self.pos_cb)
 
         self.best_pose_pub = rospy.Publisher('/best/pose', Pose, queue_size=1)
+        self.best_posestamped_pub = rospy.Publisher('/best/poseStamped',PoseStamped, queue_size=10)
         ## Sensot health
         self.nav_health_pub = rospy.Publisher('/nav_health', Int8, queue_size=1)
 
@@ -241,3 +245,21 @@ class ROSHandler():
         pos_msg.orientation.z = heading
         # pos_msg.orientation.w = not used
         self.best_pose_pub.publish(pos_msg)
+
+
+    def publishPoseStamped(self, heading, enu):
+        posarray_msg = PoseStamped()
+        quaternion = heading_to_quaternion(heading)
+        # new_stamp = rospy.Time(self.nav_header.stamp.secs - 1, self.nav_header.stamp.nsecs)
+
+        posarray_msg.header = self.nav_header
+        # posarray_msg.header.stamp = new_stamp
+        posarray_msg.header.stamp = rospy.Time.now()
+        posarray_msg.pose.position.x = enu[0]
+        posarray_msg.pose.position.y = enu[1]
+        posarray_msg.pose.position.z = 0.0
+        posarray_msg.pose.orientation.x = quaternion[0]
+        posarray_msg.pose.orientation.y = quaternion[1]
+        posarray_msg.pose.orientation.z = quaternion[2]
+        posarray_msg.pose.orientation.w = quaternion[3]
+        self.best_posestamped_pub.publish(posarray_msg)
