@@ -261,11 +261,11 @@ class Planning():
                                         updated_point[1] = generated_point[1]
                         updated_path.append(updated_point)
         else: #if BSD detected in following / straight mode, we have to change lane & update global path 
-            change_point_caution = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
+            change_point_caution = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity)
             if change_point_caution is not None :
                 change_caution, lc_state, change_idx = change_point_caution
-                print(change_caution, lc_state)
                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+
                 # if self.change_point_cnt < 3:
                 #     change_caution, lc_state, change_idx = change_point_caution
                 #     #bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
@@ -281,7 +281,7 @@ class Planning():
                 #                     final_global_path[i][0] = generated_path[0]
                 #                     final_global_path[i][1] = generated_path[1]
                     
-                #         change_point_caution  = self.gpp.get_change_point_caution(self.global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
+                #         change_point_caution  = self.gpp.get_change_point_caution(self.global_path, self.RH.local_pos, self.RH.current_velocity)
                 #         if change_point_caution is not None:
                 #             change_caution, lc_state, change_idx = change_point_caution
                 #             for point in self.global_path[change_idx-1:change_idx+change_radius]:
@@ -299,14 +299,8 @@ class Planning():
                 #         self.change_point_state = ['normal', lc_state]
                 # else:
                 if bsd_detected:
-                    self.change_point_state[0] = 'warning'
-            else:
-                if self.change_point_state[0] == 'warning' and self.change_point_cnt > 5:
-                    self.change_point_state[0] = 'normal'
-                    self.change_point_cnt = 0
-                self.change_point_cnt += 1
-
-
+                    self.change_point_state = ['warning', lc_state]
+           
         if path_updated:
             self.lane_change_state = self.lc_state_list[lc_state_idx]
             for i, point in enumerate(trim_global_path):
@@ -354,9 +348,17 @@ class Planning():
    
         else:
             target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, -1)
-
+        
         if self.change_point_state[0] == 'warning':
             target_v_ACC = max(self.prev_target_vel-(stop_vel_decrement*20), -1)
+            bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, self.change_point_state[1])
+            if not bsd_detected:
+                self.change_point_cnt += 1
+                if self.change_point_cnt > 20:
+                    self.change_point_state[0] = 'normal'
+                    target_v_ACC = self.prev_target_vel
+                    self.change_point_cnt = 0
+                    
 
         return target_v_ACC
 
