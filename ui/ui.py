@@ -2,6 +2,7 @@ import sys
 import signal
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import QTimer
+from datetime import datetime
 from PyQt5 import uic
 from functools import partial
 
@@ -37,6 +38,7 @@ class MyApp(QMainWindow, form_class):
         self.kiapi_signal_strings = ['WAIT', 'GO', 'STOP', 'SLOW ON', 'SLOW OFF', 'PIT STOP']
         self.prev_kiapi_signal = 0
         self.prev_system_mode = 0
+        self.start_time = None
 
     def set_widgets(self):
         self.rviz_widget = RvizWidget(self)
@@ -69,9 +71,12 @@ class MyApp(QMainWindow, form_class):
 
         self.can_table_update(self.RH.can_inform)
         self.kiapi_signal_update(self.RH.system_status['kiapi_signal'])
+        self.update_cumulative_time()
+
         
     def system_label_update(self, mode, signal, lane_number, lap_count, planning_mode):
         self.systemLabel1.setText(self.mode_strings[int(mode)])
+
         
         if self.prev_system_mode != int(mode):
             if int(mode)==1:
@@ -92,13 +97,23 @@ class MyApp(QMainWindow, form_class):
                 self.systemLabel2.setStyleSheet("""QLabel {background-color:  rgb(246, 126, 82); border-radius: 5px; color: black;}""")
             else:
                 self.systemLabel2.setStyleSheet("""QLabel {background-color: rgb(252,203,28); border-radius: 5px; color: black;}""")
-        
-        if lane_number >= 4:
-            lane_number = lane_number - 3
        
         self.laneNumberLabel.setText(f"Lane: {lane_number}")
         self.planningModeLabel.setText(f"{planning_mode}")
         self.lapCountLabel.setText(f"Lap: {lap_count}")
+        
+        
+    def update_cumulative_time(self):
+        if self.start_time is not None:
+            time_diff = datetime.datetime.now() - self.start_time
+            hours = time_diff.seconds // 3600
+            minutes = (time_diff.seconds % 3600) // 60
+            seconds = time_diff.seconds % 60
+            milliseconds = time_diff.microseconds // 1000
+
+            formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}:{milliseconds:03}"
+
+            self.timeCountLabel.setText(formatted_time)
     
     def can_table_update(self, can_inform):
         self.canTable.setItem(0, 1, QTableWidgetItem(can_inform['eps_status']))
@@ -114,6 +129,7 @@ class MyApp(QMainWindow, form_class):
                     continue 
                 if i == idx:
                     if i == 1:
+                        self.start_time = datetime.datetime.now()
                         kiapi_button.setStyleSheet(""" QPushButton {background-color: #0066ff;color: black;}""")
                     elif i == 2:
                         kiapi_button.setStyleSheet(""" QPushButton {background-color: rgb(252,36,68);color: black;}""")

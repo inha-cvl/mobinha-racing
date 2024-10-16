@@ -140,8 +140,6 @@ class NGII2LANELET:
         safetysigns = {}
 
         for n, a2_link in tqdm(enumerate(ngii.a2_link), desc="a2_link: ", total=len(ngii.a2_link)):
-            if a2_link.Length == 0:
-                continue
 
             new_id = str(n)
             ori_id = a2_link.ID
@@ -165,6 +163,7 @@ class NGII2LANELET:
             lanelets[new_id]['k'] = k
             lanelets[new_id]['length'] = s[-1]  # a2_link.length
             lanelets[new_id]['laneNo'] = a2_link.LaneNo
+            lanelets[new_id]['roadType'] = int(a2_link.RoadType)
             
             lanelets[new_id]['leftTurn'] = False
             lanelets[new_id]['rightTurn'] = False
@@ -191,25 +190,13 @@ class NGII2LANELET:
             from_node[a2_link.FromNodeID].append(new_id)
 
 
-            if a2_link.LinkType == '1':
-                lanelets[new_id]['intersection'] = True
-            else:
-                lanelets[new_id]['intersection'] = False
-
-            if str(a2_link.LaneNo)[0] == '9':
-                lanelets[new_id]['leftTurn'] = True
-            else:
-                lanelets[new_id]['leftTurn'] = False
-
             if a2_link.MaxSpeed is None or int(a2_link.MaxSpeed) == 0.0:
                 lanelets[new_id]['speedLimit'] = 50
             else:
                 lanelets[new_id]['speedLimit'] = int(a2_link.MaxSpeed)
 
         for a2_link in ngii.a2_link:
-            if a2_link.Length == 0:
-                continue
-
+        
             ori_id = a2_link.ID
             new_id = ori2new[ori_id]
             lanelets[new_id]['adjacentLeft'] = ori2new.get(a2_link.L_LinkID)

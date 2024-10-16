@@ -103,9 +103,9 @@ class GlobalPathPlanner():
         change_lane_num = gput.current_lane_number(c_idnidx[0])
         if c_idnidx is not None and e_idnidx is not None:
             if c_idnidx[0] != e_idnidx[0] and change_lane_num != current_lane_num:
-                if change_lane_num < current_lane_num or change_lane_num == current_lane_num+3:
+                if change_lane_num < current_lane_num:
                     return True, 'left', change_dist
-                elif change_lane_num < current_lane_num or change_lane_num == current_lane_num+5:
+                elif change_lane_num < current_lane_num:
                     return True, 'right', change_dist
             else:
                 return None

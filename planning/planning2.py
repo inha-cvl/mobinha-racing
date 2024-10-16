@@ -7,8 +7,8 @@ sys.path.append(toppath)
 import rospy
 import threading
 import signal
-import csv
 import time
+from datetime import datetime, timedelta
 import copy
 
 from ros_handler import ROSHandler
@@ -64,13 +64,22 @@ class Planning():
 
         self.local_action_set = []
         self.prev_lap = now_lap
-        self.pit_point = rospy.get_param("/pit_stop_zone_coordinate")
+        self.pit_points = [rospy.get_param("/pit_stop_zone1_coordinate"), rospy.get_param("/pit_stop_zone2_coordinate"),rospy.get_param("/pit_stop_zone3_coordinate")]
+        self.pit_point = self.pit_points[0]
         self.selected_lane = rospy.get_param("/selected_lane")
         self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
+        self.goal_point = self.goal_points[2]
         
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
         self.bank_list = ['1','2', '4','5', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42', '47', '48', '58', '59', '60']
     
+    
+
+    def get_kst(self):
+        utc_now = datetime.utcnow()
+        kst_now = utc_now + timedelta(hours=9)
+        return kst_now.strftime('%Y-%m-%d %H:%M:%S')
+        
     def check_planning_state(self):
         planning_state = 'NONE'
         race_mode = self.race_mode
@@ -92,7 +101,7 @@ class Planning():
             else:
                 race_mode = 'to_goal'
             planning_state = 'INIT'
-            self.change_point_state = ['normal', 'sraight']
+            self.change_point_state = ['normal', 'straight']
             self.change_point_cnt = 0
         elif self.RH.kiapi_signal == 5 and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
@@ -140,13 +149,22 @@ class Planning():
             self.RH.publish_global_path(g_path)
             self.gpp.global_path = g_path
     
+    def set_pit_point(self):
+        if self.RH.current_lane_number <= 2:
+            self.pit_point = self.pit_points[0]
+        elif self.RH.current_lane_number == 3:
+            self.pit_point = self.pit_points[1]
+        else:
+            self.pit_point = self.pit_points[2]
+
     def planning_pit_stop(self):
         start_time = time.time()
+        self.set_pit_point()
         gpp_result, gp = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
         if gpp_result:
             self.pit_stop_path = gp
             self.start_pose_initialized = False
-            rospy.loginfo(f'[Planning] pit_stop Global Path set took {round(time.time()-start_time, 4)} sec')
+            rospy.loginfo(f'[{self.get_kst()}] pit_stop set {round(time.time()-start_time, 2)} sec')
     
     def planning_to_goal(self):
         start_time = time.time()
@@ -155,7 +173,7 @@ class Planning():
         if gpp_result:
             self.to_goal_path = gp
             self.start_pose_initialized = False
-            rospy.loginfo(f'[Planning] to_goal Global Path set took {round(time.time()-start_time, 4)} sec')
+            rospy.loginfo(f'[{self.get_kst()}] to_goal set {round(time.time()-start_time, 2)} sec')
 
     def check_bank(self):
         if self.RH.current_lane_id in self.bank_list:
@@ -249,8 +267,8 @@ class Planning():
                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
                 # if self.change_point_cnt < 3:
                 #     change_caution, lc_state, change_idx = change_point_caution
-                #     bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-                #     #bsd_detected = ph.check_bsd(True, True, lc_state)
+                #     #bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+                #     bsd_detected = ph.check_bsd(True, True, lc_state)
                 #     if change_caution and bsd_detected:
                 #         change_radius = int((self.RH.current_velocity*3.6)/2)
                 #         for i, point in enumerate(trim_global_path):

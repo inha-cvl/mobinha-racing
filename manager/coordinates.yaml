@@ -1,11 +1,13 @@
 start_coordinate1: [9.012, -5.795]
 start_coordinate2: [10.043, -1.657]
 start_coordinate3: [10.947, 1.986]
-pit_stop_zone_coordinate: [213.062, -97.438] #[204.972, -83.837] #3 lane 
+pit_stop_zone1_coordinate: [207.856, -97.411]
+pit_stop_zone2_coordinate: [210.721, -95.047]
+pit_stop_zone3_coordinate: [213.651, -92.833]
 goal_coordinate: [635.036, -561.048] # original [494.785, -407.950]
 lane1_goal_coordinate: [794.004, -753.691]
 lane2_goal_coordinate: [797.923, -752.852]
 lane3_goal_coordinate: [801.390, -751.324]
 now_lap: 0
-selected_lane: 3
-max_velocity: 50 
+selected_lane: 1
+max_velocity: 100
