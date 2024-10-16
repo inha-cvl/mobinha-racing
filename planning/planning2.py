@@ -50,6 +50,8 @@ class Planning():
         self.lc_state_time = None
         self.prev_lane_number = self.RH.current_lane_number
         self.diffrent_lane_cnt = 0
+        self.change_point_state = ['normal', 'straight']
+        self.change_point_cnt = 0
 
         #kcity = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITY
 
@@ -67,7 +69,7 @@ class Planning():
         self.goal_points = [ rospy.get_param("/lane1_goal_coordinate"), rospy.get_param("/lane2_goal_coordinate"), rospy.get_param("/lane3_goal_coordinate")]
         
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
-        self.bank_list = ['1', '2', '4','5', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42', '47', '48', '58', '59', '60']
+        self.bank_list = ['1','2', '4','5', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42', '47', '48', '58', '59', '60']
     
     def check_planning_state(self):
         planning_state = 'NONE'
@@ -90,6 +92,8 @@ class Planning():
             else:
                 race_mode = 'to_goal'
             planning_state = 'INIT'
+            self.change_point_state = ['normal', 'sraight']
+            self.change_point_cnt = 0
         elif self.RH.kiapi_signal == 5 and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
             race_mode = 'pit_stop'
@@ -109,10 +113,12 @@ class Planning():
                 self.start_pose_initialized = False
                 self.prev_lane_number = self.RH.current_lane_number   
                 self.lc_state_list_remain_cnt = 0
-                self.prev_lc_state_list = None 
+                self.prev_lc_state_list = None
             race_mode = self.prev_race_mode
             planning_state = 'INIT'
             self.prev_race_mode = self.race_mode
+            self.change_point_state =[ 'normal', 'straight']
+            self.change_point_cnt = 0
         if self.start_pose_initialized == True:
             planning_state = 'MOVE'
 
@@ -170,7 +176,7 @@ class Planning():
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 37
-        lat_avoidance_gap = 3.5
+        lat_avoidance_gap = 4
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -228,7 +234,7 @@ class Planning():
                                     path_updated = True
                                     lc_state_idx = i
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
-                                    obj_radius = long_avoidance_gap + (obj['v'] / 5)  # 앞쪽 반경
+                                    obj_radius = long_avoidance_gap + (obj['v'] / 5) 
                                     distance_to_obj = ph.distance(x, y, obj_x, obj_y)
                                     if distance_to_obj <= obj_radius:
                                         shift_value = avoidance_gap if lc_state == 'left' else -avoidance_gap
@@ -236,24 +242,46 @@ class Planning():
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
                         updated_path.append(updated_point)
-        else:
-            change_caution, lc_state, change_idx = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
-            bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-            if change_caution and bsd_detected:
-                change_radius = int((self.RH.current_velocity*3.6)/2)
-                shift_value = -3.25 if lc_state == 'left' else 3.25
-                for i, point in enumerate(trim_global_path):
-                    if change_idx-15 < i < change_idx+change_radius:
-                        generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
-                        final_global_path[i][0] = generated_path[0]
-                        final_global_path[i][1] = generated_path[1]
-                
-                _, _, change_idx = self.gpp.get_change_point_caution(self.global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
-                for point in self.global_path[change_idx-5:change_idx+change_radius]:
-                    generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
-                    point[0] = generated_path[0]
-                    point[1] = generated_path[1]
+        else: #if BSD detected in following / straight mode, we have to change lane & update global path 
+            change_point_caution = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
+            if change_point_caution is not None :
+                change_caution, lc_state, change_idx = change_point_caution
+                bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+                # if self.change_point_cnt < 3:
+                #     change_caution, lc_state, change_idx = change_point_caution
+                #     bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+                #     #bsd_detected = ph.check_bsd(True, True, lc_state)
+                #     if change_caution and bsd_detected:
+                #         change_radius = int((self.RH.current_velocity*3.6)/2)
+                #         for i, point in enumerate(trim_global_path):
+                #             if change_idx-1 < i < change_idx+change_radius:
+                #                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, point[3], point[2], 3.25, 0)
+                #                 if not lat_avoidance_overed:
+                #                     shift_value = -avoidance_gap if lc_state == 'left' else avoidance_gap
+                #                     generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
+                #                     final_global_path[i][0] = generated_path[0]
+                #                     final_global_path[i][1] = generated_path[1]
                     
+                #         change_point_caution  = self.gpp.get_change_point_caution(self.global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
+                #         if change_point_caution is not None:
+                #             change_caution, lc_state, change_idx = change_point_caution
+                #             for point in self.global_path[change_idx-1:change_idx+change_radius]:
+                #                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, point[3], point[2], 3.25, 0)
+                #                 if not lat_avoidance_overed:
+                #                     shift_value = -avoidance_gap if lc_state == 'left' else avoidance_gap
+                #                     generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
+                #                     point[0] = generated_path[0]
+                #                     point[1] = generated_path[1]
+                            
+                #         g_path = [(float(point[0]), float(point[1])) for point in self.global_path]
+                #         self.RH.publish_global_path(g_path)
+                #         self.gpp.global_path = g_path
+                #         self.change_point_cnt += 1
+                #         self.change_point_state = ['normal', lc_state]
+                # else:
+                if bsd_detected:
+                    self.change_point_state[0] = 'warning'
+
         if path_updated:
             self.lane_change_state = self.lc_state_list[lc_state_idx]
             for i, point in enumerate(trim_global_path):
@@ -301,6 +329,9 @@ class Planning():
    
         else:
             target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, -1)
+
+        if self.change_point_state[0] == 'warning':
+            target_v_ACC = max(self.prev_target_vel-(stop_vel_decrement*20), -1)
 
         return target_v_ACC
 

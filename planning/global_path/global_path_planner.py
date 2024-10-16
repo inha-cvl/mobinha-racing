@@ -97,17 +97,18 @@ class GlobalPathPlanner():
 
     def get_change_point_caution(self, local_path, local_pose, current_vel, current_lane_num):
         change_dist = int(current_vel*3.6)
-        change_dist = change_dist if change_dist < len(local_path)-1 else len(local_path)
+        change_dist = change_dist if change_dist < len(local_path)-1 else len(local_path)-1
         c_idnidx = gput.lanelet_matching(local_path[change_dist])
         e_idnidx = gput.lanelet_matching(local_pose)
         change_lane_num = gput.current_lane_number(c_idnidx[0])
         if c_idnidx is not None and e_idnidx is not None:
             if c_idnidx[0] != e_idnidx[0] and change_lane_num != current_lane_num:
-                if change_lane_num < current_lane_num:
+                if change_lane_num < current_lane_num or change_lane_num == current_lane_num+3:
                     return True, 'left', change_dist
-                else:
+                elif change_lane_num < current_lane_num or change_lane_num == current_lane_num+5:
                     return True, 'right', change_dist
             else:
-                return False, None, None
+                return None
         else:
-            return False, None, None
+            return None
+        return None

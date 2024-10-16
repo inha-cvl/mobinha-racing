@@ -203,11 +203,13 @@ def check_bsd(left_bsd, right_bsd, lc_state):
             return True
         else:
             return False
-    else:
+    elif lc_state == 'right':
         if right_bsd == 1:
             return True
         else:
             return False
+    else:
+        return False
 
 def get_lane_change_state(d, l_width, r_width):
     # d : left + , right -
