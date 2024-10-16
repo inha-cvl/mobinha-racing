@@ -90,9 +90,9 @@ class Planning():
             self.first_lap = self.RH.lap_count
         elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
-            if self.RH.lap_count % 1 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
+            if self.RH.lap_count % 3 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
                 self.max_vel = min(self.max_vel + 7/3.6, REAL_MAX_SPEED/3.6)  
-                self.selected_lane = ph.get_selected_lane(self.max_vel)
+                #self.selected_lane = ph.get_selected_lane(self.max_vel)
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -264,6 +264,7 @@ class Planning():
             change_point_caution = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity, self.RH.current_lane_number)
             if change_point_caution is not None :
                 change_caution, lc_state, change_idx = change_point_caution
+                print(change_caution, lc_state)
                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
                 # if self.change_point_cnt < 3:
                 #     change_caution, lc_state, change_idx = change_point_caution
@@ -299,6 +300,12 @@ class Planning():
                 # else:
                 if bsd_detected:
                     self.change_point_state[0] = 'warning'
+            else:
+                if self.change_point_state[0] == 'warning' and self.change_point_cnt > 5:
+                    self.change_point_state[0] = 'normal'
+                    self.change_point_cnt = 0
+                self.change_point_cnt += 1
+
 
         if path_updated:
             self.lane_change_state = self.lc_state_list[lc_state_idx]

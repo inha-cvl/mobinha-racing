@@ -100,15 +100,17 @@ class GlobalPathPlanner():
         change_dist = change_dist if change_dist < len(local_path)-1 else len(local_path)-1
         c_idnidx = gput.lanelet_matching(local_path[change_dist])
         e_idnidx = gput.lanelet_matching(local_pose)
-        change_lane_num = gput.current_lane_number(c_idnidx[0])
-        if c_idnidx is not None and e_idnidx is not None:
-            if c_idnidx[0] != e_idnidx[0] and change_lane_num != current_lane_num:
-                if change_lane_num < current_lane_num:
+        if e_idnidx is not None and c_idnidx is not None:
+            left_lanes, right_lanes, _ = gput.get_whole_neighbor(e_idnidx[0])
+
+            for ll in left_lanes:
+                successor = gput.find_most_successor(ll)
+                if successor == c_idnidx[0]:
                     return True, 'left', change_dist
-                elif change_lane_num < current_lane_num:
+            
+            for rr in right_lanes:
+                successor = gput.find_most_successor(rr)
+                if successor == c_idnidx[0]:
                     return True, 'right', change_dist
-            else:
-                return None
-        else:
-            return None
+
         return None
