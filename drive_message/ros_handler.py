@@ -141,15 +141,15 @@ class ROSHandler():
 # ~~~~~~~~~~~~~~~~~~~ Positions ~~~~~~~~~~~~~~~~~~~~~~ #
 
     def best_callback(self, msg):
-        if self.system_status.systemHealth.data == 0:
-            self.vehicle_state.header = Header()
-            self.vehicle_state.header.stamp = rospy.Time.now()
-            self.vehicle_state.enu.x = msg.position.x
-            self.vehicle_state.enu.y = msg.position.y
-            self.vehicle_state.position.x = msg.orientation.x
-            self.vehicle_state.position.y = msg.orientation.y
-            self.local_pose = (msg.position.x,msg.position.y)
-            self.vehicle_state.heading.data = msg.orientation.z%360
+        #if self.system_status.systemHealth.data == 0:
+        self.vehicle_state.header = Header()
+        self.vehicle_state.header.stamp = rospy.Time.now()
+        self.vehicle_state.enu.x = msg.position.x
+        self.vehicle_state.enu.y = msg.position.y
+        self.vehicle_state.position.x = msg.orientation.x
+        self.vehicle_state.position.y = msg.orientation.y
+        self.local_pose = (msg.position.x,msg.position.y)
+        self.vehicle_state.heading.data = msg.orientation.z%360
 
 
     

@@ -457,6 +457,9 @@ class Planning():
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
 
+                if self.system_health == 1 :
+                    target_velocity = 5
+
                 res = ph.check_lane_deaprture(interped_path, self.RH.local_pos)
                 if res == 'Warning':
                     target_velocity = max(0, self.prev_target_vel - 0.5)

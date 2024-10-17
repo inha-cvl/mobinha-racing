@@ -24,7 +24,7 @@ class ROSHandler():
         self.planned_route = []
         self.target_actuator = Actuator()
         self.lane_number = 2
-        self.curve_list = ['1', '2', '4','5', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42', '47', '48', '58', '59', '60', '7', '8', '9','25', '27', '62', '65']
+        self.curve_list = ['10', '11', '12', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42','47', '48','58', '59', '60']
         self.curved = False
 
     def set_publisher_protocol(self):

@@ -37,6 +37,7 @@ class ROSHandler():
         self.current_lane_number = 0
         self.lap_count = 0
         self.map_name = None
+        self.system_health = 0
 
 
     def set_publisher_protocol(self):
