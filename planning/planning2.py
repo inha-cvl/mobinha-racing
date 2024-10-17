@@ -71,7 +71,7 @@ class Planning():
         self.goal_point = self.goal_points[2]
         
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
-        self.bank_list = ['10', '11', '12', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42','47', '48','58', '59', '60']
+        self.bank_list = ['26','31','32', '59', '58', '60','42', '47', '48', '12', '13','14', '1', '10', '11',]
     
     
 
@@ -448,8 +448,8 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 59/3.6  
+                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
+                    limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

@@ -486,8 +486,8 @@ def get_lane_width(id):
     if l_n != None or r_n != None:
         lane_num = lanelets[id]['laneNo']
         road_type = lanelets[id]['roadType']
-        if id in ['47', '10']:
-            l_w = h_w
+        if id in ['58', '47', '10']:
+            l_w = h_w-0.5
             r_w = lane_width+h_w
         if lane_num == 1:
             if road_type == 4:
