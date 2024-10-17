@@ -298,14 +298,14 @@ def check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, d):
 
 def get_selected_lane(max_vel, lane_number):
     if max_vel < 80/3.6:
-        if lane_number == 1:
+        if lane_number == 1 or lane_number == 4:
             return 1
         elif lane_number == 2:
             return 2
         else:
             return 3
     else:
-        if lane_number == 1:
+        if lane_number == 1 or lane_number == 4:
             return 1
         else:
             return 2

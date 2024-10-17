@@ -511,8 +511,8 @@ def get_lane_width(id):
                 r_w = h_w
         elif lane_num == 4: # lane1 on 4lane
             if road_type == 4:
-                l_w = (3*lane_width)+h_w
-                r_w = h_w
+                l_w = h_w
+                r_w = (3*lane_width)+h_w
         else:
             l_w = r_w = h_w
     else:
