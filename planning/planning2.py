@@ -92,7 +92,6 @@ class Planning():
             self.start_pose_initialized = False
             if self.RH.lap_count % 3 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
                 self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
-                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -120,6 +119,7 @@ class Planning():
             if self.diffrent_lane_cnt > 5:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
+                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 self.prev_lane_number = self.RH.current_lane_number   
                 self.lc_state_list_remain_cnt = 0
                 self.prev_lc_state_list = None
