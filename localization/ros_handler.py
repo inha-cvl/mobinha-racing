@@ -57,7 +57,7 @@ class ROSHandler():
         self.pos_invalid_cnt = 0
 
         # change
-        self.curve_list = ['10', '11', '12', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42','47', '48','58', '59', '60']
+        self.curve_list = rospy.get_param("/curve_list")
         self.curved = False
 
         self.pvt_cb = False

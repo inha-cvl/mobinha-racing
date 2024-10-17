@@ -130,8 +130,6 @@ class MapLane():
                 else:
                     dist_matrix[i, j] = 10e5
 
-
-
         # row_ind, col_ind = linear_sum_assignment(-iou_matrix)
         row_ind, col_ind = linear_sum_assignment(dist_matrix)
 

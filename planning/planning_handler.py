@@ -181,6 +181,8 @@ def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,max_th= 15):
     rel_vel = ego_vel-obj_vel
     if rel_vel > 0:
         ttc = obj_dist/rel_vel
+    elif rel_vel == 0:
+        ttc = max_th
     else:
         ttc = float('inf')
     if (ttc <= max_th) or obj_vel < 2:
@@ -213,23 +215,24 @@ def check_bsd(left_bsd, right_bsd, lc_state):
 
 def get_lane_change_state(d, l_width, r_width):
     # d : left + , right -
+    min_width = 1.7
     if l_width > r_width:
-        if (l_width - d) > 1.5:
+        if (l_width - d) > min_width:
             lane_change_state = ['left']
-            if abs(-r_width-d) > 1.5:
+            if abs(-r_width-d) > min_width:
                 lane_change_state.append('right')
         else:
-            if abs(-r_width-d) > 1.5:
+            if abs(-r_width-d) > min_width:
                 lane_change_state=['right']
             else:
                 lane_change_state = None
     else:
-        if abs(-r_width-d) > 1.5:
+        if abs(-r_width-d) > min_width:
             lane_change_state = ['right']
-            if (l_width - d) > 1.5:
+            if (l_width - d) > min_width:
                 lane_change_state.append('left')
         else:
-            if (l_width - d) > 1.5:
+            if (l_width - d) > min_width:
                 lane_change_state = ['left']
             else:
                 lane_change_state = None
@@ -288,30 +291,24 @@ def check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, d):
     overed = True
     if lc_state == 'left':
         avoidance_gap = lat_avoidance_gap+d
-        if avoidance_gap < l_width:
+        if avoidance_gap < l_width-0.2:
             overed = False
     else:
         avoidance_gap = lat_avoidance_gap-d
-        if avoidance_gap < r_width:
+        if avoidance_gap < r_width-0.2:
             overed = False
     return overed, avoidance_gap
 
 def get_selected_lane(max_vel, lane_number):
     if max_vel < 80/3.6:
-        if lane_number == 1 or lane_number == 4:
+        if lane_number == 1 or lane_number == 0:
             return 1
         elif lane_number == 2:
             return 2
         else:
             return 3
     else:
-        if lane_number == 1 or lane_number == 4:
+        if lane_number == 1 or lane_number == 0:
             return 1
         else:
             return 2
-    # if max_vel < 65/3.6:
-    #     return 3
-    # elif 65/3.6 <= max_vel < 90/3.6:
-    #     return 2
-    # else:
-    #     return 1

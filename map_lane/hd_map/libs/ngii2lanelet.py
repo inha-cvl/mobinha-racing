@@ -139,6 +139,8 @@ class NGII2LANELET:
         banklines = {}
         safetysigns = {}
 
+        curve_lists = []
+
         for n, a2_link in tqdm(enumerate(ngii.a2_link), desc="a2_link: ", total=len(ngii.a2_link)):
 
             new_id = str(n)
@@ -164,6 +166,8 @@ class NGII2LANELET:
             lanelets[new_id]['length'] = s[-1]  # a2_link.length
             lanelets[new_id]['laneNo'] = a2_link.LaneNo
             lanelets[new_id]['roadType'] = int(a2_link.RoadType)
+            if int(a2_link.RoadType) == 5 :
+                curve_lists.append(new_id)
             
             lanelets[new_id]['leftTurn'] = False
             lanelets[new_id]['rightTurn'] = False
@@ -328,12 +332,6 @@ class NGII2LANELET:
                     startlines[stopline_id] = lines
                     for_vis.append([lines, 'start_line'])
 
-
-        for id_, data in lanelets.items():
-            if data['length'] < 35.0:
-                yaw_err = get_yaw_error(data['yaw'][0], data['yaw'][-1])
-                if abs(math.degrees(yaw_err)) > 150:
-                    data['uTurn'] = True
             
         for id_, data in lanelets.items():
             data['leftChange'] = [True for _ in range(len(data['waypoints']))]
@@ -366,3 +364,7 @@ class NGII2LANELET:
         self.map_data['goallines'] = goallines
         self.map_data['banklines'] = banklines
         self.map_data['safetysigns'] = safetysigns
+
+        print(curve_lists)
+
+

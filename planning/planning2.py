@@ -71,10 +71,8 @@ class Planning():
         self.goal_point = self.goal_points[2]
         
         self.max_vel = float(rospy.get_param("/max_velocity"))/3.6
-        self.bank_list = ['26','31','32', '59', '58', '60','42', '47', '48', '12', '13','14', '1', '10', '11',]
-    
-    
-
+        self.bank_list = rospy.get_param("/curve_list")
+   
     def get_kst(self):
         utc_now = datetime.utcnow()
         kst_now = utc_now + timedelta(hours=9)
@@ -116,7 +114,7 @@ class Planning():
             self.slow_mode = 'OFF'
         elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number) and self.race_mode != 'pit_stop':
             self.diffrent_lane_cnt += 1
-            if self.diffrent_lane_cnt > 5:
+            if self.diffrent_lane_cnt > 9:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
@@ -150,9 +148,9 @@ class Planning():
             self.gpp.global_path = g_path
     
     def set_pit_point(self):
-        if self.RH.current_lane_number <= 2:
+        if self.RH.current_lane_number <= 1:
             self.pit_point = self.pit_points[0]
-        elif self.RH.current_lane_number == 3:
+        elif self.RH.current_lane_number == 2:
             self.pit_point = self.pit_points[1]
         else:
             self.pit_point = self.pit_points[2]
@@ -194,7 +192,7 @@ class Planning():
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 37
-        lat_avoidance_gap = 4
+        lat_avoidance_gap = 3.6
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])

@@ -485,36 +485,23 @@ def get_lane_width(id):
     l_n, r_n = get_neighbor(id)
     if l_n != None or r_n != None:
         lane_num = lanelets[id]['laneNo']
-        road_type = lanelets[id]['roadType']
         if id in ['58', '47', '10']:
-            l_w = h_w-0.5
+            l_w = h_w
             r_w = lane_width+h_w
-        if lane_num == 1:
-            if road_type == 4:
-                l_w = h_w
-                r_w = (3*lane_width)+h_w
-            else:
+        elif id in ['60','48','11']:
+            l_w = lane_width+h_w
+            r_w = h_w
+        else:
+            if lane_num <= 1:
                 l_w = h_w
                 r_w = (2*lane_width)+h_w
-        elif lane_num == 2:
-            if road_type == 4:
-                l_w = (1*lane_width)+h_w
-                r_w = (2*lane_width)+h_w
-            else:
+            elif lane_num == 2:
                 l_w = r_w = lane_width+h_w
-        elif lane_num == 3:
-            if road_type == 4:
-                l_w = (2*lane_width)+h_w
-                r_w = (1*lane_width)+h_w
-            else:
+            elif lane_num == 3:
                 l_w = (2*lane_width)+h_w
                 r_w = h_w
-        elif lane_num == 4: # lane1 on 4lane
-            if road_type == 4:
-                l_w = h_w
-                r_w = (3*lane_width)+h_w
-        else:
-            l_w = r_w = h_w
+            else:
+                l_w = r_w = h_w
     else:
         l_w = r_w = h_w
 
