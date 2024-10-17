@@ -100040,8 +100040,8 @@
 				0.012088165549919093
 			],
 			"length": 302.0,
-			"laneNo": 1,
-			"roadType": 3,
+			"laneNo": 4,
+			"roadType": 4,
 			"leftTurn": false,
 			"rightTurn": false,
 			"uTurn": false,
@@ -116080,8 +116080,8 @@
 				-0.004569002757148051
 			],
 			"length": 45.0,
-			"laneNo": 1,
-			"roadType": 3,
+			"laneNo": 4,
+			"roadType": 4,
 			"leftTurn": false,
 			"rightTurn": false,
 			"uTurn": false,
@@ -120348,8 +120348,8 @@
 				-0.0
 			],
 			"length": 282.0,
-			"laneNo": 1,
-			"roadType": 3,
+			"laneNo": 4,
+			"roadType": 4,
 			"leftTurn": false,
 			"rightTurn": false,
 			"uTurn": false,
@@ -132170,8 +132170,8 @@
 				-0.0004187134361026031
 			],
 			"length": 80.0,
-			"laneNo": 1,
-			"roadType": 3,
+			"laneNo": 4,
+			"roadType": 4,
 			"leftTurn": false,
 			"rightTurn": false,
 			"uTurn": false,
