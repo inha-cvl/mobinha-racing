@@ -296,10 +296,16 @@ def check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, d):
             overed = False
     return overed, avoidance_gap
 
-def get_selected_lane(max_vel):
-    if max_vel < 65/3.6:
-        return 3
-    elif 65/3.6 <= max_vel < 90/3.6:
+def get_selected_lane(max_vel, lane_number):
+    if lane_number == 1:
+        return 1
+    elif lane_number == 2:
         return 2
     else:
-        return 1
+        return 3
+    # if max_vel < 65/3.6:
+    #     return 3
+    # elif 65/3.6 <= max_vel < 90/3.6:
+    #     return 2
+    # else:
+    #     return 1

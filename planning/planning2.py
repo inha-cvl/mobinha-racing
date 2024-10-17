@@ -91,8 +91,8 @@ class Planning():
         elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
             if self.RH.lap_count % 3 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
-                self.max_vel = min(self.max_vel + 7/3.6, REAL_MAX_SPEED/3.6)  
-                #self.selected_lane = ph.get_selected_lane(self.max_vel)
+                self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
+                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -354,8 +354,8 @@ class Planning():
             bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, self.change_point_state[1])
             if not bsd_detected:
                 self.change_point_cnt += 1
-                if self.change_point_cnt > 20:
-                    self.change_point_state[0] = 'normal'
+                if self.change_point_cnt > 5:
+                    self.change_point_state = ['normal', 'straight']
                     target_v_ACC = self.prev_target_vel
                     self.change_point_cnt = 0
                     
@@ -448,7 +448,7 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel
