@@ -53,30 +53,41 @@ class PurePursuit(object):
 
         if self.RH.curved:
             if self.RH.lane_number == 1:
-                lfd = 0.3*vehicle_speed + 6
-                lfd = min(max(lfd, 15), 36)
+                # lfd = 0.3*vehicle_speed + 6
+                # lfd = min(max(lfd, 15), 36)
+                lfd = 0.2 * vehicle_speed + 14
+                lfd = min(max(lfd, 28), 34)
+                lfd_offset = 0.98
             elif self.RH.lane_number == 2:
-                lfd = 0.3*vehicle_speed + 11
-                lfd = min(max(lfd, 20), 41)
+                # lfd = 0.3*vehicle_speed + 11
+                # lfd = min(max(lfd, 20), 41)
+                lfd = 0.024 * vehicle_speed**2 - 0.85 * vehicle_speed + 49.0 
+                lfd = min(max(lfd, 33), 50)
+                lfd_offset = 0.00007 * vehicle_speed**3 - 0.016 * vehicle_speed**2 + 1.18 * vehicle_speed - 19.5
+                lfd_offset = min(max(lfd, 0.8), 0.98)
+
             elif self.RH.lane_number == 3:
                 lfd = 7/1125*vehicle_speed**2 - 67/225*vehicle_speed + 70/3
                 lfd = min(max(lfd, 20), 36)
+                lfd_offset = 1
             else:
                 lfd = self.lfd_gain*vehicle_speed
                 lfd = min(max(lfd, self.min_lfd), self.max_lfd)
+                lfd_offset = 1
         else:
             lfd = self.lfd_gain*vehicle_speed
             lfd = min(max(lfd, self.min_lfd), self.max_lfd)
+            lfd_offset = 1
         print("original: ", lfd)
 
         # 1st lane
         # lfd = 28 # 70kph, 0.98
-        lfd = 30 #80kph, 0.98
-        lfd = 32 #90kph, 0.98
-        lfd = 34 #90kph, 0.98
+        # lfd = 30 #80kph, 0.98
+        # lfd = 32 #90kph, 0.98
+        # lfd = 34 #90kph, 0.98
 
         # 2nd lane
-        # lfd = 기존 # 60kph, 0.8
+        # lfd = 기존\ # 60kph, 0.8
         # lfd = 33 #70kph, 0.85
         # lfd = 45 #80kph, 0.95
         # lfd = 50 #90kph, 0.98
@@ -96,15 +107,15 @@ class PurePursuit(object):
                 dis = rotated_diff.distance()
                 if dis >= lfd:
                     theta = rotated_diff.angle
-                    steering_angle = np.arctan2(2*self.wheelbase*np.sin(theta), lfd*0.98)
+                    steering_angle = np.arctan2(2*self.wheelbase*np.sin(theta), lfd*lfd_offset)
                     self.RH.publish_lh(path_point)
                     break
         
         steering_angle = math.degrees(steering_angle)
 
-        offset = min(max(self.RH.current_velocity * MPS_TO_KPH * 0.02 + 0.1, 1), 2.2)
+        steer_offset = min(max(self.RH.current_velocity * MPS_TO_KPH * 0.02 + 0.1, 1), 2.2)
         if self.RH.current_velocity * MPS_TO_KPH > 30:
-            steering_angle = steering_angle * offset
+            steering_angle = steering_angle * steer_offset
 
         #saturated_angle = self.saturate_steering_angle(steering_angle)
 
