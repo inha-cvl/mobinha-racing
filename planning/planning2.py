@@ -234,6 +234,10 @@ class Planning():
                             self.lc_state_list = self.prev_lc_state_list
                 break
         
+        if self.acc_cnt >= 50 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
+            overtaking_required = True
+            self.acc_cnt = 0
+        
         path_updated = False
         lc_state_idx = 9
         if self.race_mode != 'pit_stop' and overtaking_required and self.lc_state_list is not None:
@@ -351,7 +355,10 @@ class Planning():
 
                 offset = 0.8
                 target_v_ACC = obj_v - margin*offset
+
+                self.acc_cnt += 1
             else:
+                self.acc_cnt = 0
                 target_v_ACC = interped_vel[2]
    
         else:
