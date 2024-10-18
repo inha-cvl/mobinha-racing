@@ -66,7 +66,7 @@ class GlobalPathPlanner():
             final_ids = final_ids[0:-15]
             final_vs = final_vs[0:-15]
             if name != 'pit_stop':
-                more_path, _, more_ids, more_vs = gput.get_straight_path(goal_ll, 400, '', 'Right')
+                more_path, _, more_ids, more_vs = gput.get_straight_path(goal_ll, 1500, '', 'Right')
                 final_path.extend(more_path)
                 final_ids.extend(more_ids)
                 final_vs.extend(more_vs)

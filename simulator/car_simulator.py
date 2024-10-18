@@ -70,7 +70,7 @@ class CarSimulator:
             #self.ego = Vehicle(10.759, 2.147, -2.99, 0, wheelbase) #3 lane first
             #self.ego = Vehicle(6.593, -6.417,-2.969, 0, wheelbase ) #1 lane firstv
             #self.ego = Vehicle(66.799, 81.714,-0.681, 0, wheelbase ) #2 lane
-            self.ego = Vehicle(754.668, -684.966, 2.212,  0, wheelbase )
+            self.ego = Vehicle(844.555, -1050.541, 2.263,  0, wheelbase )
             
         elif map == 'KCity':
             self.ego = Vehicle(167.259, 55.401, 2.810, 0, wheelbase)

@@ -120,15 +120,16 @@ class Planning():
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 #TODO: Pre-2
-                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                if self.race_mode == 'slow_on' and self.selected_lane == 1:
+                    self.selected_lane = 2
                 self.prev_lane_number = self.RH.current_lane_number   
                 self.lc_state_list_remain_cnt = 0
                 self.acc_reset = False
                 self.acc_cnt = 0
                 self.prev_lc_state_list = None
-            race_mode = self.prev_race_mode
+            race_mode = self.race_mode
             planning_state = 'INIT'
-            self.prev_race_mode = self.race_mode
             self.change_point_state =[ 'normal', 'straight']
             self.change_point_cnt = 0
         if self.start_pose_initialized == True:
@@ -141,6 +142,7 @@ class Planning():
         if race_mode == 'pit_stop':
             global_path = copy.deepcopy(self.pit_stop_path)
         else:
+            race_mode = 'to_goal'
             global_path = copy.deepcopy(self.to_goal_path)
         
         if global_path is not None:
@@ -194,15 +196,12 @@ class Planning():
         
         check_object = []
         front_object = []
+        right_object = []
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 37
         lat_avoidance_gap = 3.5
-
-        if self.check_bank():
-            target_d = 3
-        else:
-            target_d = 2.7
+        target_d = 3 if self.check_bank() else 2.7
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -212,10 +211,13 @@ class Planning():
                 obj['d'] = d
                 obj['ttc'] = ph.calc_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                 check_object.append(obj)
-                if -target_d < d < target_d and -10 < s :
+                if -target_d < d < target_d and -5 < s :
                     front_object.append(obj)
                     if s < 100:
                         self.lane_change_state = 'follow'
+                if -4.8 < d < -1.25 and -5 < s < 20:
+                    right_object.append(obj)
+
 
         self.RH.publish_target_object(check_object)
 
@@ -245,16 +247,14 @@ class Planning():
             self.acc_reset = True
         
         path_updated = False
-        lc_state_idx = 9
-        if self.race_mode != 'pit_stop' and overtaking_required and self.lc_state_list is not None:
+        avoid_on = False
+        if self.race_mode not in ['pit_stop', 'slow_on'] and overtaking_required and self.lc_state_list is not None:
             for i, lc_state in enumerate(self.lc_state_list):
                 if not path_updated:
-                    updated_path = []
-                    for point in trim_global_path:
+                    for j, point in enumerate(trim_global_path):
                         x, y = point[0], point[1]
                         r_width, l_width = point[2], point[3]
                         x_normvec, y_normvec = point[4], point[5]
-                        updated_point = point.copy()
                         for obj in front_object:
                             overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                             if overtakng or self.acc_reset:
@@ -263,68 +263,36 @@ class Planning():
                                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, obj['d'])
                                 if not around_detected and not bsd_detected and not lat_avoidance_overed:
                                     path_updated = True
-                                    lc_state_idx = i
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
                                     obj_radius = long_avoidance_gap + (obj['v'] / 5) 
                                     distance_to_obj = ph.distance(x, y, obj_x, obj_y)
-                                    if distance_to_obj <= obj_radius:
+                                    if distance_to_obj <= obj_radius or avoid_on:
+                                        avoid_on = True
                                         shift_value = avoidance_gap if lc_state == 'left' else -avoidance_gap
                                         generated_point = (x + (-1 * x_normvec) * shift_value, y + (-1 * y_normvec) * shift_value)
-                                        updated_point[0] = generated_point[0]
-                                        updated_point[1] = generated_point[1]
-                        updated_path.append(updated_point)
+                                        final_global_path[j][0] = generated_point[0]
+                                        final_global_path[j][1] = generated_point[1]
+                                        
 
-                
+        elif self.race_mode == 'slow_on' and self.RH.current_lane_id in ['17', '14', '1', '25', '26', '56', '42']:
+            bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, 'right')
+            if not bsd_detected and len(right_object) == 0:
+                for i, point in enumerate(trim_global_path):
+                    shift_value = -4
+                    if i > 5:
+                        generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
+                        final_global_path[i][0] = generated_path[0]
+                        final_global_path[i][1] = generated_path[1]
+                            
+
         else: #if BSD detected in following / straight mode, we have to change lane & update global path 
             change_point_caution = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity)
             if change_point_caution is not None :
                 change_caution, lc_state, change_idx = change_point_caution
                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-
-                # if self.change_point_cnt < 3:
-                #     change_caution, lc_state, change_idx = change_point_caution
-                #     #bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-                #     bsd_detected = ph.check_bsd(True, True, lc_state)
-                #     if change_caution and bsd_detected:
-                #         change_radius = int((self.RH.current_velocity*3.6)/2)
-                #         for i, point in enumerate(trim_global_path):
-                #             if change_idx-1 < i < change_idx+change_radius:
-                #                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, point[3], point[2], 3.25, 0)
-                #                 if not lat_avoidance_overed:
-                #                     shift_value = -avoidance_gap if lc_state == 'left' else avoidance_gap
-                #                     generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
-                #                     final_global_path[i][0] = generated_path[0]
-                #                     final_global_path[i][1] = generated_path[1]
-                    
-                #         change_point_caution  = self.gpp.get_change_point_caution(self.global_path, self.RH.local_pos, self.RH.current_velocity)
-                #         if change_point_caution is not None:
-                #             change_caution, lc_state, change_idx = change_point_caution
-                #             for point in self.global_path[change_idx-1:change_idx+change_radius]:
-                #                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, point[3], point[2], 3.25, 0)
-                #                 if not lat_avoidance_overed:
-                #                     shift_value = -avoidance_gap if lc_state == 'left' else avoidance_gap
-                #                     generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
-                #                     point[0] = generated_path[0]
-                #                     point[1] = generated_path[1]
-                            
-                #         g_path = [(float(point[0]), float(point[1])) for point in self.global_path]
-                #         self.RH.publish_global_path(g_path)
-                #         self.gpp.global_path = g_path
-                #         self.change_point_cnt += 1
-                #         self.change_point_state = ['normal', lc_state]
-                # else:
                 if bsd_detected:
                     self.change_point_state = ['warning', lc_state]
            
-        if path_updated:
-            self.lane_change_state = self.lc_state_list[lc_state_idx]
-            for i, point in enumerate(trim_global_path):
-                for obj in object_list:
-                    obj_radius = long_avoidance_gap + (obj['v'] / 5)
-                    if ph.distance(point[0], point[1], obj['X'], obj['Y']) <= obj_radius:
-                        final_global_path[i] = updated_path[i]
-                        
-            
         return final_global_path
     
     def calculate_acc_vel(
@@ -337,10 +305,7 @@ class Planning():
             if self.lane_change_state == 'follow':
                 object_list = self.RH.object_list 
                 acc_object_d_v = []
-                if self.check_bank():
-                    target_d = 3
-                else:
-                    target_d = 2.7
+                target_d = 3 if self.check_bank() else 2.7
                     
                 for obj in object_list:
                     s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
@@ -395,7 +360,6 @@ class Planning():
         # 기본 조건: set_go가 False일 경우
         if not self.RH.set_go:
             return -1
-
         # 'stop' 모드 처리
         if self.race_mode == 'stop' :
             if not self.check_bank():
@@ -480,7 +444,7 @@ class Planning():
                 if self.race_mode == 'pit_stop' and len(interped_path) < 7:
                     target_velocity = -1
 
-                # if self.system_health == 1 :
+                # if self.RH.system_health == 1 :
                 #     target_velocity = 5
 
                 res = ph.check_lane_deaprture(interped_path, self.RH.local_pos)
