@@ -88,8 +88,8 @@ class Planning():
             self.first_lap = self.RH.lap_count
         elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
-            if self.RH.lap_count % 3 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
-                self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
+            #if self.RH.lap_count % 2 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
+                #self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -117,7 +117,7 @@ class Planning():
             if self.diffrent_lane_cnt > 9:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
-                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 self.prev_lane_number = self.RH.current_lane_number   
                 self.lc_state_list_remain_cnt = 0
                 self.prev_lc_state_list = None
@@ -192,7 +192,12 @@ class Planning():
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 37
-        lat_avoidance_gap = 3.6
+        lat_avoidance_gap = 3.5
+
+        if self.check_bank():
+            target_d = 3
+        else:
+            target_d = 2.7
 
         for obj in object_list:
             s, d = ph.object2frenet(trim_global_path, [float(obj['X']), float(obj['Y'])])
@@ -202,7 +207,7 @@ class Planning():
                 obj['d'] = d
                 obj['ttc'] = ph.calc_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                 check_object.append(obj)
-                if -2.7 < d < 2.7 and -10 < s :
+                if -target_d < d < target_d and -10 < s :
                     front_object.append(obj)
                     if s < 100:
                         self.lane_change_state = 'follow'
@@ -320,9 +325,14 @@ class Planning():
             if self.lane_change_state == 'follow':
                 object_list = self.RH.object_list 
                 acc_object_d_v = []
+                if self.check_bank():
+                    target_d = 3
+                else:
+                    target_d = 2.7
+                    
                 for obj in object_list:
                     s, d = ph.object2frenet(updated_path, [float(obj['X']), float(obj['Y'])])
-                    if s> 0 and -2.7 < d < 2.7:
+                    if s> 0 and -target_d < d < target_d:
                         acc_object_d_v.append([float(obj['dist']), float(obj['v'])])
                 min_s = 200
                 obj_v = 200
@@ -446,6 +456,7 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
+                # if self.RH.lap_count == 0: # TODO: 0lap limit velocity
                 if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6  
                 else:

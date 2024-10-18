@@ -10,5 +10,5 @@ lane2_goal_coordinate: [720.224, -651.130]
 lane3_goal_coordinate: [723.483, -649.487]
 curve_list: ['1', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '32', '33', '34', '35', '42', '47', '48', '58', '59', '60']
 now_lap: 0
-selected_lane: 3
-max_velocity: 50
+selected_lane: 1
+max_velocity: 100

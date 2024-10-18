@@ -37,6 +37,7 @@ class PurePursuit(object):
 
         # 2nd lane, # roll: 5~6
         # lfd = 20 # optimal at 30kph
+        lfd = 33 # 
         # lfd = 35 # optimal at 80kph  
         # lfd = 41 # optimal at 100kph
 
@@ -66,8 +67,20 @@ class PurePursuit(object):
         else:
             lfd = self.lfd_gain*vehicle_speed
             lfd = min(max(lfd, self.min_lfd), self.max_lfd)
+        print("original: ", lfd)
 
+        # 1st lane
+        # lfd = 28 # 70kph, 0.98
+        lfd = 30 #80kph, 0.98
+        lfd = 32 #90kph, 0.98
+        lfd = 34 #90kph, 0.98
 
+        # 2nd lane
+        # lfd = 기존 # 60kph, 0.8
+        # lfd = 33 #70kph, 0.85
+        # lfd = 45 #80kph, 0.95
+        # lfd = 50 #90kph, 0.98
+        print("lfd:", lfd)
 
 
 
@@ -83,7 +96,7 @@ class PurePursuit(object):
                 dis = rotated_diff.distance()
                 if dis >= lfd:
                     theta = rotated_diff.angle
-                    steering_angle = np.arctan2(2*self.wheelbase*np.sin(theta), lfd)
+                    steering_angle = np.arctan2(2*self.wheelbase*np.sin(theta), lfd*0.98)
                     self.RH.publish_lh(path_point)
                     break
         
