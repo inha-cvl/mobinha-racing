@@ -54,6 +54,12 @@ class ROSHandler():
         proj_enu = Proj(proj='aeqd', datum='WGS84', lat_0=base_lla[0], lon_0=base_lla[1], h_0=base_lla[2])
         self.transformer = Transformer.from_proj(proj_wgs84, proj_enu)
 
+        # Sensor Health
+        self.system_health = 0
+        self.nav_err = 1 << 0  # 001(1)
+        self.lid_err = 1 << 1  # 010(2)
+        self.cam_err = 1 << 2  # 100(4)
+
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
         self.system_status_pub = rospy.Publisher('/SystemStatus', SystemStatus, queue_size=1)
@@ -70,13 +76,14 @@ class ROSHandler():
         rospy.Subscriber('/NavigationData', NavigationData, self.navigation_data_cb)
         rospy.Subscriber('/simulator/pose', Pose2D, self.sim_pose_cb) # Simulator
         rospy.Subscriber('/map_lane/refine_obstacles', PoseArray, self.refine_obstacle_cb) # Obstacles
-
-        # Sensor Health
-        # rospy.Subscriber('/nav_health', Int8, self.sensor_health_cb)
-        rospy.Subscriber('/lid_health', Int8, self.sensor_health_cb)
-        rospy.Subscriber('/rtk_health', Int8, self.sensor_health_cb)
         rospy.Subscriber('/best/pose', Pose, self.best_callback)
         rospy.Subscriber('/kiss/odometry', Odometry, self.best_callback2)
+
+        # Sensor Health
+        rospy.Subscriber('/nav_health', Int8, self.nav_health_cb)
+        rospy.Subscriber('/lid_health', Int8, self.lid_health_cb)
+        rospy.Subscriber('/cam_health', Int8, self.cam_health_cb)
+        
 
 
     def can_output_cb(self, msg):
@@ -135,26 +142,47 @@ class ROSHandler():
             object_info.distance.data = float(obj.orientation.z)
             self.detection_data.objects.append(object_info)
 
-    def sensor_health_cb(self, msg):
-        self.system_status.systemHealth.data = msg.data
+    # def sensor_health_cb(self, msg):
+    #     self.system_status.systemHealth.data = msg.data
+
+    def nav_health_cb(self, msg):
+        if msg.data == 1: 
+            self.system_health |= self.nav_err
+        elif msg.data == 0:  
+            self.system_health &= ~self.nav_err
+        self.system_status.systemHealth.data = self.system_health
+
+    def lid_health_cb(self, msg):
+        if msg.data == 1:  
+            self.system_health |= self.lid_err
+        elif msg.data == 0:
+            self.system_health &= ~self.lid_err
+        self.system_status.systemHealth.data = self.system_health
+
+    def cam_health_cb(self, msg):
+        if msg.data == 1:  
+            self.system_health |= self.cam_err
+        elif msg.data == 0:  
+            self.system_health &= ~self.cam_err
+        self.system_status.systemHealth.data = self.system_health
 
 # ~~~~~~~~~~~~~~~~~~~ Positions ~~~~~~~~~~~~~~~~~~~~~~ #
 
     def best_callback(self, msg):
-        #if self.system_status.systemHealth.data == 0:
-        self.vehicle_state.header = Header()
-        self.vehicle_state.header.stamp = rospy.Time.now()
-        self.vehicle_state.enu.x = msg.position.x
-        self.vehicle_state.enu.y = msg.position.y
-        self.vehicle_state.position.x = msg.orientation.x
-        self.vehicle_state.position.y = msg.orientation.y
-        self.local_pose = (msg.position.x,msg.position.y)
-        self.vehicle_state.heading.data = msg.orientation.z%360
+        if self.system_status.systemHealth.data & self.nav_err == 0:
+            self.vehicle_state.header = Header()
+            self.vehicle_state.header.stamp = rospy.Time.now()
+            self.vehicle_state.enu.x = msg.position.x
+            self.vehicle_state.enu.y = msg.position.y
+            self.vehicle_state.position.x = msg.orientation.x
+            self.vehicle_state.position.y = msg.orientation.y
+            self.local_pose = (msg.position.x,msg.position.y)
+            self.vehicle_state.heading.data = msg.orientation.z%360
 
 
     
     def best_callback2(self, msg):
-        if self.system_status.systemHealth.data == 1:
+        if self.system_status.systemHealth.data & self.nav_err == 1:
             self.vehicle_state.header = Header()
             self.vehicle_state.header.stamp = rospy.Time.now()
             self.vehicle_state.enu.x = msg.pose.pose.position.x
