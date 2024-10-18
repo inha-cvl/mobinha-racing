@@ -53,39 +53,56 @@ class PurePursuit(object):
 
         if self.RH.curved:
             if self.RH.lane_number == 1:
-                # lfd = 0.3*vehicle_speed + 6
-                # lfd = min(max(lfd, 15), 36)
                 lfd = 0.2 * vehicle_speed + 14
                 lfd = min(max(lfd, 28), 34)
+
                 lfd_offset = 0.98
+
             elif self.RH.lane_number == 2:
-                # lfd = 0.3*vehicle_speed + 11
-                # lfd = min(max(lfd, 20), 41)
-                lfd = 0.024 * vehicle_speed**2 - 0.85 * vehicle_speed + 49.0 
-                lfd = min(max(lfd, 28), 50)
-                lfd_offset = 0.00007 * vehicle_speed**3 - 0.016 * vehicle_speed**2 + 1.18 * vehicle_speed - 19.5
-                lfd_offset = min(max(lfd, 0.8), 0.98)
+                if vehicle_speed < 80:
+                    lfd = 1.500e-03*vehicle_speed**3 -2.700e-01*vehicle_speed**2 + 1.635e+01*vehicle_speed -3.030e+02
+                else:
+                    lfd = 0.5*vehicle_speed + 5
+                lfd = min(max(lfd, 25), 50)
+
+                lfd_offset = -8.33333333e-07*vehicle_speed**4 + 2.26666667e-04*vehicle_speed**3 -2.26666667e-02*vehicle_speed**2 + 9.91833333e-01*vehicle_speed -1.52500000e+01
+                lfd_offset = min(max(lfd_offset, 0.8), 0.98)
 
             elif self.RH.lane_number == 3:
-                lfd = 7/1125*vehicle_speed**2 - 67/225*vehicle_speed + 70/3
-                lfd = min(max(lfd, 20), 36)
-                lfd_offset = 1
+                lfd = 0.6*vehicle_speed - 3
+                lfd = min(max(lfd, 20), 45)
+
+                lfd_offset = 0.005*vehicle_speed + 0.55
+                lfd_offset = min(max(lfd_offset, 0.8), 0.85)
+
             else:
                 lfd = self.lfd_gain*vehicle_speed
                 lfd = min(max(lfd, self.min_lfd), self.max_lfd)
-                lfd_offset = 1
+                lfd_offset = 0.95
         else:
             lfd = self.lfd_gain*vehicle_speed
             lfd = min(max(lfd, self.min_lfd), self.max_lfd)
-            lfd_offset = 1
+            
+            lfd_offset = 0.95
 
-        # 1st lane
-        # lfd = 28 # 70kph, 0.98
-        # lfd = 30 #80kph, 0.98
-        # lfd = 32 #90kph, 0.98
-        # lfd = 34 #90kph, 0.98
+        ## 1st lane
+        # 70kph
+        # lfd = 28 
+        # lfd_offset = 0.98
 
-        # 2nd lane
+        # 80kph
+        # lfd = 30 
+        # lfd_offset = 0.98
+
+        # 90kph
+        # lfd = 32 
+        # lfd_offset = 0.98
+        
+        # 100kph
+        # lfd = 34 
+        # lfd_offset = 0.98
+
+        ## 2nd lane
         # 50kph 
         # lfd = 27
         # lfd_offset = 0.80
@@ -93,17 +110,29 @@ class PurePursuit(object):
         # 60kph
         # lfd = 30
         # lfd_offset = 0.82
-        # lfd = 33 #70kph, 0.85
-        # lfd = 45 #80kph, 0.95
-        # lfd = 50 #90kph, 0.98
 
-        #3rd lane
+        # 70kph
+        # lfd = 33 
+        # lfd_offset = 0.85
+
+        # 80kph
+        # lfd = 45 
+        # lfd_offset = 0.95
+
+        # 90kph
+        # lfd = 50 
+        # lfd_offset = 0.98
+
+        ## 3rd lane
+        # 50kph
         # lfd = 27
         # lfd_offset = 0.8
 
+        # 60kph
         # lfd = 33
         # lfd_offset = 0.85
 
+        # 70kph
         # lfd = 39
         # lfd_offset = 0.85
 
