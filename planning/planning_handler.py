@@ -245,10 +245,10 @@ def check_around(xobj, yobjs, lc_state, radius = 15):
         if xobj['s'] - radius < yobj['s'] < xobj['s'] + radius:
 
             if lc_state == 'left':
-                if yobj['d'] > xobj['d']:
+                if yobj['d'] > xobj['d'] and yobj['d'] > 1.5:
                     around = True
             else:
-                if yobj['d'] < xobj['d']:
+                if yobj['d'] < xobj['d'] and yobj['d'] < -1.5:
                     around = True
     return around
 

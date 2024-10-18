@@ -62,7 +62,7 @@ class PurePursuit(object):
                 # lfd = 0.3*vehicle_speed + 11
                 # lfd = min(max(lfd, 20), 41)
                 lfd = 0.024 * vehicle_speed**2 - 0.85 * vehicle_speed + 49.0 
-                lfd = min(max(lfd, 33), 50)
+                lfd = min(max(lfd, 28), 50)
                 lfd_offset = 0.00007 * vehicle_speed**3 - 0.016 * vehicle_speed**2 + 1.18 * vehicle_speed - 19.5
                 lfd_offset = min(max(lfd, 0.8), 0.98)
 
@@ -78,7 +78,6 @@ class PurePursuit(object):
             lfd = self.lfd_gain*vehicle_speed
             lfd = min(max(lfd, self.min_lfd), self.max_lfd)
             lfd_offset = 1
-        print("original: ", lfd)
 
         # 1st lane
         # lfd = 28 # 70kph, 0.98
@@ -87,12 +86,26 @@ class PurePursuit(object):
         # lfd = 34 #90kph, 0.98
 
         # 2nd lane
-        # lfd = 기존\ # 60kph, 0.8
+        # 50kph 
+        # lfd = 27
+        # lfd_offset = 0.80
+
+        # 60kph
+        # lfd = 30
+        # lfd_offset = 0.82
         # lfd = 33 #70kph, 0.85
         # lfd = 45 #80kph, 0.95
         # lfd = 50 #90kph, 0.98
-        print("lfd:", lfd)
 
+        #3rd lane
+        # lfd = 27
+        # lfd_offset = 0.8
+
+        # lfd = 33
+        # lfd_offset = 0.85
+
+        # lfd = 39
+        # lfd_offset = 0.85
 
 
         point = self.RH.current_location

@@ -52,6 +52,8 @@ class Planning():
         self.diffrent_lane_cnt = 0
         self.change_point_state = ['normal', 'straight']
         self.change_point_cnt = 0
+        self.acc_cnt = 0
+        self.acc_reset = False
 
         #kcity = self.gpp.get_shortest_path((self.RH.local_pos[0], self.RH.local_pos[1]), [239.553, 41.007], self.specifiers[0]) # : KCITY
 
@@ -88,8 +90,8 @@ class Planning():
             self.first_lap = self.RH.lap_count
         elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
-            #if self.RH.lap_count % 2 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
-                #self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
+            if self.RH.lap_count % 2 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
+                self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -117,9 +119,12 @@ class Planning():
             if self.diffrent_lane_cnt > 9:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
-                #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                #TODO: Pre-2
+                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 self.prev_lane_number = self.RH.current_lane_number   
                 self.lc_state_list_remain_cnt = 0
+                self.acc_reset = False
+                self.acc_cnt = 0
                 self.prev_lc_state_list = None
             race_mode = self.prev_race_mode
             planning_state = 'INIT'
@@ -234,9 +239,10 @@ class Planning():
                             self.lc_state_list = self.prev_lc_state_list
                 break
         
-        if self.acc_cnt >= 50 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
+       
+        if self.acc_cnt >= 70 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
             overtaking_required = True
-            self.acc_cnt = 0
+            self.acc_reset = True
         
         path_updated = False
         lc_state_idx = 9
@@ -251,7 +257,7 @@ class Planning():
                         updated_point = point.copy()
                         for obj in front_object:
                             overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
-                            if overtakng:
+                            if overtakng or self.acc_reset:
                                 around_detected = ph.check_around(obj, check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
                                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, obj['d'])
@@ -267,6 +273,8 @@ class Planning():
                                         updated_point[0] = generated_point[0]
                                         updated_point[1] = generated_point[1]
                         updated_path.append(updated_point)
+
+                
         else: #if BSD detected in following / straight mode, we have to change lane & update global path 
             change_point_caution = self.gpp.get_change_point_caution(trim_global_path, self.RH.local_pos, self.RH.current_velocity)
             if change_point_caution is not None :
@@ -358,7 +366,6 @@ class Planning():
 
                 self.acc_cnt += 1
             else:
-                self.acc_cnt = 0
                 target_v_ACC = interped_vel[2]
    
         else:
@@ -369,7 +376,7 @@ class Planning():
             bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, self.change_point_state[1])
             if not bsd_detected:
                 self.change_point_cnt += 1
-                if self.change_point_cnt > 5:
+                if self.change_point_cnt > 3:
                     self.change_point_state = ['normal', 'straight']
                     target_v_ACC = self.prev_target_vel
                     self.change_point_cnt = 0
@@ -463,8 +470,8 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                # if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                # if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel
