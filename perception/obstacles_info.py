@@ -58,8 +58,7 @@ class Object():
 
             if abs(v_x - mean_x) <= threshold:
                 self.x_velocities.append(v_x)
-            else:
-                print("not good movement!! removing outlier")
+            
         else:
             self.x_velocities.append(v_x)
         

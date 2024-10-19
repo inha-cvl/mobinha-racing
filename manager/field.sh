@@ -11,6 +11,7 @@ cd ../drive_message/ #0
 python3 drive_message.py KIAPI_Racing_Fast &
 cd ../perception/
 python3 perception.py &
+python3 tracking.py &
 sleep 2 
 cd ../map_lane
 python3 map_lane.py &

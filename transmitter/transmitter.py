@@ -16,10 +16,10 @@ def signal_handler(sig, frame):
 
 class Transmitter():
     def __init__(self):
-        self.bus0 = can.ThreadSafeBus(interface='socketcan', channel='can1', bitrate=500000)
-        self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can2', bitrate=500000)
+        self.bus0 = can.ThreadSafeBus(interface='socketcan', channel='can0', bitrate=500000)
+        self.bus1 = can.ThreadSafeBus(interface='socketcan', channel='can1', bitrate=500000)
         try:
-            self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can0', bitrate=500000)
+            self.bus2 = can.ThreadSafeBus(interface='socketcan', fd=True, channel='can2', bitrate=500000)
         except Exception as e:
             self.bus2 = None
             print("[Trasmitter] No CAN2")

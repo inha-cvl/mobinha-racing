@@ -43,7 +43,7 @@ def find_minimum_point(x_norm, y_norm, l_width):
     return min_point
 
 def trim_and_update_global_path(global_path, local_pos, local_path_length):
-    now_idx = find_closest_index(global_path, local_pos)
+    now_idx = max(find_closest_index(global_path, local_pos), 0)
     end_idx = min(now_idx + local_path_length, len(global_path))
     copy_g_path = copy.deepcopy(global_path)
     trim_global_path = copy_g_path[now_idx:end_idx]

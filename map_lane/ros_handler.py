@@ -56,10 +56,10 @@ class ROSHandler():
         rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb)
 
         #rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
-        rospy.Subscriber('/tracked_marker/', BoundingBoxArray, self.lidar_track_box_cb)
+        rospy.Subscriber('/tracked_marker', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
         #rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
-        rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
+        #rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
 
     def system_status_cb(self, msg):
         self.map_name = msg.mapName.data
@@ -122,42 +122,23 @@ class ROSHandler():
 
     def lidar_track_box_cb(self, msg):
         obstacles = []
-        bsd_msg = Int8MultiArray()
-        bsd_msg.data = [0,0]
-        car_x_array = []
-        car_y_array = []
-
+       
         for obj in msg.boxes:
             
-            if obj.header.seq < 3:
-                continue
-            
-            car_x = obj.pose.position.x
-            car_y = obj.pose.position.y
-            car_x_array.append(car_x)
-            car_y_array.append(car_y)
-
-            offset = 20
-
-            if any(-offset< x for x in car_x_array) & any(offset> x for x in car_x_array) & any(2 < y for y in car_y_array) & any(5 > y for y in car_y_array):
-                bsd_msg.data[0] = 1
-            else:
-                bsd_msg.data[0] = 0
-
-            if any(-offset< x for x in car_x_array) & any(offset> x for x in car_x_array) & any(-5 < y for y in car_y_array) & any(-2 > y for y in car_y_array):
-                bsd_msg.data[1] = 1
-            else:
-                bsd_msg.data[1] = 0
-
+            # if obj.header.seq < 3:
+            #     continue    
             conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
             if conv is None:
                 return
             else:
+                
+                
                 nx,ny = conv
                 v =  (obj.value if obj.value != 0 else 0 ) + self.current_velocity
                 obstacles.append([0, nx, ny, v])
+            
         self.lid_obstacles = obstacles 
-        self.lidar_bsd_pub.publish(bsd_msg)
+        
 
     def publish(self, path, kappa, velocity):
         self.navigation_data = NavigationData()
@@ -188,6 +169,11 @@ class ROSHandler():
     
     def publish_refine_obstacles(self, obstacles):
         pose_array = PoseArray()
+        bsd_msg = Int8MultiArray()
+        bsd_msg.data = [0,0]
+        car_x_array = []
+        car_y_array = []
+
         for obs in obstacles:
             pose = Pose()
             pose.position.x = obs[1] #pos x
@@ -197,4 +183,22 @@ class ROSHandler():
             pose.orientation.y = obs[4] #heading
             pose.orientation.z = obs[5] #distance
             pose_array.poses.append(pose)
+
+            car_x, car_y = self.oh.enu2obj((obs[1], obs[2])) 
+            car_x_array.append(car_x)
+            car_y_array.append(car_y)
+
+            offset = 12+self.current_velocity/8
+            if any(-offset< x for x in car_x_array) and any(offset> x for x in car_x_array) and any(2 < y for y in car_y_array) and any(5 > y for y in car_y_array):
+                bsd_msg.data[0] = 1
+            else:
+                bsd_msg.data[0] = 0
+
+            if any(-offset< x for x in car_x_array) and any(offset> x for x in car_x_array) and any(-5 < y for y in car_y_array) and any(-2 > y for y in car_y_array):
+                bsd_msg.data[1] = 1
+            else:
+                bsd_msg.data[1] = 0
+
+
         self.refine_obstacles_pub.publish(pose_array)
+        self.lidar_bsd_pub.publish(bsd_msg)

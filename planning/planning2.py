@@ -91,7 +91,8 @@ class Planning():
         elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
             if self.RH.lap_count % 2 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
-                self.max_vel = min(self.max_vel + 5/3.6, REAL_MAX_SPEED/3.6)  
+                vel_offset = 5/3.6 if self.RH.lap_count <= 6 else 7/3.6
+                self.max_vel = min(self.max_vel + vel_offset, REAL_MAX_SPEED/3.6)  
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -120,7 +121,7 @@ class Planning():
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 #TODO: Pre-2
-                #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 if self.race_mode == 'slow_on' and self.selected_lane == 1:
                     self.selected_lane = 2
                 self.prev_lane_number = self.RH.current_lane_number   
@@ -200,7 +201,7 @@ class Planning():
         self.lane_change_state = 'straight'
 
         long_avoidance_gap = 37
-        lat_avoidance_gap = 3.5
+        lat_avoidance_gap = 3.7 if self.check_bank() else 3.5
         target_d = 3 if self.check_bank() else 2.7
 
         for obj in object_list:
@@ -245,6 +246,7 @@ class Planning():
         if self.acc_cnt >= 70 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
             overtaking_required = True
             self.acc_reset = True
+            print("ACC Reset")
         
         path_updated = False
         avoid_on = False
@@ -438,7 +440,7 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                 # if self.RH.lap_count == 100: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6  
                 else:

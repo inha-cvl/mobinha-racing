@@ -40,6 +40,24 @@ class ObstacleHandler:
 
         return obj_x, obj_y
     
+    def enu2obj(self, enu_pose):
+        if self.local_pose is None:
+            return None
+        if len(self.local_pose) < 1:
+            return None
+        rad = np.radians(self.current_heading)
+
+        # ENU 좌표에서 로컬 좌표로 변환
+        nx = enu_pose[0] - self.local_pose[0]
+        ny = enu_pose[1] - self.local_pose[1]
+
+        # 회전 행렬의 역변환 (로컬 좌표로 변환)
+        obj_x = math.cos(rad) * nx + math.sin(rad) * ny
+        obj_y = -math.sin(rad) * nx + math.cos(rad) * ny
+
+        return obj_x, obj_y
+
+
     def filtering_by_lane_num(self, lane_num, fred_d):
         if -1 < fred_d < 1:
             return True
