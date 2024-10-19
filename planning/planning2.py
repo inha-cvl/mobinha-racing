@@ -327,7 +327,7 @@ class Planning():
 
                 ttc = ph.calc_ttc(min_s, obj_v, self.RH.current_velocity)
                 safety_distance = 0.4*self.RH.current_velocity*3.6
-                safety_distance = min(max(safety_distance, 20), 40)
+                safety_distance = min(max(safety_distance, 20), 60)
 
                 margin = safety_distance - min_s
 
