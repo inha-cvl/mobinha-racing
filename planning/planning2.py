@@ -260,8 +260,9 @@ class Planning():
                             if overtakng or self.acc_reset:
                                 around_detected = ph.check_around(obj, check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
+                                lidar_bsd_detected = ph.check_bsd(self.RH.left_lidar_bsd_detect, self.RH.right_lidar_bsd_detect, lc_state)
                                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, obj['d'])
-                                if not around_detected and not bsd_detected and not lat_avoidance_overed:
+                                if not around_detected and not bsd_detected and not lidar_bsd_detected and not lat_avoidance_overed:
                                     path_updated = True
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
                                     obj_radius = long_avoidance_gap + (obj['v'] / 5) 
@@ -276,7 +277,8 @@ class Planning():
 
         elif self.race_mode == 'slow_on' and self.RH.current_lane_id in ['17', '14', '1', '25', '26', '56', '42']:
             bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, 'right')
-            if not bsd_detected and len(right_object) == 0:
+            lidar_bsd_detected = ph.check_bsd(self.RH.left_lidar_bsd_detect, self.RH.right_lidar_bsd_detect, 'right')
+            if not bsd_detected and not lidar_bsd_detected and len(right_object) == 0:
                 for i, point in enumerate(trim_global_path):
                     shift_value = -4
                     if i > 5:
@@ -290,7 +292,8 @@ class Planning():
             if change_point_caution is not None :
                 change_caution, lc_state, change_idx = change_point_caution
                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
-                if bsd_detected:
+                lidar_bsd_detected = ph.check_bsd(self.RH.left_lidar_bsd_detect, self.RH.right_lidar_bsd_detect, lc_state)
+                if bsd_detected and lidar_bsd_detected:
                     self.change_point_state = ['warning', lc_state]
            
         return final_global_path
@@ -339,7 +342,8 @@ class Planning():
         if self.change_point_state[0] == 'warning':
             target_v_ACC = max(self.prev_target_vel-(stop_vel_decrement*20), -1)
             bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, self.change_point_state[1])
-            if not bsd_detected:
+            lidar_bsd_detected = ph.check_bsd(self.RH.left_lidar_bsd_detect, self.RH.right_lidar_bsd_detect, self.change_point_state[1])
+            if not bsd_detected and not lidar_bsd_detected:
                 self.change_point_cnt += 1
                 if self.change_point_cnt > 3:
                     self.change_point_state = ['normal', 'straight']

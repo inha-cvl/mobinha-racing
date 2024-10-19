@@ -5,7 +5,8 @@ from drive_msgs.msg import *
 from geometry_msgs.msg import Point, Pose, PoseArray
 from visualization_msgs.msg import Marker, MarkerArray
 from jsk_recognition_msgs.msg import BoundingBoxArray
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Int8MultiArray
+
 
 from libs.planning_utils import *
 from pyproj import Proj, Transformer
@@ -47,6 +48,7 @@ class ROSHandler():
         self.lane_data_pub = rospy.Publisher('/LaneData', LaneData, queue_size=1)
         self.lanelet_pub = rospy.Publisher('/LaneLet', LaneLet, queue_size=1)
         self.refine_obstacles_pub = rospy.Publisher('/map_lane/refine_obstacles', PoseArray, queue_size=1)
+        self.lidar_bsd_pub = rospy.Publisher('/map_lane/lidar_bsd', Int8MultiArray,queue_size=1)
 
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
@@ -119,9 +121,33 @@ class ROSHandler():
 
     def lidar_track_box_cb(self, msg):
         obstacles = []
+        bsd_msg = Int8MultiArray()
+        bsd_msg.data = [0,0]
+        car_x_array = []
+        car_y_array = []
+
         for obj in msg.boxes:
-            if obj.pose.position.z > 0.5 and obj.header.seq < 3:
+            
+            if obj.header.seq < 3:
                 continue
+            
+            car_x = obj.pose.position.x
+            car_y = obj.pose.position.y
+            car_x_array.append(car_x)
+            car_y_array.append(car_y)
+
+            offset = 20
+
+            if any(-offset< x for x in car_x_array) & any(offset> x for x in car_x_array) & any(2 < y for y in car_y_array) & any(5 > y for y in car_y_array):
+                bsd_msg.data[0] = 1
+            else:
+                bsd_msg.data[0] = 0
+
+            if any(-offset< x for x in car_x_array) & any(offset> x for x in car_x_array) & any(-5 < y for y in car_y_array) & any(-2 > y for y in car_y_array):
+                bsd_msg.data[1] = 1
+            else:
+                bsd_msg.data[1] = 0
+
             conv = self.oh.object2enu([obj.pose.position.x, obj.pose.position.y])
             if conv is None:
                 return
@@ -130,6 +156,7 @@ class ROSHandler():
                 v =  (obj.value if obj.value != 0 else 0 ) + self.current_velocity
                 obstacles.append([0, nx, ny, v])
         self.lid_obstacles = obstacles 
+        self.lidar_bsd_pub.publish(bsd_msg)
 
     def publish(self, path, kappa, velocity):
         self.navigation_data = NavigationData()

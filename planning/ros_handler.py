@@ -6,6 +6,7 @@ from drive_msgs.msg import *
 from geometry_msgs.msg import Point
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Int8MultiArray
 
 class ROSHandler():
     def __init__(self):
@@ -27,6 +28,8 @@ class ROSHandler():
         self.current_position_long = 0
         self.left_bsd_detect = 0
         self.right_bsd_detect = 0
+        self.left_lidar_bsd_detect = 0
+        self.right_lidar_bsd_detect = 0
         self.local_pos = None
         self.prev_start_pos = [0,0]
         self.object_list = []
@@ -51,6 +54,7 @@ class ROSHandler():
         rospy.Subscriber('/DetectionData', DetectionData, self.detection_data_cb)
         rospy.Subscriber('/LaneData', LaneData, self.lane_data_cb)
         rospy.Subscriber('/CCANOutput', CCANOutput, self.ccan_output_cb)
+        rospy.Subscriber('/map_lane/lidar_bsd', Int8MultiArray, self.lidar_bsd_cb)
 
     def system_status_cb(self, msg):
         self.map_name = msg.mapName.data   
@@ -79,6 +83,10 @@ class ROSHandler():
         self.left_bsd_detect = int(msg.CF_Lca_IndLeft.data) # 0 : none, 1 : detect
         self.right_bsd_detect = int(msg.CF_Lca_IndRight.data) 
     
+    def lidar_bsd_cb(self, msg):
+        self.left_lidar_bsd_detect = int(msg.data[0])
+        self.right_lidar_bsd_detect = int(msg.data[1])
+
     def detection_data_cb(self, msg):
         object_list = []
         position_list = []
