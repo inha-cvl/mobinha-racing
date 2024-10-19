@@ -55,7 +55,8 @@ class ROSHandler():
         rospy.Subscriber('/SystemStatus', SystemStatus, self.system_status_cb)
         rospy.Subscriber('/ADAS_DRV',Float32MultiArray, self.adas_drv_cb)
 
-        rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        #rospy.Subscriber('/mobinha/perception/lidar/track_box', BoundingBoxArray, self.lidar_track_box_cb)
+        rospy.Subscriber('/tracked_marker/', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
         #rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
         rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
