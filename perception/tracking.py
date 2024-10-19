@@ -39,7 +39,7 @@ class ObjectTracker():
         self.prev_bbox_timestamp = None
         self.dt = None  # dt를 저장할 변수
 
-        rospy.Subscriber('/deep_box', BoundingBoxArray, self.bbox_callback)
+        rospy.Subscriber('/mobinha/perception/lidar/bbox', BoundingBoxArray, self.bbox_callback)
 
         self.tracker_pub = rospy.Publisher("/tracked_marker", BoundingBoxArray, queue_size=10)
         self.footprint_pub = rospy.Publisher("/foot_print", MarkerArray, queue_size=10)

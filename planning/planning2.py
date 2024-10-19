@@ -246,7 +246,6 @@ class Planning():
         if self.acc_cnt >= 70 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
             overtaking_required = True
             self.acc_reset = True
-            print("ACC Reset")
         
         path_updated = False
         avoid_on = False
@@ -326,14 +325,18 @@ class Planning():
                 safety_distance = 30
 
                 ttc = ph.calc_ttc(min_s, obj_v, self.RH.current_velocity)
-                safety_distance = 0.4*self.RH.current_velocity*3.6
-                safety_distance = min(max(safety_distance, 20), 60)
+                safety_distance = self.RH.current_velocity*3.6
+                safety_distance = min(max(safety_distance, 20), 100)
+                # print("safety dis", safety_distance)
+                # if min_s != 200:
+                    # print("detected", min_s)
 
                 margin = safety_distance - min_s
 
                 offset = 0.8
-                target_v_ACC = obj_v - margin*offset
+                target_v_ACC = obj_v*0.8 - margin*offset
 
+                # print("targetv", target_v_ACC)
                 self.acc_cnt += 1
             else:
                 target_v_ACC = interped_vel[2]
