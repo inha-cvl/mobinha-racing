@@ -54,6 +54,7 @@ class ROSHandler():
         self.nav_err = 1 << 1 
         self.lid_err = 1 << 2  
         self.cam_err = 1 << 3 
+        self.planning_warning= 0
 
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
@@ -78,7 +79,8 @@ class ROSHandler():
         rospy.Subscriber('/nav_health', Int8, self.nav_health_cb)
         rospy.Subscriber('/lid_health', Int8, self.lid_health_cb)
         rospy.Subscriber('/cam_health', Int8, self.cam_health_cb)
-        
+        rospy.Subscriber('/planning/warning', Int8, self.planning_warning_cb)
+
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake
@@ -104,6 +106,9 @@ class ROSHandler():
     def lane_data_cb(self, msg:LaneData):
         if msg.currentLane.laneNumber.data != 0:
             self.lane_number = msg.currentLane.laneNumber.data
+    
+    def planning_warning_cb(self,msg):
+        self.planning_warning = msg.data
 
     def navigation_data_cb(self, msg):
         path = []
@@ -166,7 +171,7 @@ class ROSHandler():
 # ~~~~~~~~~~~~~~~~~~~ Positions ~~~~~~~~~~~~~~~~~~~~~~ #
 
     def best_callback(self, msg):
-        if self.system_status.systemHealth.data & self.nav_err == 0:
+        if ( self.system_status.systemHealth.data & self.nav_err == 0 ) and self.planning_warning == 0:
             self.vehicle_state.header = Header()
             self.vehicle_state.header.stamp = rospy.Time.now()
             self.vehicle_state.enu.x = msg.position.x
@@ -179,7 +184,7 @@ class ROSHandler():
 
     
     def best_callback2(self, msg):
-        if self.system_status.systemHealth.data & self.nav_err == 1:
+        if ( self.system_status.systemHealth.data & self.nav_err == 2 ) and self.planning_warning == 1:
             self.vehicle_state.header = Header()
             self.vehicle_state.header.stamp = rospy.Time.now()
             self.vehicle_state.enu.x = msg.pose.pose.position.x

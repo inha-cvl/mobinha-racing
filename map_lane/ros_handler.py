@@ -59,7 +59,7 @@ class ROSHandler():
         rospy.Subscriber('/tracked_marker', BoundingBoxArray, self.lidar_track_box_cb)
         rospy.Subscriber('/simulator/objects', PoseArray, self.sim_objects_cb)
         #rospy.Subscriber('/RadarObjectArray', RadarObjectArray, self.radar_object_array_cb)
-        #rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
+        rospy.Subscriber('/perception/fusion_objects', PoseArray, self.fusion_objects_cb)
 
     def system_status_cb(self, msg):
         self.map_name = msg.mapName.data

@@ -56,7 +56,7 @@ class PurePursuit(object):
                 lfd = 0.2 * vehicle_speed + 14
                 lfd = min(max(lfd, 28), 34)
 
-                lfd_offset = 0.98
+                lfd_offset = 1 #0.98 rainy
 
             elif self.RH.lane_number == 2:
                 if vehicle_speed < 80:

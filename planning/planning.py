@@ -118,7 +118,7 @@ class Planning():
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 #TODO: Pre-2
-                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 if self.race_mode == 'slow_on' and self.selected_lane == 1:
                     self.selected_lane = 2
                 self.prev_lane_number = self.RH.current_lane_number   
@@ -442,7 +442,7 @@ class Planning():
 
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
-                if self.RH.lap_count == 100: # TODO: 0lap limit velocity
+                if self.RH.lap_count == 0: # TODO: 0lap limit velocity
                     limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel

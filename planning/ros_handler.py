@@ -47,7 +47,7 @@ class ROSHandler():
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
         self.global_path_pub = rospy.Publisher('/global_path', Path, queue_size=1)
         self.target_object_pub = rospy.Publisher('/planning/target_object', DetectionData, queue_size=1)
-        self.planning_warning_pub = rospy.Publisher('/planning/warninig', Int8, queue_size=1)
+        self.planning_warning_pub = rospy.Publisher('/planning/warning', Int8, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
