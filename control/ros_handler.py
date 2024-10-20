@@ -25,6 +25,7 @@ class ROSHandler():
         self.target_actuator = Actuator()
         self.lane_number = 2
         self.curve_list = rospy.get_param("/curve_list")
+        self.curve_list = self.curve_list+['9', '8', '7']
         self.curved = False
 
     def set_publisher_protocol(self):

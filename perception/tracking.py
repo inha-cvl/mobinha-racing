@@ -128,7 +128,7 @@ class ObjectTracker():
             start = time.time()
             bboxes = []
             for box in self.bboxarray.boxes:
-                if box.label == 1:
+                if box.label in [0, 1]:
                     center_x = box.pose.position.x
                     center_y = box.pose.position.y
                     center_z = 0.0

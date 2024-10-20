@@ -153,10 +153,8 @@ class Planning():
             self.gpp.global_path = g_path
     
     def set_pit_point(self):
-        if self.RH.current_lane_number <= 1:
+        if self.RH.current_lane_number <= 2:
             self.pit_point = self.pit_points[0]
-        elif self.RH.current_lane_number == 2:
-            self.pit_point = self.pit_points[1]
         else:
             self.pit_point = self.pit_points[2]
 
@@ -323,12 +321,12 @@ class Planning():
                 safety_distance = 30
 
                 ttc = ph.calc_ttc(min_s, obj_v, self.RH.current_velocity)
-                safety_distance = ((self.RH.current_velocity*3.6)*1.1)-10
+                safety_distance = ((self.RH.current_velocity*3.6)*1.3)-30
                 safety_distance = min(max(safety_distance, 20), 100)
                 margin = safety_distance - min_s
                 offset = 0.8
-                print("obj_v: ", obj_v, "obj_v * 0.8: ", obj_v*0.8)
-                print("margin: ", margin, "offset: ", offset, "margin*offset: ", margin*offset)
+                # print("obj_v: ", round(obj_v, 2), "obj_v * 0.8: ", round(obj_v*0.8,2))
+                # print("margin: ", round(margin,2), "offset: ", round(offset,2), "margin*offset: ", round(margin*offset,2))
                 target_v_ACC = obj_v*0.8 - margin*offset
 
                 self.acc_cnt += 1
