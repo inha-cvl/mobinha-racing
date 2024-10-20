@@ -323,10 +323,12 @@ class Planning():
                 safety_distance = 30
 
                 ttc = ph.calc_ttc(min_s, obj_v, self.RH.current_velocity)
-                safety_distance = self.RH.current_velocity*3.6
+                safety_distance = ((self.RH.current_velocity*3.6)*1.1)-10
                 safety_distance = min(max(safety_distance, 20), 100)
                 margin = safety_distance - min_s
                 offset = 0.8
+                print("obj_v: ", obj_v, "obj_v * 0.8: ", obj_v*0.8)
+                print("margin: ", margin, "offset: ", offset, "margin*offset: ", margin*offset)
                 target_v_ACC = obj_v*0.8 - margin*offset
 
                 self.acc_cnt += 1

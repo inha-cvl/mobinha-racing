@@ -72,7 +72,7 @@ class PurePursuit(object):
                 lfd = 0.6*vehicle_speed - 3
                 lfd = min(max(lfd, 20), 45)
 
-                lfd_offset = 0.005*vehicle_speed + 0.55 + 0.04
+                lfd_offset = 0.005*vehicle_speed + 0.55 + 0.08 #0.04 :rainy
                 lfd_offset = min(max(lfd_offset, 0.8), 0.85)
 
             else:

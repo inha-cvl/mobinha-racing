@@ -169,8 +169,8 @@ class ObjectTracker():
                 object_id = object_ids[row]
                 self.disappeared[object_id] += 1
                 self.prev_objects[object_id].predict(self.dt)
-                if object_id == 0:    
-                    print("object id : {0} is predicted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".format(object_id))
+                # if object_id == 0:    
+                #     print("object id : {0} is predicted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".format(object_id))
 
                 if self.disappeared[object_id] > self.remove_count:
                     self.remove(object_id)
