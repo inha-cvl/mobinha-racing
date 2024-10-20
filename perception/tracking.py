@@ -45,8 +45,10 @@ class ObjectTracker():
         self.dt = None  # dt를 저장할 변수
 
         rospy.Subscriber("/ublox/navpvt", NavPVT, self.gspeed_callback)
-        rospy.Subscriber('/deep_box', BoundingBoxArray, self.bbox_callback)
+        #rospy.Subscriber('/deep_box', BoundingBoxArray, self.bbox_callback)
         # rospy.Subscriber('/best/poseStamped', PoseStamped, self.gps_callback)
+
+        rospy.Subscriber("/mobinha/perception/lidar/track_box", BoundingBoxArray, self.bbox_callback)
 
         self.tracker_pub = rospy.Publisher("/tracked_marker", BoundingBoxArray, queue_size=10)
         self.footprint_pub = rospy.Publisher("/foot_print", MarkerArray, queue_size=10)
@@ -275,7 +277,7 @@ class ObjectTracker():
             bounding_box.dimensions.x = scale_x
             bounding_box.dimensions.y = scale_y
             bounding_box.dimensions.z = scale_z
-            bounding_box.value = round(bbox.state_est[1] * 3.6, 2)
+            bounding_box.value = round(bbox.state_est[1], 2)
             bbox_array.boxes.append(bounding_box)
 
         return bbox_array
