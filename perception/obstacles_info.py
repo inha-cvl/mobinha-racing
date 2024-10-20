@@ -53,8 +53,8 @@ class Object:
 
 
         y = z - self.H.dot(self.state_pred)  
-        print("residual : ", y)
-        print("kalman gain : ", K[0][0], K[1][1])
+        # print("residual : ", y)
+        # print("kalman gain : ", K[0][0], K[1][1])
         self.state_est = self.state_pred + K.dot(y)
         self.P_est = (np.eye(4) - K.dot(self.H)).dot(self.P_pred)
 

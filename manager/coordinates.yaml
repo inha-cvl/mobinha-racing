@@ -13,4 +13,4 @@ curve_list: ['1', '10', '11', '12', '13', '14', '26', '28', '29', '30', '31', '3
 
 now_lap: 0
 selected_lane: 3
-max_velocity: 100
+max_velocity: 50

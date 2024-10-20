@@ -66,7 +66,6 @@ class ROSHandler():
         if msg.currentLane.laneNumber.data != 0:
             self.lane_number = int(msg.currentLane.laneNumber.data)
         
-    
     def publish(self):
         self.user_input.user_mode.data = self.user_value['user_mode']
         self.user_input.user_signal.data = self.user_value['user_signal']
