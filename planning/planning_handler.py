@@ -43,8 +43,8 @@ def find_minimum_point(x_norm, y_norm, l_width):
     return min_point
 
 def trim_and_update_global_path(global_path, local_pos, local_path_length):
-    now_idx = max(find_closest_index(global_path, local_pos)-20, 0)
-    end_idx = min(now_idx + local_path_length+20, len(global_path))
+    now_idx = max(find_closest_index(global_path, local_pos), 0)
+    end_idx = min(now_idx + local_path_length, len(global_path))
     copy_g_path = copy.deepcopy(global_path)
     trim_global_path = copy_g_path[now_idx:end_idx]
     updated_global_path = global_path[now_idx:]
@@ -77,8 +77,6 @@ def object2frenet(trim_path, obs_pose):
     vector_from_start = point - centerline[0]  
     if np.dot(tangents[0], vector_from_start) < 0:  
         s = -np.linalg.norm(vector_from_start)  
-
-    s -= 20
 
     return s, d
 

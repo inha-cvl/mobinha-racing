@@ -97,7 +97,8 @@ class GlobalPathPlanner():
 
     def get_change_point_caution(self, local_path, local_pose, current_vel):
         change_dist = int(current_vel*3.6*2)
-        change_dist = change_dist if change_dist < len(local_path)-1 else len(local_path)-1
+        change_dist = min(change_dist, len(local_path)-1)
+
         c_idnidx = gput.lanelet_matching(local_path[change_dist])
         e_idnidx = gput.lanelet_matching(local_pose)
         if e_idnidx is not None and c_idnidx is not None:

@@ -46,15 +46,15 @@ class ObjectSimulator:
         while not rospy.is_shutdown():
             if self.objects:
                 for obj in self.objects:
-                    x, y, yaw, v = obj.next_state(dt, self._steer, self._accel, 0)
-                    yaw = math.degrees(yaw)
+                    #x, y, yaw, v = obj.next_state(dt, self._steer, self._accel, 0)
+                    #yaw = math.degrees(yaw)
                     
                     pose = Pose()
-                    pose.position.x = x
-                    pose.position.y = y
+                    pose.position.x = obj.x
+                    pose.position.y = obj.y
                     pose.position.z = 1
-                    pose.orientation.x = v
-                    pose.orientation.y = yaw
+                    pose.orientation.x = 0
+                    pose.orientation.y = obj.yaw
                     pose_array.poses.append(pose)
             self.pub_sim_object.publish(pose_array)
             pose_array = PoseArray()

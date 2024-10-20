@@ -185,20 +185,17 @@ class ROSHandler():
             pose_array.poses.append(pose)
 
             car_x, car_y = self.oh.enu2obj((obs[1], obs[2])) 
+            
             car_x_array.append(car_x)
             car_y_array.append(car_y)
 
             offset = 12+self.current_velocity/8
-            if any(-offset< x for x in car_x_array) and any(offset> x for x in car_x_array) and any(2 < y for y in car_y_array) and any(5 > y for y in car_y_array):
+            if -offset< car_x < offset and 2 < car_y < 5:
                 bsd_msg.data[0] = 1
-            else:
-                bsd_msg.data[0] = 0
 
-            if any(-offset< x for x in car_x_array) and any(offset> x for x in car_x_array) and any(-5 < y for y in car_y_array) and any(-2 > y for y in car_y_array):
+            if-offset< car_x < offset and -5 < car_y < -2:
                 bsd_msg.data[1] = 1
-            else:
-                bsd_msg.data[1] = 0
-
+            
 
         self.refine_obstacles_pub.publish(pose_array)
         self.lidar_bsd_pub.publish(bsd_msg)

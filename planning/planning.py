@@ -117,7 +117,7 @@ class Planning():
             if self.diffrent_lane_cnt > 9:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
-                #TODO: Pre-2
+                #TODO: Pre-2 off 
                 #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 if self.race_mode == 'slow_on' and self.selected_lane == 1:
                     self.selected_lane = 2
@@ -195,7 +195,7 @@ class Planning():
         right_object = []
         self.lane_change_state = 'straight'
 
-        long_avoidance_gap = 30
+        long_avoidance_gap = 35
         lat_avoidance_gap = 3.7 if self.check_bank() else 3.5
         target_d = 3 if self.check_bank() else 2.7
 
@@ -325,8 +325,6 @@ class Planning():
                 safety_distance = min(max(safety_distance, 20), 100)
                 margin = safety_distance - min_s
                 offset = 0.8
-                # print("obj_v: ", round(obj_v, 2), "obj_v * 0.8: ", round(obj_v*0.8,2))
-                # print("margin: ", round(margin,2), "offset: ", round(offset,2), "margin*offset: ", round(margin*offset,2))
                 target_v_ACC = obj_v*0.8 - margin*offset
 
                 self.acc_cnt += 1
