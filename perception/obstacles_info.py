@@ -1,82 +1,76 @@
-## obstacle_info.py
 import numpy as np
-import rospy
-import math
 from collections import deque
 
-class Object():
+class Object:
     def __init__(self, bbox):
         self.bbox = bbox
-        
-        self.prev_x = bbox[0]
-        self.prev_y = bbox[1]
-        self.x_est = np.array([bbox[0], 0.0])  # [위치 x, 속도 v_x]
-        self.y_est = np.array([bbox[1], 0.0])  # [위치 y, 속도 v_y]
+        self.dt = 0.1  # 시간 간격
 
-        self.x_velocities = deque(maxlen=10)
-        self.mean_velocity_x = 0.0
+        # 상태 벡터: [x, y, vx, vy]
+        self.state_est = np.array([bbox[0], bbox[1], 0.0, 0.0])
 
+        self.H = np.array([
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0]
+        ])
 
-        self.z_x = 0.0
-        self.z_y = 0.0
-        self.collision_pos_y = 0.0
+        # my ye chuk noise
+        self.Q = np.eye(4) * 0.1
+
+        # sensor noise(detection noise)
+        self.R = np.eye(2) * 0.005
+
+        # initial velocity little bit bu-jeunghwak
+        self.P_est = np.diag([1.0, 1.0, 10.0, 10.0])
+
+        self.count = 0
         self.appear = 0
-        self.z_score = 2.58 # [1.645, 1.96, 2.58]
+        
 
     def set_initial_value(self, z_x, z_y):
-        self.x_est = np.array([z_x, 0.0])
-        self.y_est = np.array([z_y, 0.0])
-        self.prev_x = z_x
-        self.prev_y = z_y
-        self.appear += 1
+        self.state_est = np.array([z_x, z_y, 0.0, 0.0])
+        self.count += 1
 
     def predict(self, dt):
-        self.prev_x = self.x_est[0] + self.x_est[1]*dt
-        self.prev_y = self.y_est[0] + self.y_est[1]*dt
+
+        F = np.array([
+            [1.0, 0.0, dt, 0.0],
+            [0.0, 1.0, 0.0, dt],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0]
+        ])
+        self.state_pred = F.dot(self.state_est)
+        self.P_pred = F.dot(self.P_est).dot(F.T) + self.Q
 
     def update(self, z_x, z_y, dt):
-        self.x_est[0] = z_x
-        self.y_est[0] = z_y
-        if dt > 0:
-            self.x_est[1] = (self.x_est[0] - self.prev_x) / dt
-            self.y_est[1] = (self.y_est[0] - self.prev_y) / dt
-        else:
-            self.x_est[1] = 0.0
-            self.y_est[1] = 0.0
-        
-        v_x = self.x_est[1]
-        v_y = self.y_est[1]
-        velocity = np.sqrt(v_x*v_x + v_y*v_y)
-        
-        self.x_velocities.append(v_x)
-        # self.mean_velocity_x = np.mean(self.x_velocities)
-        if len(self.x_velocities) >= 3:
-            mean_x = np.mean(self.x_velocities)
-            std_x = np.std(self.x_velocities)
 
-            threshold = self.z_score* std_x
+        self.predict(dt)
 
-            if abs(v_x - mean_x) <= threshold:
-                self.x_velocities.append(v_x)
-            
-        else:
-            self.x_velocities.append(v_x)
-        
-        self.mean_velocity_x = np.mean(self.x_velocities)
-        # if v_x >= self.mean_velocity_x:
-        #     if (v_x - self.mean_velocity_x)/dt <= 2.0:
-        #         self.x_velocities.append(v_x)
-        #         self.mean_velocity_x = np.mean(self.x_velocities)
-        #     else:
-        #         print("velocity miss calculated !! ignore that value")
-        # else:
-        #     self.x_velocities.append(v_x)
-        #     self.mean_velocity_x = np.mean(self.x_velocities)
+        z = np.array([z_x, z_y])
 
-        if velocity >= 90:    
-            print("velocity : ", round(velocity, 2))
-        self.prev_x = self.x_est[0]
-        self.prev_y = self.y_est[0]
+        S = self.H.dot(self.P_pred).dot(self.H.T) + self.R
+        K = self.P_pred.dot(self.H.T).dot(np.linalg.inv(S))
+
+
+        y = z - self.H.dot(self.state_pred)  
+        print("residual : ", y)
+        print("kalman gain : ", K[0][0], K[1][1])
+        self.state_est = self.state_pred + K.dot(y)
+        self.P_est = (np.eye(4) - K.dot(self.H)).dot(self.P_pred)
+
         self.appear += 1
 
+    def future_point(self):
 
+        forward = []
+        for i in range(5):
+            dt_future = self.dt * (i + 1)
+            F_future = np.array([
+                [1.0, 0.0, dt_future, 0.0],
+                [0.0, 1.0, 0.0, dt_future],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0]
+            ])
+            future_state = F_future.dot(self.state_est)
+            forward.append([future_state[0], future_state[1]])
+        return forward

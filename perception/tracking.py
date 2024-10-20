@@ -1,20 +1,25 @@
-## tracker
+import tf.transformations
 from obstacles_info import Object
 from numpy.linalg import inv
 from visualization_msgs.msg import Marker, MarkerArray
 from scipy.optimize import linear_sum_assignment
 from collections import deque
 from visualization_msgs.msg import MarkerArray, Marker
+from geometry_msgs.msg import Pose, PoseArray, PoseStamped
 from jsk_recognition_msgs.msg import BoundingBoxArray, BoundingBox
+import copy
 import time
 import math
 import tf
 import numpy as np
 import rospy
 import math
+import datetime as dt
+from geometry_msgs.msg import Point
+from ublox_msgs.msg import NavPVT
 
 class ObjectTracker():
-    def __init__(self,  remove_count=2, distance_threshold=2.5, appear_count=2):
+    def __init__(self,  remove_count=4, distance_threshold=2.5, appear_count=2):
         self.next_object_id = 0
         self.prev_objects = {}  
         self.disappeared = {}  
@@ -39,7 +44,9 @@ class ObjectTracker():
         self.prev_bbox_timestamp = None
         self.dt = None  # dt를 저장할 변수
 
-        rospy.Subscriber('/mobinha/perception/lidar/bbox', BoundingBoxArray, self.bbox_callback)
+        rospy.Subscriber("/ublox/navpvt", NavPVT, self.gspeed_callback)
+        rospy.Subscriber('/deep_box', BoundingBoxArray, self.bbox_callback)
+        # rospy.Subscriber('/best/poseStamped', PoseStamped, self.gps_callback)
 
         self.tracker_pub = rospy.Publisher("/tracked_marker", BoundingBoxArray, queue_size=10)
         self.footprint_pub = rospy.Publisher("/foot_print", MarkerArray, queue_size=10)
@@ -73,8 +80,9 @@ class ObjectTracker():
 
         if self.prev_bbox_timestamp is not None:
             self.dt = (bbox_msg.header.stamp - self.prev_bbox_timestamp).to_sec()
+            # print("dt:", self.dt)
         else:
-            self.dt = 0.0666  # 첫 번째 메시지인 경우 dt를 일단은 1/15로 해두자 
+            self.dt = 0.05  # 첫 번째 메시지인 경우 dt를 일단은 1/20로 해두자 
 
         # 현재 bbox_msg의 타임스탬프를 저장하여 
         self.prev_bbox_timestamp = bbox_msg.header.stamp
@@ -103,7 +111,7 @@ class ObjectTracker():
         del self.candidate_alive_count[object_id]
 
     def distance(self, prev_object, bbox):
-        prev_center_x, prev_center_y = prev_object.prev_x, prev_object.prev_y
+        prev_center_x, prev_center_y = prev_object.state_est[0], prev_object.state_est[1]
         new_center_x, new_center_y = bbox.bbox[0], bbox.bbox[1]
         distance = math.sqrt((prev_center_x - new_center_x) ** 2 + (prev_center_y - new_center_y) ** 2)
         return distance
@@ -159,6 +167,8 @@ class ObjectTracker():
                 object_id = object_ids[row]
                 self.disappeared[object_id] += 1
                 self.prev_objects[object_id].predict(self.dt)
+                if object_id == 0:    
+                    print("object id : {0} is predicted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".format(object_id))
 
                 if self.disappeared[object_id] > self.remove_count:
                     self.remove(object_id)
@@ -180,7 +190,6 @@ class ObjectTracker():
             unmatched_candidate_cols = set(range(candidate_cost_matrix.shape[1]))
 
             matched_cols = set()
-
             for row, col in zip(candidate_row_ind, candidate_col_ind):
                 if candidate_cost_matrix[row, col] <= self.distance_threshold:
                     candidate_id = candidate_ids[row]
@@ -221,14 +230,14 @@ class ObjectTracker():
         text_array = MarkerArray()
         for object_id in objects.keys():
             bbox = objects[object_id]
-            center_x = bbox.prev_x
-            center_y = bbox.prev_y
+            center_x = bbox.state_est[0]
+            center_y = bbox.state_est[1]
             center_z = bbox.bbox[2]
             text = Marker()
             text.id = object_id
             text.header.frame_id = "hesai_lidar"
             text.type = Marker.TEXT_VIEW_FACING
-            text.text = "object_id : {0}, velocity : {1}".format(object_id, round(bbox.mean_velocity_x, 2))
+            text.text = "object_id : {0}, velocity : {1}".format(object_id, round(bbox.state_est[2] * 3.6, 2))
             text.action = Marker.ADD
             text.pose.position.x = center_x
             text.pose.position.y = center_y
@@ -249,8 +258,8 @@ class ObjectTracker():
 
         for object_id in objects.keys():
             bbox = objects[object_id]
-            center_x = bbox.prev_x
-            center_y = bbox.prev_y
+            center_x = bbox.state_est[0]
+            center_y = bbox.state_est[1]
             center_z = bbox.bbox[2]
             scale_x = bbox.bbox[3]
             scale_y = bbox.bbox[4]
@@ -266,7 +275,7 @@ class ObjectTracker():
             bounding_box.dimensions.x = scale_x
             bounding_box.dimensions.y = scale_y
             bounding_box.dimensions.z = scale_z
-            bounding_box.value = round(bbox.mean_velocity_x, 2)
+            bounding_box.value = round(bbox.state_est[1] * 3.6, 2)
             bbox_array.boxes.append(bounding_box)
 
         return bbox_array
