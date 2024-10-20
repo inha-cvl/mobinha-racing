@@ -50,9 +50,10 @@ class ROSHandler():
 
         # Sensor Health
         self.system_health = 0
-        self.nav_err = 1 << 0  # 001(1)
-        self.lid_err = 1 << 1  # 010(2)
-        self.cam_err = 1 << 2  # 100(4)
+        self.nav_warn = 1 << 0
+        self.nav_err = 1 << 1 
+        self.lid_err = 1 << 2  
+        self.cam_err = 1 << 3 
 
     def set_publisher_protocol(self):
         self.sensor_data_pub = rospy.Publisher('/SensorData', SensorData, queue_size=1)
@@ -139,10 +140,13 @@ class ROSHandler():
     #     self.system_status.systemHealth.data = msg.data
 
     def nav_health_cb(self, msg):
-        if msg.data == 1: 
+        if msg.data == 2:
             self.system_health |= self.nav_err
+        if msg.data == 1: 
+            self.system_health |= self.nav_warn
         elif msg.data == 0:  
             self.system_health &= ~self.nav_err
+            self.system_health |= self.nav_warn
         self.system_status.systemHealth.data = self.system_health
 
     def lid_health_cb(self, msg):
