@@ -3,15 +3,9 @@ import numpy as np
 from pyproj import Proj, Transformer
 
 from drive_msgs.msg import *
-from geometry_msgs.msg import PoseArray, Pose, Pose2D, QuaternionStamped
-from ublox_msgs.msg import NavPVT
-from std_msgs.msg import Header, Float32, Bool, Int8
-from sensor_msgs.msg import NavSatFix
+from geometry_msgs.msg import PoseArray, Pose, Pose2D
+from std_msgs.msg import Header,  Int8
 from nav_msgs.msg import Odometry
-# from sbg_driver.msg import SbgEkfNav, SbgEkfEuler, SbgEkfQuat, SbgGpsHdt
-
-# from novatel_oem7_msgs.msg import INSPVA
-
 
 from libs.message_handler import *
 from libs.obstalce_handler import ObstacleHandler
@@ -84,7 +78,6 @@ class ROSHandler():
         rospy.Subscriber('/lid_health', Int8, self.lid_health_cb)
         rospy.Subscriber('/cam_health', Int8, self.cam_health_cb)
         
-
 
     def can_output_cb(self, msg):
         self.vehicle_state.mode.data = mode_checker(msg.EPS_Control_Status.data, msg.ACC_Control_Status.data)  # off, on, steering, acc/brake

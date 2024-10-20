@@ -6,7 +6,7 @@ from drive_msgs.msg import *
 from geometry_msgs.msg import Point
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import Int8MultiArray
+from std_msgs.msg import Int8MultiArray, Int8
 
 class ROSHandler():
     def __init__(self):
@@ -47,6 +47,7 @@ class ROSHandler():
         self.navigation_data_pub = rospy.Publisher('/NavigationData', NavigationData, queue_size=1)
         self.global_path_pub = rospy.Publisher('/global_path', Path, queue_size=1)
         self.target_object_pub = rospy.Publisher('/planning/target_object', DetectionData, queue_size=1)
+        self.planning_warning_pub = rospy.Publisher('/planning/warninig', Int8, queue_size=1)
         
     def set_subscriber_protocol(self):
         rospy.Subscriber('/VehicleState', VehicleState, self.vehicle_state_cb)
@@ -56,16 +57,17 @@ class ROSHandler():
         rospy.Subscriber('/CCANOutput', CCANOutput, self.ccan_output_cb)
         rospy.Subscriber('/map_lane/lidar_bsd', Int8MultiArray, self.lidar_bsd_cb)
 
-    def system_status_cb(self, msg):
+    def system_status_cb(self, msg: SystemStatus):
         self.map_name = msg.mapName.data   
         self.system_mode = msg.systemMode.data 
         self.current_signal = msg.systemSignal.data
         self.lap_count = msg.lapCount.data
         self.kiapi_signal = msg.kiapiSignal.data
-        #selff
+        self.system_health = msg.systemHealth.data
         #0:None, 1:Go, 2:Stop, 3:Slow On, 4:Slow Off, 5:Pit Stop
         if not self.set_go and self.kiapi_signal == 1:
             self.set_go = True
+        
         
     def lane_data_cb(self, msg: LaneData):
         self.current_lane_id = str(msg.currentLane.id.data)
@@ -140,7 +142,6 @@ class ROSHandler():
         
         self.target_object_pub.publish(detection_data)
 
-
     
     def publish_global_path(self, waypoints):
         path = Path()
@@ -161,4 +162,6 @@ class ROSHandler():
         for set in local_action_set:
             action_mean += set[5]
         return action_mean / 5
-            
+    
+    def publish_warning(self, value):
+        self.planning_warning_pub.publish(Int8(value))

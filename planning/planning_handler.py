@@ -44,7 +44,7 @@ def find_minimum_point(x_norm, y_norm, l_width):
 
 def trim_and_update_global_path(global_path, local_pos, local_path_length):
     now_idx = max(find_closest_index(global_path, local_pos)-20, 0)
-    end_idx = min(now_idx + local_path_length, len(global_path))
+    end_idx = min(now_idx + local_path_length+20, len(global_path))
     copy_g_path = copy.deepcopy(global_path)
     trim_global_path = copy_g_path[now_idx:end_idx]
     updated_global_path = global_path[now_idx:]
@@ -72,12 +72,14 @@ def object2frenet(trim_path, obs_pose):
     d = np.dot(vector_to_point, normal)
 
     # 경로 상의 거리를 계산 (경로 시작부터 closest_index까지의 거리)
-    s = np.sum(np.linalg.norm(np.diff(centerline[:closest_index + 1], axis=0), axis=0))
+    s = np.sum(np.linalg.norm(np.diff(centerline[:closest_index + 1], axis=0), axis=1))
 
     vector_from_start = point - centerline[0]  
     if np.dot(tangents[0], vector_from_start) < 0:  
         s = -np.linalg.norm(vector_from_start)  
-    
+
+    s -= 20
+
     return s, d
 
 
@@ -260,7 +262,7 @@ def get_stop_distance(current_velocity, decel_factor=2.7):
 
 def check_lane_deaprture(local_path, localpos):
     if local_path is not None and len(local_path) > 0:
-        dist = distance(local_path[0][0], local_path[0][1], localpos[0], localpos[1])
+        dist = distance(local_path[20][0], local_path[20][1], localpos[0], localpos[1])
         if dist <= 5:
             return 'Normal'
         elif 5 < dist < 10:

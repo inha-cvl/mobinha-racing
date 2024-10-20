@@ -11,7 +11,7 @@ class GetMaxVelocity:
         self.set_values(global_path_name)
 
     def set_values(self,global_path_name):
-        csv_file = f'./inputs/traj_ltpl_cl/traj_ltpl_cl_{global_path_name}.csv'
+        csv_file = f'./log/{global_path_name}.csv'
         with open(csv_file, 'r', encoding='utf-8') as f:
             rdr = csv.reader(f, delimiter=';')
             for i, line in enumerate(rdr):

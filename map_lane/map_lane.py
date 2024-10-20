@@ -7,7 +7,6 @@ import math
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from shapely.geometry import Polygon
-from local_path_test import LocalPathTest
 from hd_map.map import MAP
 from libs.lanelet_handler import LaneletHandler
 
@@ -24,7 +23,6 @@ class MapLane():
 
     
     def set_values(self):
-        self.lpt_use = False
         self.max_vel = 30
         self.stacked_refine_obstacles = []
         self.obstacle_timestamps = []
@@ -37,8 +35,6 @@ class MapLane():
         if self.RH.map_name != None:
             self.map = MAP(self.RH.map_name)
             self.llh = LaneletHandler(self.RH, self.map)
-            if self.lpt_use:
-                self.lpt = LocalPathTest(self.RH, self.map)
             
     def update_obstacles(self, new_obstacles):
         current_time = time.time()
@@ -179,16 +175,6 @@ class MapLane():
 
         rate = rospy.Rate(30)
         while not rospy.is_shutdown():
-            if self.lpt is None:
-                pass
-            if self.lpt_use:
-                lp_result = self.lpt.execute(self.RH.local_pose)
-                if lp_result == None:
-                    local_path, local_kappa = None, None 
-                else:
-                    [ local_path, local_kappa ] = lp_result
-                local_velocity = self.lpt.get_velocity(self.max_vel)
-                self.RH.publish(local_path, local_kappa, local_velocity)
             
             sim_obs, lid_obs, rad_obs = self.llh.refine_obstacles_heading(self.RH.local_pose, [self.RH.sim_obstacles, self.RH.lid_obstacles, self.RH.fus_obstacles]) # 0: simulator, 1 : lidar, 2 : fusion
             matched_obstacles, _ = self.lidar_radar_matching(lid_obs, rad_obs)

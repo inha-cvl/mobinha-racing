@@ -24,7 +24,7 @@ class GlobalPathPlanner():
     
     def to_csv(self, file_name, trajectory_info):
         top_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        file_path = f'{top_path}/inputs/traj_ltpl_cl/traj_ltpl_cl_{file_name}.csv'
+        file_path = f'{top_path}/log/{file_name}.csv'
         with open(file_path, 'w', newline='') as file:
             writer = csv.writer(file, delimiter=';')
             writer.writerow(['#x', 'y', 'w_right', 'w_left', 'x_normvec', 'y_normvec', 'alpha', 's', 'psj', 'kappa', 'vx', 'ax'])

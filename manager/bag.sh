@@ -12,4 +12,4 @@ python3 tracking.py &
 cd ../map_lane
 python3 map_lane.py &
 cd ../planning
-python3 planning2.py 
+python3 planning.py 

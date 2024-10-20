@@ -277,7 +277,7 @@ class ObjectTracker():
             bounding_box.dimensions.x = scale_x
             bounding_box.dimensions.y = scale_y
             bounding_box.dimensions.z = scale_z
-            bounding_box.value = round(bbox.state_est[1], 2)
+            bounding_box.value = round(bbox.state_est[2], 2)
             bbox_array.boxes.append(bounding_box)
 
         return bbox_array
