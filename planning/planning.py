@@ -175,7 +175,7 @@ class Planning():
             self.to_goal_path = gp
             self.start_pose_initialized = False
             rospy.loginfo(f'[{self.get_kst()}] to_goal set {round(time.time()-start_time, 2)} sec')
-
+        
     def check_bank(self):
         if self.RH.current_lane_id in self.bank_list:
             return True
@@ -441,12 +441,12 @@ class Planning():
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
                 if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 89/3.6  
+                    limit_vel = 29/3.6  
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)
 
-                if self.race_mode == 'pit_stop' and len(interped_path)-20 < 10:
+                if self.race_mode == 'pit_stop' and len(interped_path) < 10:
                     target_velocity = -1
                 
                 self.prev_target_vel = target_velocity
