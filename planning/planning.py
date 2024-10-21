@@ -40,7 +40,7 @@ class Planning():
         self.race_mode = 'to_goal'
         self.prev_race_mode = self.race_mode
         
-        self.to_goal_path = None
+        self.planned_global_path = None
         self.pit_stop_path = None
         
         self.lane_change_state = 'straight'
@@ -55,6 +55,7 @@ class Planning():
         self.acc_cnt = 0
         self.acc_reset = False
         self.system_warning = False
+        self.pit_once_passed = False
 
         self.start_pose_initialized = False
         self.first_initialized = False
@@ -87,30 +88,35 @@ class Planning():
             race_mode = 'to_goal'
             planning_state = 'INIT'
             self.first_lap = self.RH.lap_count
-        elif self.prev_lap != self.RH.lap_count and self.race_mode != 'pit_stop': 
+        elif self.prev_lap != self.RH.lap_count:# and self.race_mode != 'pit_stop': 
             self.start_pose_initialized = False
+            
             if self.RH.lap_count % 2 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
                 vel_offset = 5/3.6 if self.RH.lap_count <= 6 else 7/3.6
                 self.max_vel = min(self.max_vel + vel_offset, REAL_MAX_SPEED/3.6)
-            self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)  
+
+            self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+
             self.prev_lap = self.RH.lap_count
-            if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
-                race_mode = self.prev_race_mode
-            else:
-                race_mode = 'to_goal'
+            race_mode = self.race_mode
             planning_state = 'INIT'
             self.change_point_state = ['normal', 'straight']
             self.change_point_cnt = 0
+
+            
         elif self.RH.kiapi_signal == 5 and self.race_mode != 'pit_stop':
             self.start_pose_initialized = False
             race_mode = 'pit_stop'
             planning_state = 'INIT'
+
         elif self.RH.kiapi_signal == 2 and self.race_mode != 'stop':
             race_mode = 'stop'
         elif self.RH.kiapi_signal == 3 and self.race_mode != 'slow_on':
+            print("slow on")
             self.prev_race_mode = self.race_mode
             race_mode = 'slow_on'
         elif self.RH.kiapi_signal == 4 and self.race_mode != 'slow_off':
+            print("slow off")
             race_mode = self.prev_race_mode
             self.slow_mode = 'OFF'
         elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number) and self.race_mode != 'pit_stop':
@@ -138,11 +144,9 @@ class Planning():
         return planning_state, race_mode
         
     def set_start_pos(self, race_mode):
-        if race_mode == 'pit_stop':
-            global_path = copy.deepcopy(self.pit_stop_path)
-        else:
+        global_path = copy.deepcopy(self.planned_global_path)
+        if race_mode != 'pit_stop':
             race_mode = 'to_goal'
-            global_path = copy.deepcopy(self.to_goal_path)
         
         if global_path is not None:
             self.gmv = GetMaxVelocity(self.RH, race_mode)
@@ -164,16 +168,17 @@ class Planning():
         self.set_pit_point()
         gpp_result, gp = self.gpp.get_shortest_path(self.RH.local_pos, self.pit_point, 'pit_stop')
         if gpp_result:
-            self.pit_stop_path = gp
+            self.planned_global_path = gp
             self.start_pose_initialized = False
             rospy.loginfo(f'[{self.get_kst()}] pit_stop set {round(time.time()-start_time, 2)} sec')
+            
     
     def planning_to_goal(self):
         start_time = time.time()
         point = self.goal_points[self.selected_lane-1]
         gpp_result, gp = self.gpp.get_shortest_path(self.RH.local_pos, point, 'to_goal')
         if gpp_result:
-            self.to_goal_path = gp
+            self.planned_global_path = gp
             self.start_pose_initialized = False
             rospy.loginfo(f'[{self.get_kst()}] to_goal set {round(time.time()-start_time, 2)} sec')
         
@@ -416,8 +421,12 @@ class Planning():
         while not rospy.is_shutdown() and not self.shutdown_event.is_set():
             planning_state, self.race_mode = self.check_planning_state()
             if planning_state == 'INIT':
-                if self.race_mode == 'pit_stop':
+                if self.race_mode == 'pit_stop' and ( self.pit_once_passed or not self.gpp.get_pitstop_pass_id(self.RH.local_pos) ) :
                     self.planning_pit_stop()
+                    self.pit_once_passed = True
+                elif self.race_mode == 'pit_stop' and self.gpp.get_pitstop_pass_id(self.RH.local_pos) and not self.pit_once_passed:
+                    self.planning_to_goal()
+                    self.pit_once_passed = True
                 else:
                     self.planning_to_goal()
                 while not self.start_pose_initialized:            

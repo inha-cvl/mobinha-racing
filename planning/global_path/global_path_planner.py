@@ -106,12 +106,23 @@ class GlobalPathPlanner():
             if e_successor is not None:
                 left_lanes, right_lanes, _ = gput.get_whole_neighbor(e_successor)
                 for ll in left_lanes:
-                    #successor = gput.find_most_successor(ll)
                     if ll == c_idnidx[0]:
                         return True, 'left', change_dist
                 
                 for rr in right_lanes:
-                    #successor = gput.find_most_successor(rr)
                     if rr == c_idnidx[0]:
                         return True, 'right', change_dist
         return None
+    
+    def get_pitstop_pass_id(self, local_pose):
+        idnidx = gput.lanelet_matching(local_pose)
+        if idnidx is not None:
+            if idnidx[0] in ['43', '44', '45']:
+                if int(idnidx[1]/45) >= 2:
+                    return True
+            elif idnidx[0] in ['52', '53', '54', '48' ,'49', '50']:
+                return True
+            else:
+                return False
+        else:
+            return False
