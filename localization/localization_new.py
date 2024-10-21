@@ -20,7 +20,7 @@ class Localization:
     def __init__(self):
         self.RH = ROSHandler()
         self.initiated = False
-        self.health_published = True
+        self.restore_published = True
 
         self.last_pos = None
         self.last_hdg = None
@@ -166,38 +166,39 @@ class Localization:
 
 
     def localization_sensor_health(self):
-        if self.timer(30):
-            if self.RH.hdg_invalid_cnt == 2 * 20:
-                self.RH.nav_health_pub.publish(1)
-                print("WARN: invalid heading")
-                self.restart_timer = rospy.Time.now()
-             
-            elif self.RH.hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:  # 20 = hz, 0.8 = safety number
+        if self.RH.hdg_invalid_cnt == 2 * 20:
+            self.RH.nav_health_pub.publish(1)
+            print("WARN: invalid heading")
+            self.restore_published = False
+
+        if self.RH.pos_invalid_cnt == 2 * 20:
+            self.RH.nav_health_pub.publish(1)
+            print("WARN: invalid position")
+            self.restore_published = False
+
+        if (nav_pos_valid and nav_hdg_valid) and not self.restore_published:
+            self.RH.nav_health_pub.publish(0)
+            print("INFO: RTK has been restored!")
+            self.restore_published = True 
+
+        if self.timer(60): 
+            if self.RH.hdg_invalid_cnt >= self.hdg_mct * 20 * 0.8:  # 20 = hz, 0.8 = safety number
                 self.RH.nav_health_pub.publish(2)
                 print("ERROR: invalid heading")
                 os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
                 self.restart_timer = rospy.Time.now()
                 self.RH.hdg_invalid_cnt = 0
-                self.health_published = False 
-            
-            if self.RH.pos_invalid_cnt == 2 * 20:
-                self.RH.nav_health_pub.publish(1)
-                print("WARN: invalid position")
-                self.restart_timer = rospy.Time.now()
+                self.RH.pos_invalid_cnt = 0
+                self.restore_published = False   
 
-            elif self.RH.pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
+            if self.RH.pos_invalid_cnt >= self.pos_mct * 20 * 0.8:
                 self.RH.nav_health_pub.publish(2)
                 print("ERROR: invalid position")
                 os.system('pkill -f "roslaunch ublox_gps ublox_device.launch"')
                 self.restart_timer = rospy.Time.now()
+                self.RH.hdg_invalid_cnt = 0
                 self.RH.pos_invalid_cnt = 0
-                self.health_published = False
-
-            if (nav_pos_valid and nav_hdg_valid) and not self.health_published:
-                self.RH.nav_health_pub.publish(0)
-                print("INFO: RTK has been restored!")
-                self.restart_timer = rospy.Time.now()
-                self.health_published = True 
+                self.restore_published = False
 
 
     def timer(self, sec):   
