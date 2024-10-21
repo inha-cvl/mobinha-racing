@@ -19,7 +19,7 @@ from geometry_msgs.msg import Point
 from ublox_msgs.msg import NavPVT
 
 class ObjectTracker():
-    def __init__(self,  remove_count=4, distance_threshold=2.5, appear_count=2):
+    def __init__(self,  remove_count=4, distance_threshold=2.5, appear_count=3):
         self.next_object_id = 0
         self.prev_objects = {}  
         self.disappeared = {}  

@@ -252,10 +252,10 @@ class Localization:
 
     def update_last_pos(self):
         nav_diff = ((self.RH.nav_pos[0]-self.dr_pos[0])**2 + (self.RH.nav_pos[1]-self.dr_pos[1])**2)**0.5
-        if (nav_diff < 5 and self.RH.hAcc < 50) or self.RH.corr_can_velocity*3.6 < 10:
+        if (nav_diff < 5 and self.RH.hAcc < 100) or self.RH.corr_can_velocity*3.6 < 10:
             global nav_pos_valid 
             nav_pos_valid = True
-        elif nav_diff >= 5 or self.RH.hAcc >= 50:
+        elif nav_diff >= 5 or self.RH.hAcc >= 100:
             nav_pos_valid = False
             # dr_pos_valid = True
         
@@ -275,7 +275,7 @@ class Localization:
         elif dr_pos_valid:
             self.last_pos = self.dr_pos
             self.dr_pos_cnt += 1
-            print(f"DR_POS has used total {self.dr_pos_cnt * 0.05:.2f} sec!")
+            print(f"DR_POS has used total {self.dr_pos_cnt * 0.05:.2f} sec! {self.RH.hAcc}")
         else:
             self.RH.nav_health_pub.publish(1)  # emergency stop
             print("ERROR: ALL Position Dead")
