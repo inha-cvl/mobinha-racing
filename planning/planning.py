@@ -16,7 +16,7 @@ from longitudinal.get_max_velocity import GetMaxVelocity
 from global_path.global_path_planner import GlobalPathPlanner
 import planning_handler as ph
 
-LOCAL_PATH_LENGTH=150
+LOCAL_PATH_LENGTH=120
 REAL_MAX_SPEED=100
 
 def signal_handler(sig, frame):
@@ -118,7 +118,7 @@ class Planning():
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 #TODO: Pre-2 off 
-                #self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
+                self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)
                 if self.race_mode == 'slow_on' and self.selected_lane == 1:
                     self.selected_lane = 2
                 self.prev_lane_number = self.RH.current_lane_number   
@@ -222,7 +222,6 @@ class Planning():
         overtaking_required = False
         for obj in front_object:
             overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
-            
             if overtakng:
                 overtaking_required = True
                 closest_obj_idx_on_path = ph.find_closest_index(trim_global_path, [obj['X'], obj['Y']])
@@ -237,6 +236,7 @@ class Planning():
                             self.lc_state_list = self.prev_lc_state_list
                 break
         
+
        
         if self.acc_cnt >= 70 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
             overtaking_required = True
@@ -254,7 +254,10 @@ class Planning():
                         for obj in front_object:
                             overtakng = ph.calc_overtaking_by_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                             if overtakng or self.acc_reset:
-                                around_detected = ph.check_around(obj, check_object, lc_state)
+                                if self.RH.current_lane_id in ['28', '29', '30', '2', '5', '4', '38', '37', '36']:
+                                    around_detected = ph.check_around2(obj, check_object, lc_state)
+                                else:
+                                    around_detected = ph.check_around(obj, check_object, lc_state)
                                 bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, lc_state)
                                 lidar_bsd_detected = ph.check_bsd(self.RH.left_lidar_bsd_detect, self.RH.right_lidar_bsd_detect, lc_state)
                                 lat_avoidance_overed, avoidance_gap = ph.check_avoidance_gap_over(lc_state, l_width, r_width, lat_avoidance_gap, obj['d'])
@@ -441,7 +444,7 @@ class Planning():
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
                 if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 29/3.6  
+                    limit_vel = 30/3.6  
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

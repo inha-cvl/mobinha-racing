@@ -181,8 +181,6 @@ def calc_overtaking_by_ttc(obj_dist, obj_vel, ego_vel,max_th= 15):
     rel_vel = ego_vel-obj_vel
     if rel_vel > 0:
         ttc = obj_dist/rel_vel
-    elif rel_vel == 0:
-        ttc = max_th
     else:
         ttc = float('inf')
     if (ttc <= max_th) or obj_vel < 2:
@@ -237,6 +235,7 @@ def get_lane_change_state(d, l_width, r_width):
                 lane_change_state = ['left']
             else:
                 lane_change_state = None
+
     return lane_change_state
 
 
@@ -250,6 +249,19 @@ def check_around(xobj, yobjs, lc_state, radius = 15):
                     around = True
             else:
                 if yobj['d'] < xobj['d'] and yobj['d'] < -1.5:
+                    around = True
+    return around
+
+def check_around2(xobj, yobjs, lc_state, radius = 15):
+    around = False
+    for yobj in yobjs:
+        if xobj['s'] - radius < yobj['s'] < xobj['s'] + radius:
+
+            if lc_state == 'left':
+                if yobj['d'] > xobj['d'] and 3.25*1.5 > yobj['d'] > 1.5:
+                    around = True
+            else:
+                if yobj['d'] < xobj['d'] and -3.25*1.5 > yobj['d'] < -1.5:
                     around = True
     return around
 

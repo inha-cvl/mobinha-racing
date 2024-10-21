@@ -483,28 +483,25 @@ def adjust_velocity_profile(velocity_profile):
 def get_lane_width(id):
     h_w = (lane_width / 2)-0.5
     l_n, r_n = get_neighbor(id)
-    if l_n != None or r_n != None:
-        lane_num = lanelets[id]['laneNo']
-        if id in ['10', '13', '29', '31', '34', '46', '55']:
+    lane_num = lanelets[id]['laneNo']
+    if id in ['10', '13', '29', '31', '34', '46', '55']:
+        l_w = h_w
+        r_w = lane_width+h_w
+    elif id in ['11', '12', '30', '32', '35', '47', '57']:
+        l_w = lane_width+h_w
+        r_w = h_w
+    else:
+        if lane_num <= 1:
             l_w = h_w
-            r_w = lane_width+h_w
-        elif id in ['11', '12', '30', '32', '35', '47', '57']:
-            l_w = lane_width+h_w
+            r_w = (2*lane_width)+h_w
+        elif lane_num == 2:
+            l_w = r_w = lane_width+h_w
+        elif lane_num == 3:
+            l_w = (2*lane_width)+h_w
             r_w = h_w
         else:
-            if lane_num <= 1:
-                l_w = h_w
-                r_w = (2*lane_width)+h_w
-            elif lane_num == 2:
-                l_w = r_w = lane_width+h_w
-            elif lane_num == 3:
-                l_w = (2*lane_width)+h_w
-                r_w = h_w
-            else:
-                l_w = r_w = h_w
-    else:
-        l_w = r_w = h_w
-
+            l_w = r_w = h_w
+   
     return l_w, r_w
     
 
