@@ -9704,7 +9704,7 @@
 			"leftType": [],
 			"rightBound": [],
 			"rightType": [],
-			"speedLimit": 120,
+			"speedLimit": 100,
 			"adjacentLeft": null,
 			"adjacentRight": null,
 			"predecessor": [
@@ -28908,7 +28908,7 @@
 			"leftType": [],
 			"rightBound": [],
 			"rightType": [],
-			"speedLimit": 90,
+			"speedLimit": 100,
 			"adjacentLeft": null,
 			"adjacentRight": "8",
 			"predecessor": [
@@ -32235,7 +32235,7 @@
 			"leftType": [],
 			"rightBound": [],
 			"rightType": [],
-			"speedLimit": 90,
+			"speedLimit": 100,
 			"adjacentLeft": "7",
 			"adjacentRight": "9",
 			"predecessor": [
@@ -35582,7 +35582,7 @@
 			"leftType": [],
 			"rightBound": [],
 			"rightType": [],
-			"speedLimit": 90,
+			"speedLimit": 100,
 			"adjacentLeft": "8",
 			"adjacentRight": null,
 			"predecessor": [
