@@ -155,7 +155,7 @@ class ROSHandler():
             # change
             self.pvt_cb = True
             self.gspeed = msg.gSpeed
-            if self.hAcc > 50 and self.corr_can_velocity * 3.6 > 10:
+            if self.hAcc > 100 and self.corr_can_velocity * 3.6 > 10:
                 self.pos_invalid_cnt += 1
             else:
                 self.pos_invalid_cnt = 0
