@@ -26,7 +26,7 @@ class MapLane():
         self.max_vel = 30
         self.stacked_refine_obstacles = []
         self.obstacle_timestamps = []
-        self.remian_duration = 2
+        self.remian_duration = 0.5
 
     def map_publish(self):
         self.RH.publish_map_viz(self.map.lmap_viz, self.map.mlmap_viz)
@@ -181,7 +181,7 @@ class MapLane():
             final_obstacles = sim_obs+matched_obstacles #0: sim, 1: matched, 2: non-matched
 
             #if stacking
-            #self.update_obstacles(final_obstacles)
+            self.update_obstacles(final_obstacles)
             #self.RH.publish_refine_obstacles(self.stacked_refine_obstacles)    
             self.RH.publish_refine_obstacles(final_obstacles)
             
