@@ -17,7 +17,7 @@ from global_path.global_path_planner import GlobalPathPlanner
 import planning_handler as ph
 
 LOCAL_PATH_LENGTH=130
-REAL_MAX_SPEED=110
+REAL_MAX_SPEED=115
 
 def signal_handler(sig, frame):
     os._exit(0)
