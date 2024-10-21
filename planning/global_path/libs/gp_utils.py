@@ -488,7 +488,7 @@ def get_lane_width(id):
         l_w = h_w
         r_w = lane_width+h_w
     elif id in ['11', '12', '30', '32', '35', '47', '57']:
-        l_w = lane_width+h_w
+        l_w = lane_width+h_w+0.5
         r_w = h_w
     else:
         if lane_num <= 1:

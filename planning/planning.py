@@ -43,7 +43,7 @@ class Planning():
         self.to_goal_path = None
         self.pit_stop_path = None
         
-        self.lane_change_state = False
+        self.lane_change_state = 'straight'
         self.lc_state_list = []
         self.prev_lc_state_list = None
         self.lc_state_list_remain_cnt = 0
@@ -91,7 +91,8 @@ class Planning():
             self.start_pose_initialized = False
             if self.RH.lap_count % 2 == 0 and self.RH.lap_count != 0 and self.prev_lap != self.RH.lap_count:
                 vel_offset = 5/3.6 if self.RH.lap_count <= 6 else 7/3.6
-                self.max_vel = min(self.max_vel + vel_offset, REAL_MAX_SPEED/3.6)  
+                self.max_vel = min(self.max_vel + vel_offset, REAL_MAX_SPEED/3.6)
+            self.selected_lane = ph.get_selected_lane(self.max_vel, self.RH.current_lane_number)  
             self.prev_lap = self.RH.lap_count
             if self.prev_race_mode in ['slow_on', 'slow_off', 'stop']:
                 race_mode = self.prev_race_mode
@@ -114,7 +115,7 @@ class Planning():
             self.slow_mode = 'OFF'
         elif ph.has_different_lane_number(self.prev_lane_number, self.RH.current_lane_number) and self.race_mode != 'pit_stop':
             self.diffrent_lane_cnt += 1
-            if self.diffrent_lane_cnt > 9:
+            if self.diffrent_lane_cnt > 8 :#and self.lane_change_state not in ['straight', 'follow']:
                 self.diffrent_lane_cnt = 0
                 self.start_pose_initialized = False
                 #TODO: Pre-2 off 
@@ -207,7 +208,7 @@ class Planning():
                 obj['d'] = d
                 obj['ttc'] = ph.calc_ttc(obj['dist'], obj['v'], self.RH.current_velocity)
                 check_object.append(obj)
-                if -target_d < d < target_d and -5 < s :
+                if -target_d < d < target_d and -6 < s :
                     front_object.append(obj)
                     if s < 100:
                         self.lane_change_state = 'follow'
@@ -235,9 +236,8 @@ class Planning():
                         else:
                             self.lc_state_list = self.prev_lc_state_list
                 break
-        
 
-       
+    
         if self.acc_cnt >= 70 and self.race_mode != 'pit_stop' and not overtaking_required and self.lc_state_list is not None:
             overtaking_required = True
             self.acc_reset = True
@@ -266,6 +266,7 @@ class Planning():
                                     obj_x, obj_y = float(obj['X']), float(obj['Y'])
                                     obj_radius = long_avoidance_gap - (obj['v'] / 5) 
                                     distance_to_obj = ph.distance(x, y, obj_x, obj_y)
+                                    self.lane_change_state = lc_state
                                     if distance_to_obj <= obj_radius or avoid_on:
                                         avoid_on = True
                                         shift_value = avoidance_gap if lc_state == 'left' else -avoidance_gap
@@ -280,6 +281,7 @@ class Planning():
             if not bsd_detected and not lidar_bsd_detected and len(right_object) == 0:
                 for i, point in enumerate(trim_global_path):
                     shift_value = -4
+                    self.lane_change_state = 'right'
                     if i > 5:
                         generated_path = (point[0] + (-1 * point[4]) * shift_value, point[1] + (-1 * point[5]) * shift_value)
                         final_global_path[i][0] = generated_path[0]
@@ -338,12 +340,12 @@ class Planning():
             target_v_ACC = max(self.prev_target_vel - stop_vel_decrement, -1)
         
         if self.change_point_state[0] == 'warning':
-            target_v_ACC = max(self.prev_target_vel-(stop_vel_decrement*20), -1)
+            target_v_ACC = max(self.prev_target_vel-(stop_vel_decrement*15), -1)
             bsd_detected = ph.check_bsd(self.RH.left_bsd_detect, self.RH.right_bsd_detect, self.change_point_state[1])
             lidar_bsd_detected = ph.check_bsd(self.RH.left_lidar_bsd_detect, self.RH.right_lidar_bsd_detect, self.change_point_state[1])
             if not bsd_detected and not lidar_bsd_detected:
                 self.change_point_cnt += 1
-                if self.change_point_cnt > 3:
+                if self.change_point_cnt > 2:
                     self.change_point_state = ['normal', 'straight']
                     target_v_ACC = self.prev_target_vel
                     self.change_point_cnt = 0
@@ -444,7 +446,7 @@ class Planning():
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
                 if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 30/3.6  
+                    limit_vel = 200/3.6  
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)

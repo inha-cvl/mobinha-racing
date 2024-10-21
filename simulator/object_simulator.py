@@ -53,7 +53,7 @@ class ObjectSimulator:
                     pose.position.x = obj.x
                     pose.position.y = obj.y
                     pose.position.z = 1
-                    pose.orientation.x = 0
+                    pose.orientation.x = 30/3.6
                     pose.orientation.y = obj.yaw
                     pose_array.poses.append(pose)
             self.pub_sim_object.publish(pose_array)
