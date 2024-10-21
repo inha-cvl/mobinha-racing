@@ -389,19 +389,19 @@ class Planning():
                     interval = self.RH.current_velocity / (remain_dist/ (interval_divisor_base + (self.RH.current_velocity / interval_factor)))
                     acc_vel = max(self.RH.current_velocity - interval, -1)
         
-        if self.RH.system_health == 1 and not self.system_warning:
-            acc_vel = slow_vel
-            self.system_warning = True
+        # if self.RH.system_health == 1 and not self.system_warning:
+        #     acc_vel = slow_vel
+        #     self.system_warning = True
 
-        elif self.RH.system_health == 0 and self.system_warning:
-            self.system_warning = False
+        # elif self.RH.system_health == 0 and self.system_warning:
+        #     self.system_warning = False
         
-        if self.system_warning:
-            acc_vel = slow_vel
-            if self.RH.current_velocity <= 11/3.6:
-                self.RH.publish_warning(1)
-        else:
-            self.RH.publish_warning(0)
+        # if self.system_warning:
+        #     acc_vel = slow_vel
+        #     if self.RH.current_velocity <= 11/3.6:
+        #         self.RH.publish_warning(1)
+        # else:
+        #     self.RH.publish_warning(0)
 
         return acc_vel
 
@@ -441,7 +441,7 @@ class Planning():
                 road_max_vel = self.calculate_road_max_vel(acc_vel)     
                                 
                 if self.RH.lap_count == 0: # TODO: 0lap limit velocity
-                    limit_vel = 29/3.6  
+                    limit_vel = 89/3.6  
                 else:
                     limit_vel = self.max_vel
                 target_velocity = min(limit_vel, road_max_vel)
