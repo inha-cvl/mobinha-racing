@@ -24,7 +24,7 @@ class ObjectTracker():
         self.prev_objects = {}  
         self.disappeared = {}  
         self.candidate_objects = {} 
-        self.candidate_next_object_id = 100000  
+        self.candidate_next_object_id = 10000000  
         self.candidate_alive_count = {}  # 후보 객체들의 alivecount
 
         self.remove_count = remove_count
